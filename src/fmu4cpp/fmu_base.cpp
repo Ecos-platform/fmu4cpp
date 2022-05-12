@@ -20,9 +20,6 @@ namespace fmu4cpp {
     void fmu_base::terminate() {
     }
 
-    void fmu_base::reset() {
-    }
-
     void fmu_base::register_int(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
         IntVariable v(name, integers_.size(), getter, setter);
         integers_.emplace_back(std::move(v));
@@ -70,19 +67,37 @@ namespace fmu4cpp {
 
         ss << "\t<ModelVariables>\n";
 
-        for (const auto &i: integers_) {
+        for (const auto &v: integers_) {
             ss << "\t\t<ScalarVariable name=\""
-               << i.name() << "\" valueReference=\"" << i.value_reference() << "\">";
-            ss << "\n\t\t\t<Integer start=\"" << i() << "\"/>"
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
+            ss << "\n\t\t\t<Integer start=\"" << v.get() << "\"/>"
                << "\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }
 
-        for (const auto &i: reals_) {
+        for (const auto &v: reals_) {
             ss << "\t\t<ScalarVariable name=\""
-               << i.name() << "\" valueReference=\"" << i.value_reference() << "\">";
-            ss << "\n\t\t\t<Real start=\"" << i() << "\"/>"
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
+            ss << "\n\t\t\t<Real start=\"" << v.get() << "\"/>"
+               << "\n";
+            ss << "\t\t</ScalarVariable>"
+               << "\n";
+        }
+
+        for (const auto &v: booleans_) {
+            ss << "\t\t<ScalarVariable name=\""
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
+            ss << "\n\t\t\t<Boolean start=\"" << v.get() << "\"/>"
+               << "\n";
+            ss << "\t\t</ScalarVariable>"
+               << "\n";
+        }
+
+        for (const auto &v: strings_) {
+            ss << "\t\t<ScalarVariable name=\""
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
+            ss << "\n\t\t\t<String start=\"" << v.get() << "\"/>"
                << "\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
