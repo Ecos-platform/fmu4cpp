@@ -63,12 +63,12 @@ namespace fmu4cpp {
             return vr_;
         }
 
-        T operator()() const {
+        [[nodiscard]] T get() const {
             return getter_();
         }
 
-        void operator[](T value) {
-            if (setter_) setter_(value);
+        void set(T value) {
+            if (setter_) setter_->operator()(value);
         }
 
         virtual causality_t causality() const {
@@ -109,7 +109,48 @@ namespace fmu4cpp {
         virtual bool do_step(double currentTime, double dt) = 0;
 
         virtual void terminate();
-        virtual void reset();
+
+        void get_integer(const unsigned int vr[], size_t nvr, int value[]) const {
+            for (unsigned i = 0; i < nvr; i++) {
+                unsigned int ref = vr[i];
+                value[i] = integers_[ref].get();
+            }
+        }
+
+        void get_real(const unsigned int vr[], size_t nvr, double value[]) const {
+            for (unsigned i = 0; i < nvr; i++) {
+                unsigned int ref = vr[i];
+                value[i] = reals_[ref].get();
+            }
+        }
+
+        void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
+            for (unsigned i = 0; i < nvr; i++) {
+                unsigned int ref = vr[i];
+                value[i] = static_cast<int>(booleans_[ref].get());
+            }
+        }
+
+        void set_integer(const unsigned int vr[], size_t nvr, const int value[]) {
+            for (unsigned i = 0; i < nvr; i++) {
+                unsigned int ref = vr[i];
+                integers_[ref].set(value[i]);
+            }
+        }
+
+        void set_real(const unsigned int vr[], size_t nvr, const double value[]) {
+            for (unsigned i = 0; i < nvr; i++) {
+                unsigned int ref = vr[i];
+                reals_[ref].set(value[i]);
+            }
+        }
+
+        void set_boolean(const unsigned int vr[], size_t nvr, const int value[]) {
+            for (unsigned i = 0; i < nvr; i++) {
+                unsigned int ref = vr[i];
+                booleans_[ref].set(static_cast<bool>(value[i]));
+            }
+        }
 
         [[nodiscard]] std::string make_description() const;
 

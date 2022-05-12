@@ -61,9 +61,9 @@ fmi2Status fmi2SetupExperiment(fmi2Component c,
     try {
         component->slave->setup_experiment(startTime, stop, tol);
         return fmi2OK;
-    } catch (fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (std::exception &ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -74,9 +74,9 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
     try {
         component->slave->enter_initialisation_mode();
         return fmi2OK;
-    } catch (fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (std::exception &ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -86,9 +86,9 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
     try {
         component->slave->exit_initialisation_mode();
         return fmi2OK;
-    } catch (fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (std::exception &ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -98,9 +98,9 @@ fmi2Status fmi2Terminate(fmi2Component c) {
     try {
         component->slave->terminate();
         return fmi2OK;
-    } catch (fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (std::exception &ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -138,6 +138,109 @@ fmi2Status fmi2CancelStep(fmi2Component c)
 fmi2Status fmi2Reset(fmi2Component c) {
     auto component = reinterpret_cast<Component *>(c);
     return fmi2OK;
+}
+
+fmi2Status fmi2GetInteger(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        fmi2Integer value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->get_integer(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2GetReal(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        fmi2Real value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->get_real(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2GetBoolean(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        fmi2Boolean value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->get_boolean(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
+
+
+fmi2Status fmi2SetInteger(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        const fmi2Integer value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->set_integer(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2SetReal(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        const fmi2Real value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->set_real(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2SetBoolean(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        const fmi2Boolean value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->set_boolean(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
 }
 
 fmi2Status fmi2GetStatus(
