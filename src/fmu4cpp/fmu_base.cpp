@@ -51,7 +51,7 @@ namespace fmu4cpp {
            << R"( generationTool="fmu4cpp")"
            << " description=\"" << description() << "\""
            << " author=\"" << author() << "\""
-           << "\n";
+           << ">\n";
 
         ss << "\t"
            << R"(<CoSimulation needsExecutionTool="false")"
@@ -61,7 +61,7 @@ namespace fmu4cpp {
            << R"( canGetAndSetFMUstate="false")"
            << R"( canSerializeFMUstate="false")"
            << R"( canNotUseMemoryManagementFunctions="true")"
-           << "\n"
+           << ">\n"
            << "\t</CoSimulation>"
            << "\n";
 
@@ -106,30 +106,30 @@ namespace fmu4cpp {
 
         ss << "\t</ModelVariables>\n";
 
-        ss << "\t<ModelStructure>\n"
-                << "\t\t<Outputs>\n";
+        ss << "\t<ModelStructure>\n";
+
 
         std::vector<int> outputs;
         int index = 0;
-        for (const auto& i : integers_) {
+        for (const auto &i: integers_) {
             if (i.causality() == causality_t::OUTPUT) {
                 outputs.push_back(index);
             }
             index++;
         }
-        for (const auto& i : reals_) {
+        for (const auto &i: reals_) {
             if (i.causality() == causality_t::OUTPUT) {
                 outputs.push_back(index);
             }
             index++;
         }
-        for (const auto& i : booleans_) {
+        for (const auto &i: booleans_) {
             if (i.causality() == causality_t::OUTPUT) {
                 outputs.push_back(index);
             }
             index++;
         }
-        for (const auto& i : strings_) {
+        for (const auto &i: strings_) {
             if (i.causality() == causality_t::OUTPUT) {
                 outputs.push_back(index);
             }
@@ -138,11 +138,13 @@ namespace fmu4cpp {
 
         if (!outputs.empty()) {
             ss << "\t\t<Outputs>\n";
-            for (auto i : outputs) {
+            for (auto i: outputs) {
                 ss << "\t\t\tUnknown index=\"" << i << "\"\n";
             }
             ss << "\t\t</Outputs>\n";
         }
+
+        ss << "\t</ModelStructure>\n";
 
         ss << "</fmiModelDescription";
 
