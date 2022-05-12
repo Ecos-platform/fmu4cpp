@@ -1,0 +1,193 @@
+
+#include <fmi2/fmi2Functions.h>
+
+#include <limits>
+#include <memory>
+#include <string>
+
+#include <fmu4cpp/fmu_base.hpp>
+
+namespace {
+
+    // A struct that holds all the data for one model instance.
+    struct Component {
+
+        Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi2CallbackFunctions callbackFunctions)
+            : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()}, callbackFunctions(callbackFunctions), slave(std::move(slave)) {}
+
+        // Co-simulation
+        double lastSuccessfulTime;
+        fmi2CallbackFunctions callbackFunctions;
+        std::unique_ptr<fmu4cpp::fmu_base> slave;
+    };
+
+}// namespace
+
+extern "C" {
+
+const char *fmi2GetTypesPlatform() {
+    return fmi2TypesPlatform;
+}
+
+const char *fmi2GetVersion(void) {
+    return "2.0";
+}
+
+fmi2Component fmi2Instantiate(fmi2String instanceName,
+                              fmi2Type fmuType,
+                              fmi2String fmuGUID,
+                              fmi2String fmuResourceLocation,
+                              const fmi2CallbackFunctions *functions,
+                              fmi2Boolean visible,
+                              fmi2Boolean loggingOn) {
+
+    if (fmuType != fmi2CoSimulation) {
+        return nullptr;
+    }
+    auto slave = fmu4cpp::createInstance(instanceName, fmuResourceLocation);
+    return new Component(std::move(slave), *functions);
+}
+
+fmi2Status fmi2SetupExperiment(fmi2Component c,
+                               fmi2Boolean toleranceDefined,
+                               fmi2Real tolerance,
+                               fmi2Real startTime,
+                               fmi2Boolean stopTimeDefined,
+                               fmi2Real stopTime) {
+    double stop = stopTimeDefined ? stopTime : 0;
+    double tol = toleranceDefined ? tolerance : 0;
+
+    auto component = reinterpret_cast<Component *>(c);
+    try {
+        component->slave->setup_experiment(startTime, stop, tol);
+        return fmi2OK;
+    } catch (fmu4cpp::fatal_error &ex) {
+        return fmi2Fatal;
+    } catch (std::exception &ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
+    auto component = reinterpret_cast<Component *>(c);
+
+    try {
+        component->slave->enter_initialisation_mode();
+        return fmi2OK;
+    } catch (fmu4cpp::fatal_error &ex) {
+        return fmi2Fatal;
+    } catch (std::exception &ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
+    auto component = reinterpret_cast<Component *>(c);
+    try {
+        component->slave->exit_initialisation_mode();
+        return fmi2OK;
+    } catch (fmu4cpp::fatal_error &ex) {
+        return fmi2Fatal;
+    } catch (std::exception &ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2Terminate(fmi2Component c) {
+    auto component = reinterpret_cast<Component *>(c);
+    try {
+        component->slave->terminate();
+        return fmi2OK;
+    } catch (fmu4cpp::fatal_error &ex) {
+        return fmi2Fatal;
+    } catch (std::exception &ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2DoStep(
+        fmi2Component c,
+        fmi2Real currentCommunicationPoint,
+        fmi2Real communicationStepSize,
+        fmi2Boolean /*noSetFMUStatePriorToCurrentPoint*/) {
+    auto component = reinterpret_cast<Component *>(c);
+    try {
+        double endTime = currentCommunicationPoint;
+        const auto ok = component->slave->do_step(
+                currentCommunicationPoint,
+                communicationStepSize);
+        if (ok) {
+            component->lastSuccessfulTime = currentCommunicationPoint + communicationStepSize;
+            return fmi2OK;
+        } else {
+            component->lastSuccessfulTime = endTime;
+            return fmi2Discard;
+        }
+    } catch (const fmu4cpp::fatal_error &ex) {
+        return fmi2Fatal;
+    } catch (const std::exception &e) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2CancelStep(fmi2Component c)
+{
+    return fmi2Error;
+}
+
+fmi2Status fmi2Reset(fmi2Component c) {
+    auto component = reinterpret_cast<Component *>(c);
+    return fmi2OK;
+}
+
+fmi2Status fmi2GetStatus(
+        fmi2Component c,
+        const fmi2StatusKind,
+        fmi2Status*)
+{
+    return fmi2Error;
+}
+
+fmi2Status fmi2GetRealStatus(
+        fmi2Component c,
+        const fmi2StatusKind s,
+        fmi2Real* value)
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    if (s == fmi2LastSuccessfulTime) {
+        *value = component->lastSuccessfulTime;
+        return fmi2OK;
+    } else {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2GetIntegerStatus(
+        fmi2Component c,
+        const fmi2StatusKind,
+        fmi2Integer*)
+{
+    return fmi2Error;
+}
+
+fmi2Status fmi2GetBooleanStatus(
+        fmi2Component c,
+        const fmi2StatusKind,
+        fmi2Boolean*)
+{
+    return fmi2Error;
+}
+
+fmi2Status fmi2GetStringStatus(
+        fmi2Component c,
+        const fmi2StatusKind,
+        fmi2String*)
+{
+    return fmi2Error;
+}
+
+void fmi2FreeInstance(fmi2Component c) {
+    auto component = reinterpret_cast<Component *>(c);
+    delete (component);
+}
+}
