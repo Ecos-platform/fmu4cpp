@@ -62,7 +62,7 @@ namespace fmu4cpp {
             return causality_;
         }
 
-        [[nodiscard]] virtual variability_t variability() const {
+        [[nodiscard]] virtual std::optional<variability_t> variability() const {
             return variability_;
         }
 
@@ -72,7 +72,7 @@ namespace fmu4cpp {
 
     protected:
         causality_t causality_ = causality_t::LOCAL;
-        variability_t variability_ = variability_t::CONTINUOUS;
+        std::optional<variability_t> variability_;
         std::optional<initial_t> initial_;
     };
 
