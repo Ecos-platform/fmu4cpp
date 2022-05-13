@@ -25,8 +25,8 @@ private:
     }
 
 public:
-    sine(std::string instance_name, std::string resourceLocation)
-        : fmu_base(std::move(instance_name), std::move(resourceLocation)) {
+    sine(std::string instance_name, const std::string& resourceLocation)
+        : fmu_base(std::move(instance_name), resourceLocation) {
         register_real("A", [this] {
             return A;
         });
@@ -53,7 +53,11 @@ public:
     }
 };
 
+std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
+    return std::make_unique<sine>(instanceName, fmuResourceLocation);
+}
+
 int main() {
-    sine s("", "");
-    std::cout << s.make_description() << std::endl;
+    auto s = createInstance("", "");
+    std::cout << s->make_description() << std::endl;
 }
