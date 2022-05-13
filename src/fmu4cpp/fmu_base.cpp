@@ -5,6 +5,17 @@
 #include <sstream>
 #include <utility>
 
+namespace {
+    std::string now()
+    {
+        std::time_t now= std::time(nullptr);
+        std::tm* now_tm= std::gmtime(&now);
+        char buf[42];
+        std::strftime(buf, sizeof(buf), "%Y-%m-%dT%X+00:00", now_tm);
+        return buf;
+    }
+}
+
 namespace fmu4cpp {
 
     void fmu_base::setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance) {
@@ -27,9 +38,11 @@ namespace fmu4cpp {
         IntVariable v(name, integers_.size(), getter, setter);
         integers_.emplace_back(std::move(v));
     }
-    void fmu_base::register_real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
+
+    RealVariable &fmu_base::register_real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
         RealVariable v(name, reals_.size(), getter, setter);
         reals_.emplace_back(std::move(v));
+        return reals_.back();
     }
 
     void fmu_base::register_bool(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
@@ -52,17 +65,19 @@ namespace fmu4cpp {
            << " modelName=\"" << modelName() << "\""
            << " guid=\"" << uuid::generate_uuid_v4() << "\""
            << R"( generationTool="fmu4cpp")"
+           << " generationDateAndTime=\"" << now() << "\""
            << " description=\"" << description() << "\""
            << " author=\"" << author() << "\""
+           << " variableNamingConvention=\"" << variableNamingConvention() << "\""
            << ">\n";
 
-        ss << "\t"
+        ss << "\t" << std::boolalpha
            << R"(<CoSimulation needsExecutionTool="false")"
            << " modelIdentifier=\"" << modelName() << "\""
-           << R"( canHandleVariableCommunicationStepSize="true")"
-           << R"( canBeInstantiatedOnlyOncePerProcess="false")"
-           << R"( canGetAndSetFMUstate="false")"
-           << R"( canSerializeFMUstate="false")"
+           << " canHandleVariableCommunicationStepSize=\"" << canHandleVariableCommunicationStepSize() << "\""
+           << " canBeInstantiatedOnlyOncePerProcess=\"" << canBeInstantiatedOnlyOncePerProcess() << "\""
+           << " canGetAndSetFMUstate=\"" << canGetAndSetFMUstate() << "\""
+           << " canSerializeFMUstate=\"" << canSerializeFMUstate() << "\""
            << R"( canNotUseMemoryManagementFunctions="true")"
            << ">\n"
            << "\t</CoSimulation>"
@@ -82,8 +97,13 @@ namespace fmu4cpp {
         for (const auto &v: reals_) {
             ss << "\t\t<ScalarVariable name=\""
                << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
-            ss << "\n\t\t\t<Real start=\"" << v.get() << "\"/>"
-               << "\n";
+            ss << "\n\t\t\t<Real start=\"" << v.get();
+            auto min = v.getMin();
+            auto max = v.getMax();
+            if (min && max) {
+                ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
+            }
+            ss << "\"/>\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }
@@ -142,7 +162,7 @@ namespace fmu4cpp {
         if (!outputs.empty()) {
             ss << "\t\t<Outputs>\n";
             for (auto i: outputs) {
-                ss << "\t\t\tUnknown index=\"" << i << "\"\n";
+                ss << "\t\t\t<Unknown index=\"" << i << "\"/>\n";
             }
             ss << "\t\t</Outputs>\n";
         }

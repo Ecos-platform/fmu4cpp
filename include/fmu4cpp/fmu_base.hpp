@@ -34,6 +34,14 @@ namespace fmu4cpp {
             return resourceLocation_;
         }
 
+
+        std::optional<RealVariable> get_real_variable(const std::string &name) {
+            for (auto &v: reals_) {
+                if (v.name() == name) return v;
+            }
+            return std::nullopt;
+        }
+
         virtual void setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance);
 
         virtual void enter_initialisation_mode();
@@ -67,7 +75,7 @@ namespace fmu4cpp {
             }
         }
 
-        void get_string(const unsigned int vr[], size_t nvr, const char* value[]) const {
+        void get_string(const unsigned int vr[], size_t nvr, const char *value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 unsigned int ref = vr[i];
                 value[i] = strings_[ref].get().c_str();
@@ -95,7 +103,7 @@ namespace fmu4cpp {
             }
         }
 
-        void set_string(const unsigned int vr[], size_t nvr, const char* const value[]) {
+        void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 unsigned int ref = vr[i];
                 booleans_[ref].set(value[i]);
@@ -107,9 +115,16 @@ namespace fmu4cpp {
         ~fmu_base() = default;
 
     protected:
+        virtual std::string modelName() const = 0;
         [[nodiscard]] virtual std::string author() const { return ""; }
         [[nodiscard]] virtual std::string description() const { return ""; }
-        [[nodiscard]] virtual std::string modelName() const { return ""; }
+        [[nodiscard]] virtual std::string version() const { return ""; }
+        [[nodiscard]] virtual std::string variableNamingConvention() const { return "structured"; }
+
+        [[nodiscard]] virtual bool canHandleVariableCommunicationStepSize() const { return true; }
+        [[nodiscard]] virtual bool canBeInstantiatedOnlyOncePerProcess() const { return false; }
+        [[nodiscard]] virtual bool canGetAndSetFMUstate() const { return false; }
+        [[nodiscard]] virtual bool canSerializeFMUstate() const { return false; }
 
 
         void register_int(
@@ -117,7 +132,7 @@ namespace fmu4cpp {
                 const std::function<int()> &getter,
                 const std::optional<std::function<void(int)>> &setter = std::nullopt);
 
-        void register_real(
+        RealVariable& register_real(
                 const std::string &name,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter = std::nullopt);

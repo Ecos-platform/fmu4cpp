@@ -30,11 +30,24 @@ public:
         register_real("A", [this] {
             return A;
         });
+        register_real("f", [this] {
+            return f;
+        });
+        register_real("phi", [this] {
+            return phi;
+        });
+        register_real("output", [this] {
+            return output;
+        }).setCausality(fmu4cpp::causality_t::OUTPUT);
     }
 
 protected:
     [[nodiscard]] std::string author() const override {
         return "John Doe";
+    }
+
+    [[nodiscard]] std::string modelName() const override {
+        return "Sine";
     }
 
 public:
@@ -60,4 +73,20 @@ std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceNam
 int main() {
     auto s = createInstance("", "");
     std::cout << s->make_description() << std::endl;
+
+    double start = 0;
+    s->setup_experiment(start, {}, {});
+    s->enter_initialisation_mode();
+    s->exit_initialisation_mode();
+
+    double t = start;
+    double dt = 0.1;
+    auto v = s->get_real_variable("output");
+    for (int i = 0; i < 10; i++) {
+        s->do_step(t, dt);
+        std::cout << v->get() << std::endl;
+        t+=dt;
+    }
+
+    s->terminate();
 }
