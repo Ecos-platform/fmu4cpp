@@ -1,0 +1,38 @@
+
+#include "fmu4cpp/model_info.hpp"
+
+#include "nlohmann/json.hpp"
+
+#include <iostream>
+#include <fstream>
+
+namespace fmu4cpp {
+
+    model_info get_model_info() {
+
+        std::ifstream i(R"(@MODEL_INFO@)");
+
+        nlohmann::json j;
+        i >> j;
+
+        model_info info;
+        info.modelName = j["modelName"];
+        info.version = j["version"];
+        info.author = j["author"];
+        info.variableNamingConvention = j["variableNamingConvention"];
+        info.needsExecutionTool = j["needsExecutionTool"];
+        info.canHandleVariableCommunicationStepSize = j["canHandleVariableCommunicationStepSize"];
+        info.canBeInstantiatedOnlyOncePerProcess = j["canBeInstantiatedOnlyOncePerProcess"];
+        info.canGetAndSetFMUstate = j["canGetAndSetFMUstate"];
+        info.canSerializeFMUstate = j["canSerializeFMUstate"];
+
+        auto modelIdentifier = j["modelIdentifier"];
+        if (modelIdentifier == "@modelName") {
+            info.modelIdentifier = info.modelName;
+        } else {
+            info.modelIdentifier = modelIdentifier;
+        }
+        return info;
+    }
+
+}

@@ -1,11 +1,11 @@
 
-#include <fmi2/fmi2Functions.h>
+#include "fmi2/fmi2Functions.h"
 
 #include <limits>
 #include <memory>
 #include <string>
 
-#include <fmu4cpp/fmu_base.hpp>
+#include "fmu_base.hpp"
 
 namespace {
 
@@ -53,13 +53,13 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     std::string resources(fmuResourceLocation);
 
     if (resources.find("file:////") != std::string::npos) {
-        resources.replace(0, 9-magic, "");
+        resources.replace(0, 9 - magic, "");
     } else if (resources.find("file:///") != std::string::npos) {
-        resources.replace(0, 8-magic, "");
+        resources.replace(0, 8 - magic, "");
     } else if (resources.find("file://") != std::string::npos) {
-        resources.replace(0, 7-magic, "");
+        resources.replace(0, 7 - magic, "");
     } else if (resources.find("file:/") != std::string::npos) {
-        resources.replace(0, 6-magic, "");
+        resources.replace(0, 6 - magic, "");
     }
 
     auto slave = fmu4cpp::createInstance(instanceName, resources);
@@ -151,8 +151,7 @@ fmi2Status fmi2DoStep(
     }
 }
 
-fmi2Status fmi2CancelStep(fmi2Component c)
-{
+fmi2Status fmi2CancelStep(fmi2Component c) {
     return fmi2Error;
 }
 
@@ -166,15 +165,14 @@ fmi2Status fmi2GetInteger(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        fmi2Integer value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        fmi2Integer value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->get_integer(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -183,15 +181,14 @@ fmi2Status fmi2GetReal(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        fmi2Real value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        fmi2Real value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->get_real(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -200,15 +197,14 @@ fmi2Status fmi2GetBoolean(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        fmi2Boolean value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        fmi2Boolean value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->get_boolean(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -217,15 +213,14 @@ fmi2Status fmi2GetString(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        fmi2String value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        fmi2String value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->get_string(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -234,15 +229,14 @@ fmi2Status fmi2SetInteger(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        const fmi2Integer value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        const fmi2Integer value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->set_integer(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -251,15 +245,14 @@ fmi2Status fmi2SetReal(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        const fmi2Real value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        const fmi2Real value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->set_real(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -268,15 +261,14 @@ fmi2Status fmi2SetBoolean(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        const fmi2Boolean value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        const fmi2Boolean value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->set_boolean(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -285,15 +277,14 @@ fmi2Status fmi2SetString(
         fmi2Component c,
         const fmi2ValueReference vr[],
         size_t nvr,
-        const fmi2String value[])
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        const fmi2String value[]) {
+    const auto component = reinterpret_cast<Component *>(c);
     try {
         component->slave->set_string(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error& ex) {
+    } catch (const fmu4cpp::fatal_error &ex) {
         return fmi2Fatal;
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         return fmi2Error;
     }
 }
@@ -301,17 +292,15 @@ fmi2Status fmi2SetString(
 fmi2Status fmi2GetStatus(
         fmi2Component c,
         const fmi2StatusKind,
-        fmi2Status*)
-{
+        fmi2Status *) {
     return fmi2Error;
 }
 
 fmi2Status fmi2GetRealStatus(
         fmi2Component c,
         const fmi2StatusKind s,
-        fmi2Real* value)
-{
-    const auto component = reinterpret_cast<Component*>(c);
+        fmi2Real *value) {
+    const auto component = reinterpret_cast<Component *>(c);
     if (s == fmi2LastSuccessfulTime) {
         *value = component->lastSuccessfulTime;
         return fmi2OK;
@@ -323,24 +312,21 @@ fmi2Status fmi2GetRealStatus(
 fmi2Status fmi2GetIntegerStatus(
         fmi2Component c,
         const fmi2StatusKind,
-        fmi2Integer*)
-{
+        fmi2Integer *) {
     return fmi2Error;
 }
 
 fmi2Status fmi2GetBooleanStatus(
         fmi2Component c,
         const fmi2StatusKind,
-        fmi2Boolean*)
-{
+        fmi2Boolean *) {
     return fmi2Error;
 }
 
 fmi2Status fmi2GetStringStatus(
         fmi2Component c,
         const fmi2StatusKind,
-        fmi2String*)
-{
+        fmi2String *) {
     return fmi2Error;
 }
 

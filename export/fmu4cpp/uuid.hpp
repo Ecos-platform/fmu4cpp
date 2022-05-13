@@ -8,7 +8,6 @@
 // https://stackoverflow.com/questions/24365331/how-can-i-generate-uuid-in-c-without-using-boost-library
 namespace uuid {
 
-
     std::string generate_uuid_v4() {
         static std::random_device rd;
         static std::mt19937_64 gen(rd());
@@ -37,7 +36,7 @@ namespace uuid {
         ss << "-";
         for (i = 0; i < 12; i++) {
             ss << dis(gen);
-        };
+        }
         return ss.str();
     }
 }// namespace uuid

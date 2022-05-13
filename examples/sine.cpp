@@ -1,12 +1,11 @@
 
-#include <fmu4cpp/fmu_base.hpp>
+#include "fmu4cpp/fmu_base.hpp"
 
 #include <cmath>
 #include <iostream>
 #include <utility>
 
 using namespace fmu4cpp;
-
 
 class sine : public fmu_base {
 
@@ -41,16 +40,6 @@ public:
         }).setCausality(fmu4cpp::causality_t::OUTPUT);
     }
 
-protected:
-    [[nodiscard]] std::string author() const override {
-        return "John Doe";
-    }
-
-    [[nodiscard]] std::string modelName() const override {
-        return "Sine";
-    }
-
-public:
     void setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance) override {
         t = start;
     }

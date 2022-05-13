@@ -1,0 +1,20 @@
+
+#include "fmu4cpp/lib_info.hpp"
+
+#include <sstream>
+
+namespace fmu4cpp {
+
+    version library_version() {
+        // clang-format off
+        return { @PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@ };
+        // clang-format on
+    }
+
+    std::string to_string(version v) {
+        std::stringstream ss;
+        ss << v.major << "." << v.minor << "." << v.patch;
+        return ss.str();
+    }
+
+}// namespace fmu4cpp

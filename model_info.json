@@ -1,0 +1,13 @@
+{
+  "modelName": "Identity",
+  "author": "John Doe",
+  "version": "0.1.0",
+  "description": "Dummy description",
+  "modelIdentifier": "@modelName",
+  "variableNamingConvention": "structured",
+  "needsExecutionTool": false,
+  "canHandleVariableCommunicationStepSize": true,
+  "canBeInstantiatedOnlyOncePerProcess": false,
+  "canGetAndSetFMUstate": false,
+  "canSerializeFMUstate": false
+}

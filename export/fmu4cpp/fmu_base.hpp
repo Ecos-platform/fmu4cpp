@@ -26,6 +26,9 @@ namespace fmu4cpp {
         fmu_base(std::string instance_name, const std::string &resourceLocation)
             : instanceName_(std::move(instance_name)), resourceLocation_(resourceLocation) {}
 
+        fmu_base(const fmu_base&) = delete;
+        fmu_base(const fmu_base&&) = delete;
+
         [[nodiscard]] std::string instanceName() const {
             return instanceName_;
         }
@@ -33,7 +36,6 @@ namespace fmu4cpp {
         [[nodiscard]] std::filesystem::path resourceLocation() const {
             return resourceLocation_;
         }
-
 
         std::optional<RealVariable> get_real_variable(const std::string &name) {
             for (auto &v: reals_) {
@@ -115,17 +117,6 @@ namespace fmu4cpp {
         ~fmu_base() = default;
 
     protected:
-        virtual std::string modelName() const = 0;
-        [[nodiscard]] virtual std::string author() const { return ""; }
-        [[nodiscard]] virtual std::string description() const { return ""; }
-        [[nodiscard]] virtual std::string version() const { return ""; }
-        [[nodiscard]] virtual std::string variableNamingConvention() const { return "structured"; }
-
-        [[nodiscard]] virtual bool canHandleVariableCommunicationStepSize() const { return true; }
-        [[nodiscard]] virtual bool canBeInstantiatedOnlyOncePerProcess() const { return false; }
-        [[nodiscard]] virtual bool canGetAndSetFMUstate() const { return false; }
-        [[nodiscard]] virtual bool canSerializeFMUstate() const { return false; }
-
 
         void register_int(
                 const std::string &name,

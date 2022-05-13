@@ -1,27 +1,12 @@
 
-#include "fmu4cpp/fmu_base.hpp"
+#include "fmu_base.hpp"
+#include "lib_info.hpp"
+#include "model_info.hpp"
 
+#include "time.hpp"
 #include "uuid.hpp"
 #include <sstream>
 #include <utility>
-#include <ctime>
-
-namespace {
-    std::string now()
-    {
-        time_t now;
-        time(&now);
-        char buf[42];
-        tm now_tm{};
-        auto err = gmtime_s(&now_tm, &now);
-        if (!err) {
-            std::strftime(buf, sizeof(buf), "%FT%TZ", &now_tm);
-            return buf;
-        } else {
-            return "1970-01-01T00:00:00Z";
-        }
-    }
-}
 
 namespace fmu4cpp {
 
@@ -65,26 +50,27 @@ namespace fmu4cpp {
     std::string fmu_base::make_description() const {
 
         std::stringstream ss;
+        model_info m = get_model_info();
 
         ss << R"(<?xml version="1.0" encoding="UTF-8"?>)"
            << "\n"
            << R"(<fmiModelDescription fmiVersion="2.0")"
-           << " modelName=\"" << modelName() << "\""
+           << " modelName=\"" << m.modelName << "\""
            << " guid=\"" << uuid::generate_uuid_v4() << "\""
-           << R"( generationTool="fmu4cpp")"
+           << " generationTool=\"fmu4cpp" << " v" << to_string(library_version()) << "\""
            << " generationDateAndTime=\"" << now() << "\""
-           << " description=\"" << description() << "\""
-           << " author=\"" << author() << "\""
-           << " variableNamingConvention=\"" << variableNamingConvention() << "\""
+           << " description=\"" << m.description << "\""
+           << " author=\"" << m.author << "\""
+           << " variableNamingConvention=\"" << m.variableNamingConvention << "\""
            << ">\n";
 
         ss << "\t" << std::boolalpha
-           << R"(<CoSimulation needsExecutionTool="false")"
-           << " modelIdentifier=\"" << modelName() << "\""
-           << " canHandleVariableCommunicationStepSize=\"" << canHandleVariableCommunicationStepSize() << "\""
-           << " canBeInstantiatedOnlyOncePerProcess=\"" << canBeInstantiatedOnlyOncePerProcess() << "\""
-           << " canGetAndSetFMUstate=\"" << canGetAndSetFMUstate() << "\""
-           << " canSerializeFMUstate=\"" << canSerializeFMUstate() << "\""
+           << "<CoSimulation needsExecutionTool=\"" << m.needsExecutionTool << "\""
+           << " modelIdentifier=\"" << m.modelIdentifier << "\""
+           << " canHandleVariableCommunicationStepSize=\"" << m.canHandleVariableCommunicationStepSize << "\""
+           << " canBeInstantiatedOnlyOncePerProcess=\"" << m.canBeInstantiatedOnlyOncePerProcess << "\""
+           << " canGetAndSetFMUstate=\"" << m.canGetAndSetFMUstate << "\""
+           << " canSerializeFMUstate=\"" << m.canSerializeFMUstate << "\""
            << R"( canNotUseMemoryManagementFunctions="true")"
            << ">\n"
            << "\t</CoSimulation>"
