@@ -17,9 +17,11 @@ private:
 
     double output = 0;
 
+    double t = 0;
+
     void compute() {
         static double TWO_PI = 2 * atan(1) * 4;
-        output = A * sin(TWO_PI * f * currentTime() + phi);
+        output = A * sin(TWO_PI * f * t + phi);
     }
 
 public:
@@ -36,18 +38,22 @@ protected:
     }
 
 public:
+    void setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance) override {
+        t = start;
+    }
+
     void exit_initialisation_mode() override {
         compute();
     }
 
     bool do_step(double currentTime, double dt) override {
+        t = currentTime+dt;
+        compute();
         return true;
     }
 };
 
 int main() {
-
     sine s("", "");
-
     std::cout << s.make_description() << std::endl;
 }

@@ -44,7 +44,25 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     if (fmuType != fmi2CoSimulation) {
         return nullptr;
     }
-    auto slave = fmu4cpp::createInstance(instanceName, fmuResourceLocation);
+
+    int magic = 1;
+#ifdef _MSC_VER
+    magic = 0;
+#endif
+
+    std::string resources(fmuResourceLocation);
+
+    if (resources.find("file:////") != std::string::npos) {
+        resources.replace(0, 9-magic, "");
+    } else if (resources.find("file:///") != std::string::npos) {
+        resources.replace(0, 8-magic, "");
+    } else if (resources.find("file://") != std::string::npos) {
+        resources.replace(0, 7-magic, "");
+    } else if (resources.find("file:/") != std::string::npos) {
+        resources.replace(0, 6-magic, "");
+    }
+
+    auto slave = fmu4cpp::createInstance(instanceName, resources);
     return new Component(std::move(slave), *functions);
 }
 
@@ -54,8 +72,11 @@ fmi2Status fmi2SetupExperiment(fmi2Component c,
                                fmi2Real startTime,
                                fmi2Boolean stopTimeDefined,
                                fmi2Real stopTime) {
-    double stop = stopTimeDefined ? stopTime : 0;
-    double tol = toleranceDefined ? tolerance : 0;
+    std::optional<double> stop;
+    std::optional<double> tol;
+
+    if (stopTimeDefined) stop = stopTime;
+    if (toleranceDefined) tol = tolerance;
 
     auto component = reinterpret_cast<Component *>(c);
     try {
@@ -137,6 +158,7 @@ fmi2Status fmi2CancelStep(fmi2Component c)
 
 fmi2Status fmi2Reset(fmi2Component c) {
     auto component = reinterpret_cast<Component *>(c);
+    component->slave->reset();
     return fmi2OK;
 }
 
@@ -191,6 +213,22 @@ fmi2Status fmi2GetBoolean(
     }
 }
 
+fmi2Status fmi2GetString(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        fmi2String value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->get_string(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
 
 fmi2Status fmi2SetInteger(
         fmi2Component c,
@@ -235,6 +273,23 @@ fmi2Status fmi2SetBoolean(
     const auto component = reinterpret_cast<Component*>(c);
     try {
         component->slave->set_boolean(vr, nvr, value);
+        return fmi2OK;
+    } catch (const fmu4cpp::fatal_error& ex) {
+        return fmi2Fatal;
+    } catch (const std::exception& ex) {
+        return fmi2Error;
+    }
+}
+
+fmi2Status fmi2SetString(
+        fmi2Component c,
+        const fmi2ValueReference vr[],
+        size_t nvr,
+        const fmi2String value[])
+{
+    const auto component = reinterpret_cast<Component*>(c);
+    try {
+        component->slave->set_string(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error& ex) {
         return fmi2Fatal;

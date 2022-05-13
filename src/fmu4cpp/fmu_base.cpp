@@ -7,8 +7,7 @@
 
 namespace fmu4cpp {
 
-    void fmu_base::setup_experiment(double start, double stop, double tolerance) {
-        currentTime_ = start;
+    void fmu_base::setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance) {
     }
 
     void fmu_base::enter_initialisation_mode() {
@@ -18,6 +17,10 @@ namespace fmu4cpp {
     }
 
     void fmu_base::terminate() {
+    }
+
+    void fmu_base::reset() {
+        throw fatal_error("Reset is unimplemented in slave");
     }
 
     void fmu_base::register_int(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
