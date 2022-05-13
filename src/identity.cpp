@@ -12,19 +12,14 @@ public:
     Identity(const std::string &instanceName, const std::string &resources)
         : fmu_base(instanceName, resources) {
 
-        register_int("integer", [this] { return integer; });
-        register_real("real", [this] { return real; });
-        register_bool("boolean", [this] { return boolean; });
-        register_string("string", [this] { return string; });
+        register_int("integer", [this] { return integer; }, [this](int value) {integer = value;});
+        register_real("real", [this] { return real; }, [this](double value) {integer = value;});
+        register_bool("boolean", [this] { return boolean; }, [this](bool value) {boolean = value;});
+        register_string("string", [this] { return string; }, [this](std::string value) {string = value;});
     }
 
     bool do_step(double currentTime, double dt) override {
         return true;
-    }
-
-protected:
-    [[nodiscard]] std::string modelName() const override {
-        return "Identity";
     }
 
 private:
@@ -33,3 +28,7 @@ private:
     bool boolean = false;
     std::string string;
 };
+
+std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
+    return std::make_unique<Identity>(instanceName, fmuResourceLocation);
+}
