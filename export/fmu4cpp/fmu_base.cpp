@@ -162,7 +162,7 @@ namespace fmu4cpp {
 
         ss << "\t</ModelStructure>\n";
 
-        ss << "</fmiModelDescription";
+        ss << "</fmiModelDescription>";
 
 
         return ss.str();

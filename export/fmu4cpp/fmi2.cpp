@@ -4,6 +4,8 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <iostream>
+#include <fstream>
 
 #include "fmu_base.hpp"
 
@@ -31,6 +33,14 @@ const char *fmi2GetTypesPlatform() {
 
 const char *fmi2GetVersion(void) {
     return "2.0";
+}
+
+void write_description(const char * location) {
+    auto instance = fmu4cpp::createInstance("", "");
+    auto xml = instance->make_description();
+    std::ofstream of(location);
+    of << xml;
+    of.close();
 }
 
 fmi2Component fmi2Instantiate(fmi2String instanceName,

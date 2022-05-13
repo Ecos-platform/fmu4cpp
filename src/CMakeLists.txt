@@ -21,4 +21,5 @@ else ()
 endif ()
 
 add_custom_command(TARGET ${target_name} POST_BUILD
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
         COMMAND python "${PROJECT_SOURCE_DIR}/cmake/builder.py" "${outputDir}/$<TARGET_FILE_NAME:${target_name}>")
