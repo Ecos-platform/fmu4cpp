@@ -9,19 +9,25 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 set(MODEL_INFO "${CMAKE_CURRENT_SOURCE_DIR}/model_info.json")
 
+Include(FetchContent)
+FetchContent_Declare(
+        json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG        v3.10.5
+)
+FetchContent_MakeAvailable(json)
+
 add_subdirectory(export)
 add_subdirectory(src)
 add_subdirectory(examples)
 
 if (FMU4CPP_BUILD_TESTS)
-    Include(FetchContent)
 
     FetchContent_Declare(
             Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
             GIT_TAG        v2.13.8
     )
-
     FetchContent_MakeAvailable(Catch2)
 
     enable_testing()

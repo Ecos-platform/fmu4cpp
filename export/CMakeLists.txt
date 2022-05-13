@@ -32,6 +32,7 @@ add_library(fmu4cpp OBJECT
         "${headers}"
         "${sources}"
         )
+target_link_libraries(fmu4cpp PUBLIC nlohmann_json::nlohmann_json)
 target_include_directories(fmu4cpp
         PRIVATE
         "${PROJECT_SOURCE_DIR}/fmi_headers"
