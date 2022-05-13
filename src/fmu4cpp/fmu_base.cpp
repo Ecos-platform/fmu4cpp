@@ -4,15 +4,22 @@
 #include "uuid.hpp"
 #include <sstream>
 #include <utility>
+#include <ctime>
 
 namespace {
     std::string now()
     {
-        std::time_t now= std::time(nullptr);
-        std::tm* now_tm= std::gmtime(&now);
+        time_t now;
+        time(&now);
         char buf[42];
-        std::strftime(buf, sizeof(buf), "%Y-%m-%dT%X+00:00", now_tm);
-        return buf;
+        tm now_tm{};
+        auto err = gmtime_s(&now_tm, &now);
+        if (!err) {
+            std::strftime(buf, sizeof(buf), "%FT%TZ", &now_tm);
+            return buf;
+        } else {
+            return "1970-01-01T00:00:00Z";
+        }
     }
 }
 
