@@ -1,5 +1,5 @@
 //
-// FMU4cpp Hello World exaple
+// FMU4cpp Hello World example
 //
 
 #include <fmu4cpp/fmu_base.hpp>

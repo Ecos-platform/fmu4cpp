@@ -6,6 +6,8 @@ using in C++.
 FMU4cpp handles everything including generating the `modelDescription.xml`, 
 and packaging of the content into an FMU archive.
 
+Only tested on Windows.
+
 ### How do I get started?
 
 1. Change the value of the `modelIdentifier` variable in `CMakeLists.txt` to something more appropriate.
@@ -18,5 +20,6 @@ An FMU named `<modelIdentifier>.fmu` is now located in your build folder.
 Such easy, such wow.
 
 ### Requirements
+* C++17 compiler
 * CMake >= 3.15
 * Python3
