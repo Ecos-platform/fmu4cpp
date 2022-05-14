@@ -65,7 +65,7 @@ namespace fmu4cpp {
         }
 
         [[nodiscard]] std::optional<initial_t> initial() const {
-            return std::nullopt;
+            return initial_;
         }
 
         bool requires_start() {
@@ -150,9 +150,7 @@ namespace fmu4cpp {
                 unsigned int vr,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter)
-            : Variable<double>(name, vr, getter, setter) {
-            variability_ = variability_t::CONTINUOUS;
-        }
+            : Variable<double>(name, vr, getter, setter) {}
 
         [[nodiscard]] std::optional<double> getMin() const {
             return min_;

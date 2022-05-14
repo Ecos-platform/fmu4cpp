@@ -26,9 +26,10 @@ namespace fmu4cpp {
         throw fatal_error("Reset is unimplemented in slave");
     }
 
-    void fmu_base::register_int(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
+    IntVariable& fmu_base::register_int(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
         IntVariable v(name, integers_.size(), getter, setter);
         integers_.emplace_back(std::move(v));
+        return integers_.back();
     }
 
     RealVariable &fmu_base::register_real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
@@ -37,14 +38,16 @@ namespace fmu4cpp {
         return reals_.back();
     }
 
-    void fmu_base::register_bool(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
+    BoolVariable& fmu_base::register_bool(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
         BoolVariable v(name, booleans_.size(), getter, setter);
         booleans_.emplace_back(std::move(v));
+        return booleans_.back();
     }
 
-    void fmu_base::register_string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
+    StringVariable& fmu_base::register_string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
         StringVariable v(name, strings_.size(), getter, setter);
         strings_.emplace_back(std::move(v));
+        return strings_.back();
     }
 
     std::string fmu_base::make_description() const {

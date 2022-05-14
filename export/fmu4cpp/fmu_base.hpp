@@ -114,7 +114,7 @@ namespace fmu4cpp {
 
     protected:
 
-        void register_int(
+        IntVariable& register_int(
                 const std::string &name,
                 const std::function<int()> &getter,
                 const std::optional<std::function<void(int)>> &setter = std::nullopt);
@@ -124,12 +124,12 @@ namespace fmu4cpp {
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter = std::nullopt);
 
-        void register_bool(
+        BoolVariable& register_bool(
                 const std::string &name,
                 const std::function<bool()> &getter,
                 const std::optional<std::function<void(bool)>> &setter = std::nullopt);
 
-        void register_string(
+        StringVariable& register_string(
                 const std::string &name,
                 const std::function<std::string()> &getter,
                 const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
