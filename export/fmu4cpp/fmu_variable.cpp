@@ -4,7 +4,7 @@
 
 namespace fmu4cpp {
 
-    std::string to_string(const causality_t& c) {
+    std::string to_string(const causality_t &c) {
         switch (c) {
             case causality_t::PARAMETER:
                 return "parameter";
@@ -20,15 +20,15 @@ namespace fmu4cpp {
         throw std::logic_error("Invalid causality encountered");
     }
 
-    std::string to_string(const variability_t& c) {
+    std::string to_string(const variability_t &c) {
         switch (c) {
             case variability_t::CONTINUOUS:
                 return "continuous";
-                    case variability_t::CONSTANT:
+            case variability_t::CONSTANT:
                 return "constant";
             case variability_t::DISCRETE:
                 return "discrete";
-                    case variability_t::FIXED:
+            case variability_t::FIXED:
                 return "fixed";
             case variability_t::TUNABLE:
                 return "tunable";
@@ -36,7 +36,7 @@ namespace fmu4cpp {
         throw std::logic_error("Invalid variability encountered");
     }
 
-    std::string to_string(const initial_t& c) {
+    std::string to_string(const initial_t &c) {
         switch (c) {
             case initial_t::APPROX:
                 return "approx";
@@ -48,12 +48,14 @@ namespace fmu4cpp {
         throw std::logic_error("Invalid initial encountered");
     }
 
-    bool requires_start(const VariableBase& v) {
+    bool requires_start(const VariableBase &v) {
+        // clang-format off
         return v.initial() == initial_t::EXACT
                || v.initial() == initial_t::APPROX
                || v.causality() == causality_t::INPUT
                || v.causality() == causality_t::PARAMETER
                || v.variability() == variability_t::CONSTANT;
+        // clang-format on
     }
 
-}
+}// namespace fmu4cpp

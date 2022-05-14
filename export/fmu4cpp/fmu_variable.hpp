@@ -68,9 +68,6 @@ namespace fmu4cpp {
             return initial_;
         }
 
-        bool requires_start() {
-            return initial_ == initial_t::EXACT || initial_ == initial_t::APPROX || causality_ == causality_t::INPUT || causality_ == causality_t::PARAMETER || variability_ == variability_t::CONSTANT;
-        }
     };
 
     template<class T>

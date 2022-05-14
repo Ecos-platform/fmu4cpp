@@ -15,29 +15,37 @@ public:
 
         register_int(
                 "integerIn", [this] { return integer; }, [this](int value) { integer = value; })
-                .setCausality(causality_t::INPUT);
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
         register_real(
                 "realIn", [this] { return real; }, [this](double value) { real = value; })
-                .setCausality(causality_t::INPUT);
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
         register_bool(
                 "booleanIn", [this] { return boolean; }, [this](bool value) { boolean = value; })
-                .setCausality(causality_t::INPUT);
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
         register_string(
                 "stringIn", [this] { return string; }, [this](std::string value) { string = std::move(value); })
-                .setCausality(causality_t::INPUT);
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
 
         register_int(
                 "integerOut", [this] { return integer; })
-                .setCausality(causality_t::OUTPUT);
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE);
         register_real(
                 "realOut", [this] { return real; })
-                .setCausality(causality_t::OUTPUT);
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE);
         register_bool(
                 "booleanOut", [this] { return boolean; })
-                .setCausality(causality_t::OUTPUT);
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE);
         register_string(
                 "stringOut", [this] { return string; })
-                .setCausality(causality_t::OUTPUT);
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE);
 
         Model::reset();
     }
