@@ -4,7 +4,7 @@ add_library(${modelIdentifier} SHARED
         "$<TARGET_OBJECTS:fmu4cpp>")
 target_include_directories(identity PRIVATE ${PROJECT_SOURCE_DIR}/export)
 
-set(outputDir "${CMAKE_BINARY_DIR}/bin/${TARGET_PLATFORM}")
+set(outputDir "$<1:${CMAKE_BINARY_DIR}/bin/${TARGET_PLATFORM}>")
 
 if (WIN32)
     set_target_properties(${modelIdentifier}
