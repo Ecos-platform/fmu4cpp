@@ -3,12 +3,12 @@
 #define FMU4CPP_FMU_BASE_HPP
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
-#include <memory>
 
 #include "fmu_base.hpp"
 #include "fmu_except.hpp"
@@ -22,8 +22,8 @@ namespace fmu4cpp {
         fmu_base(std::string instance_name, std::string resourceLocation)
             : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
 
-        fmu_base(const fmu_base&) = delete;
-        fmu_base(const fmu_base&&) = delete;
+        fmu_base(const fmu_base &) = delete;
+        fmu_base(const fmu_base &&) = delete;
 
         [[nodiscard]] std::string instanceName() const {
             return instanceName_;
@@ -33,8 +33,29 @@ namespace fmu4cpp {
             return resourceLocation_;
         }
 
+        std::optional<IntVariable> get_int_variable(const std::string &name) {
+            for (auto &v: integers_) {
+                if (v.name() == name) return v;
+            }
+            return std::nullopt;
+        }
+
         std::optional<RealVariable> get_real_variable(const std::string &name) {
             for (auto &v: reals_) {
+                if (v.name() == name) return v;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<BoolVariable> get_bool_variable(const std::string &name) {
+            for (auto &v: booleans_) {
+                if (v.name() == name) return v;
+            }
+            return std::nullopt;
+        }
+
+        std::optional<StringVariable> get_string_variable(const std::string &name) {
+            for (auto &v: strings_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
@@ -113,28 +134,50 @@ namespace fmu4cpp {
         ~fmu_base() = default;
 
     protected:
+        IntVariable integer(const std::string &name,
+                            const std::function<int()> &getter,
+                            const std::optional<std::function<void(int)>> &setter = std::nullopt);
 
-        IntVariable& register_int(
-                const std::string &name,
-                const std::function<int()> &getter,
-                const std::optional<std::function<void(int)>> &setter = std::nullopt);
+        RealVariable real(const std::string &name,
+                          const std::function<double()> &getter,
+                          const std::optional<std::function<void(double)>> &setter = std::nullopt);
 
-        RealVariable& register_real(
-                const std::string &name,
-                const std::function<double()> &getter,
-                const std::optional<std::function<void(double)>> &setter = std::nullopt);
+        BoolVariable boolean(const std::string &name,
+                                const std::function<bool()> &getter,
+                                const std::optional<std::function<void(bool)>> &setter = std::nullopt);
 
-        BoolVariable& register_bool(
-                const std::string &name,
-                const std::function<bool()> &getter,
-                const std::optional<std::function<void(bool)>> &setter = std::nullopt);
+        StringVariable string(const std::string &name,
+                              const std::function<std::string()> &getter,
+                              const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
-        StringVariable& register_string(
-                const std::string &name,
-                const std::function<std::string()> &getter,
-                const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
+        void register_variable(IntVariable v);
+        void register_variable(RealVariable v);
+        void register_variable(BoolVariable v);
+        void register_variable(StringVariable v);
+
+//        IntVariable &register_int(
+//                const std::string &name,
+//                const std::function<int()> &getter,
+//                const std::optional<std::function<void(int)>> &setter = std::nullopt);
+//
+//        RealVariable &register_real(
+//                const std::string &name,
+//                const std::function<double()> &getter,
+//                const std::optional<std::function<void(double)>> &setter = std::nullopt);
+//
+//        BoolVariable &register_bool(
+//                const std::string &name,
+//                const std::function<bool()> &getter,
+//                const std::optional<std::function<void(bool)>> &setter = std::nullopt);
+//
+//        StringVariable &register_string(
+//                const std::string &name,
+//                const std::function<std::string()> &getter,
+//                const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
     private:
+        size_t numVariables{};
+
         std::string instanceName_;
         std::string resourceLocation_;
 

@@ -26,30 +26,6 @@ namespace fmu4cpp {
         throw fatal_error("Reset is unimplemented in slave");
     }
 
-    IntVariable& fmu_base::register_int(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
-        IntVariable v(name, integers_.size(), getter, setter);
-        integers_.emplace_back(std::move(v));
-        return integers_.back();
-    }
-
-    RealVariable &fmu_base::register_real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
-        RealVariable v(name, reals_.size(), getter, setter);
-        reals_.emplace_back(std::move(v));
-        return reals_.back();
-    }
-
-    BoolVariable& fmu_base::register_bool(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
-        BoolVariable v(name, booleans_.size(), getter, setter);
-        booleans_.emplace_back(std::move(v));
-        return booleans_.back();
-    }
-
-    StringVariable& fmu_base::register_string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
-        StringVariable v(name, strings_.size(), getter, setter);
-        strings_.emplace_back(std::move(v));
-        return strings_.back();
-    }
-
     std::string fmu_base::make_description() const {
 
         std::stringstream ss;
@@ -179,37 +155,36 @@ namespace fmu4cpp {
 
         ss << "\t<ModelStructure>\n";
 
-        std::vector<int> outputs;
-        int index = 0;
-        for (const auto &i: integers_) {
-            if (i.causality() == causality_t::OUTPUT) {
-                outputs.push_back(index);
-            }
-            index++;
+        std::vector<VariableBase> outputs;
+        for (const auto &v: integers_) {
+            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
         }
-        for (const auto &i: reals_) {
-            if (i.causality() == causality_t::OUTPUT) {
-                outputs.push_back(index);
-            }
-            index++;
+        for (const auto &v: reals_) {
+            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
         }
-        for (const auto &i: booleans_) {
-            if (i.causality() == causality_t::OUTPUT) {
-                outputs.push_back(index);
-            }
-            index++;
+        for (const auto &v: booleans_) {
+            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
         }
-        for (const auto &i: strings_) {
-            if (i.causality() == causality_t::OUTPUT) {
-                outputs.push_back(index);
-            }
-            index++;
+        for (const auto &v: strings_) {
+            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
         }
 
         if (!outputs.empty()) {
             ss << "\t\t<Outputs>\n";
-            for (auto i: outputs) {
-                ss << "\t\t\t<Unknown index=\"" << i << "\"/>\n";
+            for (const auto &v: outputs) {
+                ss << "\t\t\t<Unknown index=\"" << v.index() << "\"";
+                auto deps = v.getDependencies();
+                if (!deps.empty()) {
+                    ss << " dependencies=\"";
+                    for (unsigned i = 0; i < deps.size(); i++) {
+                        ss << deps[i];
+                        if (i != deps.size() - 1) {
+                            ss << " ";
+                        }
+                    }
+                    ss << "\"";
+                }
+                ss << "/>\n";
             }
             ss << "\t\t</Outputs>\n";
         }
@@ -218,9 +193,39 @@ namespace fmu4cpp {
 
         ss << "</fmiModelDescription>";
 
-
         return ss.str();
     }
 
+    IntVariable fmu_base::integer(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
+        return {name, static_cast<unsigned int>(integers_.size()), numVariables++, getter, setter};
+    }
+
+    RealVariable fmu_base::real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
+        return {name, static_cast<unsigned int>(reals_.size()), numVariables++, getter, setter};
+    }
+
+    BoolVariable fmu_base::boolean(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
+        return {name, static_cast<unsigned int>(booleans_.size()), numVariables++, getter, setter};
+    }
+
+    StringVariable fmu_base::string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
+        return {name, static_cast<unsigned int>(strings_.size()), numVariables++, getter, setter};
+    }
+
+    void fmu_base::register_variable(IntVariable v) {
+        integers_.emplace_back(std::move(v));
+    }
+
+    void fmu_base::register_variable(RealVariable v) {
+        reals_.emplace_back(std::move(v));
+    }
+
+    void fmu_base::register_variable(BoolVariable v) {
+        booleans_.emplace_back(std::move(v));
+    }
+
+    void fmu_base::register_variable(StringVariable v) {
+        strings_.emplace_back(std::move(v));
+    }
 
 }// namespace fmu4cpp

@@ -4,8 +4,10 @@
 
 #include <functional>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace fmu4cpp {
 
@@ -31,22 +33,29 @@ namespace fmu4cpp {
         CALCULATED,
     };
 
-    std::string to_string(const causality_t& c);
-    std::string to_string(const variability_t& v);
-    std::string to_string(const initial_t& i);
+    std::string to_string(const causality_t &c);
+    std::string to_string(const variability_t &v);
+    std::string to_string(const initial_t &i);
 
     class VariableBase {
     private:
         std::string name_;
         unsigned int vr_;
+        size_t index_;
 
     protected:
         causality_t causality_ = causality_t::LOCAL;
         std::optional<variability_t> variability_;
         std::optional<initial_t> initial_;
 
+        std::vector<size_t> dependencies_;
+
     public:
-        VariableBase(std::string name, unsigned int vr) : name_(std::move(name)), vr_(vr) {}
+        VariableBase(
+                std::string name,
+                unsigned int vr,
+                size_t index)
+            : name_(std::move(name)), vr_(vr), index_(index) {}
 
         [[nodiscard]] const std::string &name() const {
             return name_;
@@ -54,6 +63,10 @@ namespace fmu4cpp {
 
         [[nodiscard]] unsigned int value_reference() const {
             return vr_;
+        }
+
+        [[nodiscard]] size_t index() const {
+            return index_;
         }
 
         [[nodiscard]] causality_t causality() const {
@@ -68,6 +81,12 @@ namespace fmu4cpp {
             return initial_;
         }
 
+        [[nodiscard]] std::vector<size_t> getDependencies() const {
+            if (causality_ != causality_t::OUTPUT) {
+                throw std::logic_error("Can only declare dependencies for outputs!");
+            }
+            return dependencies_;
+        }
     };
 
     template<class T>
@@ -77,8 +96,12 @@ namespace fmu4cpp {
         std::optional<std::function<void(T)>> setter_;
 
     public:
-        Variable(const std::string &name, unsigned int vr, std::function<T()> getter, std::optional<std::function<void(T)>> setter)
-            : VariableBase(name, vr), getter_(std::move(getter)), setter_(std::move(setter)) {}
+        Variable(
+                const std::string &name,
+                unsigned int vr, size_t index,
+                std::function<T()> getter,
+                std::optional<std::function<void(T)>> setter)
+            : VariableBase(name, vr, index), getter_(std::move(getter)), setter_(std::move(setter)) {}
 
         [[nodiscard]] T get() const {
             return getter_();
@@ -97,10 +120,10 @@ namespace fmu4cpp {
     public:
         IntVariable(
                 const std::string &name,
-                unsigned int vr,
+                unsigned int vr, size_t index,
                 const std::function<int()> &getter,
                 const std::optional<std::function<void(int)>> &setter)
-            : Variable<int>(name, vr, getter, setter) {}
+            : Variable<int>(name, vr, index, getter, setter) {}
 
         [[nodiscard]] std::optional<int> getMin() const {
             return min_;
@@ -134,6 +157,13 @@ namespace fmu4cpp {
             initial_ = initial;
             return *this;
         }
+
+        IntVariable &setDependencies(const std::vector<size_t> &dependencies) {
+            for (auto i: dependencies) {
+                dependencies_.emplace_back(i);
+            }
+            return *this;
+        }
     };
 
     class RealVariable : public Variable<double> {
@@ -144,10 +174,10 @@ namespace fmu4cpp {
     public:
         RealVariable(
                 const std::string &name,
-                unsigned int vr,
+                unsigned int vr, size_t index,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter)
-            : Variable<double>(name, vr, getter, setter) {}
+            : Variable<double>(name, vr, index, getter, setter) {}
 
         [[nodiscard]] std::optional<double> getMin() const {
             return min_;
@@ -181,6 +211,13 @@ namespace fmu4cpp {
             initial_ = initial;
             return *this;
         }
+
+        RealVariable &setDependencies(const std::vector<size_t> &dependencies) {
+            for (auto i: dependencies) {
+                dependencies_.emplace_back(i);
+            }
+            return *this;
+        }
     };
 
     class BoolVariable : public Variable<bool> {
@@ -188,10 +225,10 @@ namespace fmu4cpp {
     public:
         BoolVariable(
                 const std::string &name,
-                unsigned int vr,
+                unsigned int vr, size_t index,
                 const std::function<bool()> &getter,
                 const std::optional<std::function<void(bool)>> &setter)
-            : Variable<bool>(name, vr, getter, setter) {}
+            : Variable<bool>(name, vr, index, getter, setter) {}
 
         BoolVariable &setCausality(causality_t causality) {
             causality_ = causality;
@@ -207,6 +244,13 @@ namespace fmu4cpp {
             initial_ = initial;
             return *this;
         }
+
+        BoolVariable &setDependencies(const std::vector<size_t> &dependencies) {
+            for (auto i: dependencies) {
+                dependencies_.emplace_back(i);
+            }
+            return *this;
+        }
     };
 
     class StringVariable : public Variable<std::string> {
@@ -214,10 +258,10 @@ namespace fmu4cpp {
     public:
         StringVariable(
                 const std::string &name,
-                unsigned int vr,
+                unsigned int vr, size_t index,
                 const std::function<std::string()> &getter,
                 const std::optional<std::function<void(std::string)>> &setter)
-            : Variable<std::string>(name, vr, getter, setter) {}
+            : Variable<std::string>(name, vr, index, getter, setter) {}
 
         StringVariable &setCausality(causality_t causality) {
             causality_ = causality;
@@ -233,9 +277,16 @@ namespace fmu4cpp {
             initial_ = initial;
             return *this;
         }
+
+        StringVariable &setDependencies(const std::vector<size_t> &dependencies) {
+            for (auto i: dependencies) {
+                dependencies_.emplace_back(i);
+            }
+            return *this;
+        }
     };
 
-    bool requires_start(const VariableBase& v);
+    bool requires_start(const VariableBase &v);
 
 }// namespace fmu4cpp
 

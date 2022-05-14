@@ -13,39 +13,51 @@ public:
     Model(const std::string &instanceName, const std::string &resources)
         : fmu_base(instanceName, resources) {
 
-        register_int(
-                "integerIn", [this] { return integer; }, [this](int value) { integer = value; })
-                .setCausality(causality_t::INPUT)
-                .setVariability(variability_t::DISCRETE);
-        register_real(
-                "realIn", [this] { return real; }, [this](double value) { real = value; })
-                .setCausality(causality_t::INPUT)
-                .setVariability(variability_t::DISCRETE);
-        register_bool(
-                "booleanIn", [this] { return boolean; }, [this](bool value) { boolean = value; })
-                .setCausality(causality_t::INPUT)
-                .setVariability(variability_t::DISCRETE);
-        register_string(
-                "stringIn", [this] { return string; }, [this](std::string value) { string = std::move(value); })
-                .setCausality(causality_t::INPUT)
-                .setVariability(variability_t::DISCRETE);
+        register_variable(
+                integer(
+                        "integerIn", [this] { return integer_; }, [this](int value) { integer_ = value; })
+                        .setCausality(causality_t::INPUT)
+                        .setVariability(variability_t::DISCRETE));
+        register_variable(
+                real(
+                        "realIn", [this] { return real_; }, [this](double value) { real_ = value; })
+                        .setCausality(causality_t::INPUT)
+                        .setVariability(variability_t::DISCRETE));
+        register_variable(
+                boolean(
+                        "booleanIn", [this] { return boolean_; }, [this](bool value) { boolean_ = value; })
+                        .setCausality(causality_t::INPUT)
+                        .setVariability(variability_t::DISCRETE));
+        register_variable(
+                string(
+                        "stringIn", [this] { return string_; }, [this](std::string value) { string_ = std::move(value); })
+                        .setCausality(causality_t::INPUT)
+                        .setVariability(variability_t::DISCRETE));
 
-        register_int(
-                "integerOut", [this] { return integer; })
-                .setCausality(causality_t::OUTPUT)
-                .setVariability(variability_t::DISCRETE);
-        register_real(
-                "realOut", [this] { return real; })
-                .setCausality(causality_t::OUTPUT)
-                .setVariability(variability_t::DISCRETE);
-        register_bool(
-                "booleanOut", [this] { return boolean; })
-                .setCausality(causality_t::OUTPUT)
-                .setVariability(variability_t::DISCRETE);
-        register_string(
-                "stringOut", [this] { return string; })
-                .setCausality(causality_t::OUTPUT)
-                .setVariability(variability_t::DISCRETE);
+        register_variable(
+                integer(
+                        "integerOut", [this] { return integer_; })
+                        .setCausality(causality_t::OUTPUT)
+                        .setVariability(variability_t::DISCRETE)
+                        .setDependencies({get_real_variable("integerIn")->index()}));
+        register_variable(
+                real(
+                        "realOut", [this] { return real_; })
+                        .setCausality(causality_t::OUTPUT)
+                        .setVariability(variability_t::DISCRETE)
+                        .setDependencies({get_real_variable("realIn")->index()}));
+        register_variable(
+                boolean(
+                        "booleanOut", [this] { return boolean_; })
+                        .setCausality(causality_t::OUTPUT)
+                        .setVariability(variability_t::DISCRETE)
+                        .setDependencies({get_bool_variable("booleanIn")->index()}));
+        register_variable(
+                string(
+                        "stringOut", [this] { return string_; })
+                        .setCausality(causality_t::OUTPUT)
+                        .setVariability(variability_t::DISCRETE)
+                        .setDependencies({get_string_variable("stringIn")->index()}));
 
         Model::reset();
     }
@@ -55,17 +67,17 @@ public:
     }
 
     void reset() override {
-        integer = 0;
-        real = 0;
-        boolean = false;
-        string = "";
+        integer_ = 0;
+        real_ = 0;
+        boolean_ = false;
+        string_ = "";
     }
 
 private:
-    int integer;
-    double real;
-    bool boolean;
-    std::string string;
+    int integer_;
+    double real_;
+    bool boolean_;
+    std::string string_;
 };
 
 std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
