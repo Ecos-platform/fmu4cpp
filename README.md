@@ -1,4 +1,4 @@
-# FMU4cpp
+# FMU4cpp (early prototype)
 
 FMU4cpp is a CMake template repository that allows you to easily create FMUs written in C++.
 
