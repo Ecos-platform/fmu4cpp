@@ -49,7 +49,6 @@ FetchContent_MakeAvailable(json)
 
 add_subdirectory(export)
 add_subdirectory(src)
-add_subdirectory(examples)
 
 if (FMU4CPP_BUILD_TESTS)
 
