@@ -16,10 +16,6 @@
 
 namespace fmu4cpp {
 
-    class fmu_base;
-
-    std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::string &fmuResourceLocation);
-
     class fmu_base {
 
     public:
@@ -147,6 +143,8 @@ namespace fmu4cpp {
         std::vector<BoolVariable> booleans_;
         std::vector<StringVariable> strings_;
     };
+
+    std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::string &fmuResourceLocation);
 
 }// namespace fmu4cpp
 

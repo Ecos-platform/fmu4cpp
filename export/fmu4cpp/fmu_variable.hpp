@@ -31,24 +31,22 @@ namespace fmu4cpp {
         CALCULATED,
     };
 
-    template<class T>
-    class Variable {
+    std::string to_string(const causality_t& c);
+    std::string to_string(const variability_t& v);
+    std::string to_string(const initial_t& i);
+
+    class VariableBase {
     private:
         std::string name_;
         unsigned int vr_;
-
-        std::function<T()> getter_;
-        std::optional<std::function<void(T)>> setter_;
 
     protected:
         causality_t causality_ = causality_t::LOCAL;
         std::optional<variability_t> variability_;
         std::optional<initial_t> initial_;
 
-
     public:
-        Variable(std::string name, unsigned int vr, std::function<T()> getter, std::optional<std::function<void(T)>> setter)
-            : name_(std::move(name)), vr_(vr), getter_(std::move(getter)), setter_(std::move(setter)) {}
+        VariableBase(std::string name, unsigned int vr) : name_(std::move(name)), vr_(vr) {}
 
         [[nodiscard]] const std::string &name() const {
             return name_;
@@ -56,14 +54,6 @@ namespace fmu4cpp {
 
         [[nodiscard]] unsigned int value_reference() const {
             return vr_;
-        }
-
-        [[nodiscard]] T get() const {
-            return getter_();
-        }
-
-        void set(T value) {
-            if (setter_) setter_->operator()(value);
         }
 
         [[nodiscard]] causality_t causality() const {
@@ -76,6 +66,29 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::optional<initial_t> initial() const {
             return std::nullopt;
+        }
+
+        bool requires_start() {
+            return initial_ == initial_t::EXACT || initial_ == initial_t::APPROX || causality_ == causality_t::INPUT || causality_ == causality_t::PARAMETER || variability_ == variability_t::CONSTANT;
+        }
+    };
+
+    template<class T>
+    class Variable : public VariableBase {
+    private:
+        std::function<T()> getter_;
+        std::optional<std::function<void(T)>> setter_;
+
+    public:
+        Variable(const std::string &name, unsigned int vr, std::function<T()> getter, std::optional<std::function<void(T)>> setter)
+            : VariableBase(name, vr), getter_(std::move(getter)), setter_(std::move(setter)) {}
+
+        [[nodiscard]] T get() const {
+            return getter_();
+        }
+
+        void set(T value) {
+            if (setter_) setter_->operator()(value);
         }
     };
 
@@ -137,7 +150,9 @@ namespace fmu4cpp {
                 unsigned int vr,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter)
-            : Variable<double>(name, vr, getter, setter) {}
+            : Variable<double>(name, vr, getter, setter) {
+            variability_ = variability_t::CONTINUOUS;
+        }
 
         [[nodiscard]] std::optional<double> getMin() const {
             return min_;
@@ -224,6 +239,8 @@ namespace fmu4cpp {
             return *this;
         }
     };
+
+    bool requires_start(const VariableBase& v);
 
 }// namespace fmu4cpp
 

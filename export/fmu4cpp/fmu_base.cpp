@@ -57,7 +57,8 @@ namespace fmu4cpp {
            << R"(<fmiModelDescription fmiVersion="2.0")"
            << " modelName=\"" << m.modelName << "\""
            << " guid=\"" << uuid::generate_uuid_v4() << "\""
-           << " generationTool=\"fmu4cpp" << " v" << to_string(library_version()) << "\""
+           << " generationTool=\"fmu4cpp"
+           << " v" << to_string(library_version()) << "\""
            << " generationDateAndTime=\"" << now() << "\""
            << " description=\"" << m.description << "\""
            << " author=\"" << m.author << "\""
@@ -79,51 +80,101 @@ namespace fmu4cpp {
         ss << "\t<ModelVariables>\n";
 
         for (const auto &v: integers_) {
+            auto variability = v.variability();
+            auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
-            ss << "\n\t\t\t<Integer start=\"" << v.get() << "\"/>"
-               << "\n";
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
+               << " causality=\"" << to_string(v.causality()) << "\"";
+            if (variability) {
+                ss << " variability=\"" << to_string(*variability) << "\"";
+            }
+            if (initial) {
+                ss << " initial=\"" << to_string(*initial) << "\"";
+            }
+            ss << ">\n";
+            ss << "\t\t\t<Integer";
+            if (requires_start(v)) {
+                ss << " start=\"" << v.get() << "\"";
+            }
+            ss << "/>\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }
 
         for (const auto &v: reals_) {
+            auto variability = v.variability();
+            auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
-            ss << "\n\t\t\t<Real start=\"" << v.get();
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
+               << " causality=\"" << to_string(v.causality()) << "\"";
+            if (variability) {
+                ss << " variability=\"" << to_string(*variability) << "\"";
+            }
+            if (initial) {
+                ss << " initial=\"" << to_string(*initial) << "\"";
+            }
+            ss << ">\n";
+            ss << "\t\t\t<Real";
+            if (requires_start(v)) {
+                ss << " start=\"" << v.get() << "\"";
+            }
             auto min = v.getMin();
             auto max = v.getMax();
             if (min && max) {
                 ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
             }
-            ss << "\"/>\n";
+            ss << "/>\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }
 
         for (const auto &v: booleans_) {
+            auto variability = v.variability();
+            auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
-            ss << "\n\t\t\t<Boolean start=\"" << v.get() << "\"/>"
-               << "\n";
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
+               << " causality=\"" << to_string(v.causality()) << "\"";
+            if (variability) {
+                ss << " variability=\"" << to_string(*variability) << "\"";
+            }
+            if (initial) {
+                ss << " initial=\"" << to_string(*initial) << "\"";
+            }
+            ss << ">\n";
+            ss << "\t\t\t<Boolean";
+            if (requires_start(v)) {
+                ss << " start=\"" << v.get() << "\"";
+            }
+            ss << "/>\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }
 
         for (const auto &v: strings_) {
+            auto variability = v.variability();
+            auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\">";
-            ss << "\n\t\t\t<String start=\"" << v.get() << "\"/>"
-               << "\n";
+               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
+               << " causality=\"" << to_string(v.causality()) << "\"";
+            if (variability) {
+                ss << " variability=\"" << to_string(*variability) << "\"";
+            }
+            if (initial) {
+                ss << " initial=\"" << to_string(*initial) << "\"";
+            }
+            ss << ">\n";
+            ss << "\t\t\t<String";
+            if (requires_start(v)) {
+                ss << " start=\"" << v.get() << "\"";
+            }
+            ss << "/>\n";
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }
 
-
         ss << "\t</ModelVariables>\n";
 
         ss << "\t<ModelStructure>\n";
-
 
         std::vector<int> outputs;
         int index = 0;

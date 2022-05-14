@@ -13,7 +13,7 @@ public:
         : fmu_base(instanceName, resources) {
 
         register_int("integer", [this] { return integer; }, [this](int value) {integer = value;});
-        register_real("real", [this] { return real; }, [this](double value) {integer = value;});
+        register_real("real", [this] { return real; }, [this](double value) {integer = value;}).setCausality(causality_t::INPUT);
         register_bool("boolean", [this] { return boolean; }, [this](bool value) {boolean = value;});
         register_string("string", [this] { return string; }, [this](std::string value) {string = value;});
     }
@@ -24,7 +24,7 @@ public:
 
 private:
     int integer = 0;
-    double real = 0;
+    double real = 1;
     bool boolean = false;
     std::string string;
 };

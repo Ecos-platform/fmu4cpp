@@ -16,6 +16,7 @@ configure_file(
 
 set(headers
         "fmu4cpp/lib_info.hpp"
+        "fmu4cpp/model_info.hpp"
         "fmu4cpp/fmu_base.hpp"
         "fmu4cpp/fmu_except.hpp"
         "fmu4cpp/fmu_variable.hpp"
@@ -24,6 +25,7 @@ set(headers
 set(sources
         "fmu4cpp/fmi2.cpp"
         "fmu4cpp/fmu_base.cpp"
+        "fmu4cpp/fmu_variable.cpp"
         )
 
 add_library(fmu4cpp OBJECT

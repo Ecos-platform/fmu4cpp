@@ -26,12 +26,10 @@ namespace fmu4cpp {
         info.canGetAndSetFMUstate = j["canGetAndSetFMUstate"];
         info.canSerializeFMUstate = j["canSerializeFMUstate"];
 
-        auto modelIdentifier = j["modelIdentifier"];
-        if (modelIdentifier == "@modelName") {
-            info.modelIdentifier = info.modelName;
-        } else {
-            info.modelIdentifier = modelIdentifier;
-        }
+        // clang-format off
+        info.modelIdentifier = "@modelIdentifier@";
+        // clang-format on
+
         return info;
     }
 
