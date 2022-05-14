@@ -4,7 +4,6 @@ on: [push, workflow_dispatch]
 
 jobs:
   build-on-linux:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -22,8 +21,8 @@ jobs:
         run: |
           cd build/tests
           ctest --output-on-failure
-  build-on-windows:
 
+  build-on-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
