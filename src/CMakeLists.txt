@@ -18,6 +18,11 @@ else ()
             )
 endif ()
 
+set(pythonCmd)
+if(WIN32)
+    set(pythonCmd python)
+endif()
+
 add_custom_command(TARGET ${modelIdentifier} POST_BUILD
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMAND python "${PROJECT_SOURCE_DIR}/cmake/builder.py" ${modelIdentifier} "${outputDir}/$<TARGET_FILE_NAME:${modelIdentifier}>")
+        COMMAND ${pythonCmd} "${PROJECT_SOURCE_DIR}/cmake/builder.py" ${modelIdentifier} "${outputDir}/$<TARGET_FILE_NAME:${modelIdentifier}>")

@@ -2,13 +2,13 @@
 #ifndef FMU4CPP_FMU_BASE_HPP
 #define FMU4CPP_FMU_BASE_HPP
 
-#include <filesystem>
 #include <functional>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include "fmu_base.hpp"
 #include "fmu_except.hpp"
@@ -19,8 +19,8 @@ namespace fmu4cpp {
     class fmu_base {
 
     public:
-        fmu_base(std::string instance_name, const std::string &resourceLocation)
-            : instanceName_(std::move(instance_name)), resourceLocation_(resourceLocation) {}
+        fmu_base(std::string instance_name, std::string resourceLocation)
+            : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
 
         fmu_base(const fmu_base&) = delete;
         fmu_base(const fmu_base&&) = delete;
@@ -29,7 +29,7 @@ namespace fmu4cpp {
             return instanceName_;
         }
 
-        [[nodiscard]] std::filesystem::path resourceLocation() const {
+        [[nodiscard]] std::string resourceLocation() const {
             return resourceLocation_;
         }
 
@@ -136,7 +136,7 @@ namespace fmu4cpp {
 
     private:
         std::string instanceName_;
-        std::filesystem::path resourceLocation_;
+        std::string resourceLocation_;
 
         std::vector<IntVariable> integers_;
         std::vector<RealVariable> reals_;

@@ -6,8 +6,6 @@ using in C++.
 FMU4cpp handles everything including generating the `modelDescription.xml`, 
 and packaging of the content into an FMU archive.
 
-Only tested on Windows.
-
 ### How do I get started?
 
 1. Change the value of the `modelIdentifier` variable in `CMakeLists.txt` to something more appropriate.
