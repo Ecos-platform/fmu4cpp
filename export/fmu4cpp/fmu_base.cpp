@@ -4,9 +4,42 @@
 #include "model_info.hpp"
 
 #include "time.hpp"
-#include "uuid.hpp"
+#include <functional>
 #include <sstream>
 #include <utility>
+
+namespace {
+
+    std::vector<fmu4cpp::VariableBase> collect(
+            const std::vector<fmu4cpp::IntVariable> &v1,
+            const std::vector<fmu4cpp::RealVariable> &v2,
+            const std::vector<fmu4cpp::BoolVariable> &v3,
+            const std::vector<fmu4cpp::StringVariable> &v4,
+            const std::function<bool(const fmu4cpp::VariableBase &)> &f = [](auto &v) { return true; }) {
+        std::vector<fmu4cpp::VariableBase> vars;
+        for (const fmu4cpp::VariableBase &v: v1) {
+            if (f(v)) {
+                vars.push_back(v);
+            }
+        }
+        for (const fmu4cpp::VariableBase &v: v2) {
+            if (f(v)) {
+                vars.push_back(v);
+            }
+        }
+        for (const fmu4cpp::VariableBase &v: v3) {
+            if (f(v)) {
+                vars.push_back(v);
+            }
+        }
+        for (const fmu4cpp::VariableBase &v: v4) {
+            if (f(v)) {
+                vars.push_back(v);
+            }
+        }
+        return vars;
+    }
+}// namespace
 
 namespace fmu4cpp {
 
@@ -35,7 +68,7 @@ namespace fmu4cpp {
            << "\n"
            << R"(<fmiModelDescription fmiVersion="2.0")"
            << " modelName=\"" << m.modelName << "\""
-           << " guid=\"" << uuid::generate_uuid_v4() << "\""
+           << " guid=\"" << guid() << "\""
            << " generationTool=\"fmu4cpp"
            << " v" << to_string(library_version()) << "\""
            << " generationDateAndTime=\"" << now() << "\""
@@ -155,19 +188,9 @@ namespace fmu4cpp {
 
         ss << "\t<ModelStructure>\n";
 
-        std::vector<VariableBase> outputs;
-        for (const auto &v: integers_) {
-            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
-        }
-        for (const auto &v: reals_) {
-            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
-        }
-        for (const auto &v: booleans_) {
-            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
-        }
-        for (const auto &v: strings_) {
-            if (v.causality() == causality_t::OUTPUT) outputs.push_back(v);
-        }
+        std::vector<VariableBase> outputs = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
+            return v.causality() == causality_t::OUTPUT;
+        });
 
         if (!outputs.empty()) {
             ss << "\t\t<Outputs>\n";
@@ -226,6 +249,37 @@ namespace fmu4cpp {
 
     void fmu_base::register_variable(StringVariable v) {
         strings_.emplace_back(std::move(v));
+    }
+
+    [[maybe_unused]] std::string fmu_base::guid() const {
+        model_info info = get_model_info();
+        std::vector<std::string> content{
+                info.author,
+                info.version,
+                info.modelIdentifier,
+                info.description,
+                info.modelName};
+
+        std::stringstream ss;
+        for (const auto &str: content) {
+            ss << str;
+        }
+
+        auto vars = collect(integers_, reals_, booleans_, strings_);
+        for (const auto &v: vars) {
+            ss << v.name();
+            ss << std::to_string(v.index());
+            ss << std::to_string(v.value_reference());
+            ss << to_string(v.causality());
+            if (v.variability()) {
+                ss << to_string(*v.variability());
+            }
+            if (v.initial()) {
+                ss << to_string(*v.initial());
+            }
+        }
+
+        return std::to_string(std::hash<std::string>{}(ss.str()));
     }
 
 }// namespace fmu4cpp

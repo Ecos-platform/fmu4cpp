@@ -20,6 +20,7 @@ set(headers
         "fmu4cpp/fmu_base.hpp"
         "fmu4cpp/fmu_except.hpp"
         "fmu4cpp/fmu_variable.hpp"
+        "fmu4cpp/time.hpp"
         )
 
 set(sources

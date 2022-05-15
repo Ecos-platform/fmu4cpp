@@ -129,6 +129,8 @@ namespace fmu4cpp {
             }
         }
 
+        [[nodiscard]] std::string guid() const;
+
         [[nodiscard]] std::string make_description() const;
 
         ~fmu_base() = default;

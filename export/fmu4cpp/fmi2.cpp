@@ -73,6 +73,10 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     }
 
     auto slave = fmu4cpp::createInstance(instanceName, resources);
+    auto guid = slave->guid();
+    if (guid != fmuGUID) {
+        return nullptr;
+    }
     return new Component(std::move(slave), *functions);
 }
 
