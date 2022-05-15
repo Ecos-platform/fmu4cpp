@@ -1,11 +1,11 @@
 
 #include "fmi2/fmi2Functions.h"
 
+#include <fstream>
+#include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
-#include <iostream>
-#include <fstream>
 
 #include "fmu_base.hpp"
 
@@ -35,7 +35,7 @@ const char *fmi2GetVersion(void) {
     return "2.0";
 }
 
-void write_description(const char * location) {
+void write_description(const char *location) {
     auto instance = fmu4cpp::createInstance("", "");
     auto xml = instance->make_description();
     std::ofstream of(location);

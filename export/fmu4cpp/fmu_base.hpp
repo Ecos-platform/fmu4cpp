@@ -143,8 +143,8 @@ namespace fmu4cpp {
                           const std::optional<std::function<void(double)>> &setter = std::nullopt);
 
         BoolVariable boolean(const std::string &name,
-                                const std::function<bool()> &getter,
-                                const std::optional<std::function<void(bool)>> &setter = std::nullopt);
+                             const std::function<bool()> &getter,
+                             const std::optional<std::function<void(bool)>> &setter = std::nullopt);
 
         StringVariable string(const std::string &name,
                               const std::function<std::string()> &getter,
@@ -154,26 +154,6 @@ namespace fmu4cpp {
         void register_variable(RealVariable v);
         void register_variable(BoolVariable v);
         void register_variable(StringVariable v);
-
-//        IntVariable &register_int(
-//                const std::string &name,
-//                const std::function<int()> &getter,
-//                const std::optional<std::function<void(int)>> &setter = std::nullopt);
-//
-//        RealVariable &register_real(
-//                const std::string &name,
-//                const std::function<double()> &getter,
-//                const std::optional<std::function<void(double)>> &setter = std::nullopt);
-//
-//        BoolVariable &register_bool(
-//                const std::string &name,
-//                const std::function<bool()> &getter,
-//                const std::optional<std::function<void(bool)>> &setter = std::nullopt);
-//
-//        StringVariable &register_string(
-//                const std::string &name,
-//                const std::function<std::string()> &getter,
-//                const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
     private:
         size_t numVariables{};

@@ -13,6 +13,6 @@ namespace fmu4cpp {
     };
 
 
-}
+}// namespace fmu4cpp
 
 #endif//FMU4CPP_FMU_EXCEPT_HPP

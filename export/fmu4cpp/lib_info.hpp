@@ -19,6 +19,6 @@ namespace fmu4cpp {
     // Get a string representation of the version object
     std::string to_string(version v);
 
-}
+}// namespace fmu4cpp
 
 #endif//FMU4CPP_TEMPLATE_LIB_INFO_HPP

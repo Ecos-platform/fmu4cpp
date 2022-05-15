@@ -4,11 +4,11 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
-class Model: public fmu4cpp::fmu_base {
+class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string& instanceName, const std::string& resources)
-    : fmu4cpp::fmu_base(instanceName, resources){}
+    Model(const std::string &instanceName, const std::string &resources)
+        : fmu4cpp::fmu_base(instanceName, resources) {}
 
     bool do_step(double currentTime, double dt) override {
         return true;
@@ -20,6 +20,4 @@ std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &in
 }
 
 TEST_CASE("basic") {
-
-
 }

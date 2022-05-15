@@ -22,6 +22,6 @@ namespace fmu4cpp {
 
     model_info get_model_info();
 
-}
+}// namespace fmu4cpp
 
 #endif//FMU4CPP_TEMPLATE_MODEL_INFO_HPP

@@ -3,7 +3,6 @@
 
 #include "nlohmann/json.hpp"
 
-#include <iostream>
 #include <fstream>
 
 namespace fmu4cpp {
@@ -33,4 +32,4 @@ namespace fmu4cpp {
         return info;
     }
 
-}
+}// namespace fmu4cpp
