@@ -28,6 +28,3 @@ In the future the process might be automated using GitHub runners.
 ### Requirements
 * C++17 compiler
 * CMake >= 3.15
-* Python3
-
-
