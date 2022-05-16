@@ -37,7 +37,7 @@ add_library(fmu4cpp OBJECT
         )
 target_compile_features(fmu4cpp PUBLIC "cxx_std_17")
 set_target_properties(fmu4cpp PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(fmu4cpp PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(fmu4cpp PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(fmu4cpp
         PRIVATE
         "${PROJECT_SOURCE_DIR}/fmi_headers"
