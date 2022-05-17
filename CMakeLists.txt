@@ -39,18 +39,11 @@ else ()
     set(TARGET_PLATFORM ${TARGET_PLATFORM}32)
 endif ()
 
-Include(FetchContent)
-FetchContent_Declare(
-        json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG        v3.10.5
-)
-FetchContent_MakeAvailable(json)
-
 add_subdirectory(export)
 add_subdirectory(src)
 
 if (FMU4CPP_BUILD_TESTS)
+    Include(FetchContent)
 
     FetchContent_Declare(
             Catch2

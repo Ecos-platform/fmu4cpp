@@ -13,6 +13,7 @@
 #include "fmu_base.hpp"
 #include "fmu_except.hpp"
 #include "fmu_variable.hpp"
+#include "model_info.hpp"
 
 namespace fmu4cpp {
 
@@ -168,6 +169,8 @@ namespace fmu4cpp {
         std::vector<BoolVariable> booleans_;
         std::vector<StringVariable> strings_;
     };
+
+    model_info get_model_info();
 
     std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::string &fmuResourceLocation);
 

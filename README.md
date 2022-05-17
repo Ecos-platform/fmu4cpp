@@ -9,9 +9,8 @@ and packaging of the content into an FMU archive.
 ### How do I get started?
 
 1. Change the value of the `modelIdentifier` variable in `CMakeLists.txt` to something more appropriate.
-2. Edit `model_info.json`.
-3. Edit the content of `src/model.cpp`.
-4. Build.
+2. Edit the content of `src/model.cpp`.
+3. Build.
 
 An FMU named `<modelIdentifier>.fmu` is now located in your build folder.
 
