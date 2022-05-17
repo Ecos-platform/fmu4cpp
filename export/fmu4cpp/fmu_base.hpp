@@ -134,7 +134,7 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::string make_description() const;
 
-        ~fmu_base() = default;
+        virtual ~fmu_base() = default;
 
     protected:
         IntVariable integer(const std::string &name,
