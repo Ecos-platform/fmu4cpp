@@ -39,7 +39,7 @@ public:
                         "integerOut", [this] { return integer_; })
                         .setCausality(causality_t::OUTPUT)
                         .setVariability(variability_t::DISCRETE)
-                        .setDependencies({get_real_variable("integerIn")->index()}));
+                        .setDependencies({get_int_variable("integerIn")->index()}));
         register_variable(
                 real(
                         "realOut", [this] { return real_; })
