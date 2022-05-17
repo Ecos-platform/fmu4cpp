@@ -7,13 +7,6 @@ configure_file(
         @ONLY
 )
 
-set(model_info "${generatedSourcesDir}/fmu4cpp/model_info.cpp")
-configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/fmu4cpp/model_info.cpp.in"
-        "${model_info}"
-        @ONLY
-)
-
 set(headers
         "fmu4cpp/lib_info.hpp"
         "fmu4cpp/model_info.hpp"
@@ -37,7 +30,6 @@ add_library(fmu4cpp OBJECT
         )
 target_compile_features(fmu4cpp PUBLIC "cxx_std_17")
 set_target_properties(fmu4cpp PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(fmu4cpp PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(fmu4cpp
         PRIVATE
         "${PROJECT_SOURCE_DIR}/fmi_headers"

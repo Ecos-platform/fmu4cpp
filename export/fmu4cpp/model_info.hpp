@@ -12,15 +12,13 @@ namespace fmu4cpp {
         std::string description;
         std::string modelIdentifier;
         std::string version;
-        std::string variableNamingConvention;
-        bool needsExecutionTool;
-        bool canHandleVariableCommunicationStepSize;
-        bool canBeInstantiatedOnlyOncePerProcess;
-        bool canGetAndSetFMUstate;
-        bool canSerializeFMUstate;
+        std::string variableNamingConvention{"structured"};
+        bool needsExecutionTool{false};
+        bool canHandleVariableCommunicationStepSize{true};
+        bool canBeInstantiatedOnlyOncePerProcess{false};
+        bool canGetAndSetFMUstate{false};
+        bool canSerializeFMUstate{false};
     };
-
-    model_info get_model_info();
 
 }// namespace fmu4cpp
 

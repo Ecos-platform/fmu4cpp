@@ -5,6 +5,7 @@
 #include <fmu4cpp/fmu_base.hpp>
 #include <utility>
 
+
 using namespace fmu4cpp;
 
 class Model : public fmu_base {
@@ -79,6 +80,14 @@ private:
     bool boolean_;
     std::string string_;
 };
+
+model_info fmu4cpp::get_model_info() {
+    model_info info;
+    info.modelName = "Identity";
+    info.description = "A simple feed-trough model";
+    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
+    return info;
+}
 
 std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
     return std::make_unique<Model>(instanceName, fmuResourceLocation);

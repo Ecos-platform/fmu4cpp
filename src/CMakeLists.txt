@@ -3,6 +3,7 @@ add_library(${modelIdentifier} SHARED
         model.cpp
         "$<TARGET_OBJECTS:fmu4cpp>")
 target_include_directories(${modelIdentifier} PRIVATE ${PROJECT_SOURCE_DIR}/export)
+add_compile_definitions(FMU4CPP_MODEL_IDENTIFIER="${modelIdentifier}")
 
 set(outputDir "$<1:${CMAKE_BINARY_DIR}/binaries/${TARGET_PLATFORM}>")
 
@@ -26,7 +27,7 @@ add_custom_command(TARGET ${modelIdentifier} POST_BUILD
 # Generate FMU
 add_custom_command(TARGET ${modelIdentifier} POST_BUILD
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${modelIdentifier}.fmu" --format=zip
+        COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
         "${CMAKE_BINARY_DIR}/binaries"
         "${CMAKE_BINARY_DIR}/modelDescription.xml")
 
