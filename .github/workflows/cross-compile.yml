@@ -39,15 +39,21 @@ jobs:
        uses: actions/download-artifact@v2
        with:
          name: binaries
-         path: model
+         path: model/binaries
 
      - name: "Download modelDescription.xml"
        uses: actions/download-artifact@v2
        with:
          name: modelDescription
-         path: model
+         path: model/modelDescription.xml
 
      - name: action-zip
        uses: montudor/action-zip@v1.0.0
        with:
          args: zip -qq -r model.fmu model
+
+     - name: "Upload FMU"
+       uses: actions/upload-artifact@v2
+       with:
+         name: model
+         path: model.fmu
