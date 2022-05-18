@@ -53,5 +53,5 @@ if (FMU4CPP_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     enable_testing()
-    add_subdirectory(tests)
+    add_subdirectory(export/tests)
 endif ()
