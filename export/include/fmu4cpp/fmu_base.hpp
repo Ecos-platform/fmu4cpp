@@ -96,9 +96,11 @@ namespace fmu4cpp {
         }
 
         void get_string(const unsigned int vr[], size_t nvr, const char *value[]) const {
+            stringBuffer_.clear();
             for (unsigned i = 0; i < nvr; i++) {
                 unsigned int ref = vr[i];
-                value[i] = strings_[ref].get().c_str();
+                stringBuffer_.push_back(strings_[ref].get());
+                value[i] = stringBuffer_.back().c_str();
             }
         }
 
@@ -168,6 +170,8 @@ namespace fmu4cpp {
         std::vector<RealVariable> reals_;
         std::vector<BoolVariable> booleans_;
         std::vector<StringVariable> strings_;
+
+        mutable std::vector<std::string> stringBuffer_;
     };
 
     model_info get_model_info();
