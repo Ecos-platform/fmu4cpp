@@ -11,18 +11,9 @@ set(modelIdentifier identity)
 set(MODEL_INFO "${CMAKE_CURRENT_SOURCE_DIR}/model_info.json")
 
 if (MSVC)
-    # https://stackoverflow.com/questions/14172856/compile-with-mt-instead-of-md-using-cmake
-    set(CompilerFlags
-            CMAKE_CXX_FLAGS
-            CMAKE_CXX_FLAGS_DEBUG
-            CMAKE_CXX_FLAGS_RELEASE
-            CMAKE_C_FLAGS
-            CMAKE_C_FLAGS_DEBUG
-            CMAKE_C_FLAGS_RELEASE
-            )
-    foreach (CompilerFlag ${CompilerFlags})
-        string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-    endforeach ()
+    # link statically against the the Visual C runtime
+    string(REPLACE "/MD" "/MT" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+    string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif ()
 
 if (WIN32)
@@ -48,7 +39,7 @@ if (FMU4CPP_BUILD_TESTS)
     FetchContent_Declare(
             Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG        v2.13.8
+            GIT_TAG v2.13.8
     )
     FetchContent_MakeAvailable(Catch2)
 
