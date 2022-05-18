@@ -19,6 +19,7 @@ set(privateHeaders
         "fmi2/fmi2Functions.h"
         "fmi2/fmi2FunctionTypes.h"
         "fmi2/fmi2TypesPlatform.h"
+        "fmu4cpp/hash.hpp"
         "fmu4cpp/time.hpp"
         )
 

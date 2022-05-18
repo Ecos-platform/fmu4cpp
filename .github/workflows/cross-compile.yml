@@ -1,0 +1,65 @@
+name: Cross-compile
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-18.04, windows-2019 ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Configure and build (Linux)"
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          cmake . -B build
+          cmake --build build
+
+      - name: "Configure and build (Windows)"
+        if: startsWith(runner.os, 'Windows')
+        run: |
+          cmake . -B build -A x64
+          cmake --build build --config Release
+
+      - name: "Archive library"
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: build/binaries
+
+      - name: "Archive modelDescription.xml"
+        if: startsWith(runner.os, 'Linux')
+        uses: actions/upload-artifact@v2
+        with:
+          name: modelDescription
+          path: build/modelDescription.xml
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-18.04
+
+    steps:
+     - name: "Download binaries"
+       uses: actions/download-artifact@v2
+       with:
+         name: binaries
+         path: model/binaries
+
+     - name: "Download modelDescription.xml"
+       uses: actions/download-artifact@v2
+       with:
+         name: modelDescription
+         path: model
+
+     - name: "Set permissions"
+       run: |
+         sudo chmod -R +x model/binaries
+
+     - name: "Upload FMU"
+       uses: actions/upload-artifact@v2
+       with:
+         name: model
+         path: model

@@ -3,6 +3,7 @@
 #include "fmu4cpp/lib_info.hpp"
 #include "fmu4cpp/model_info.hpp"
 
+#include "hash.hpp"
 #include "time.hpp"
 #include <functional>
 #include <sstream>
@@ -279,7 +280,7 @@ namespace fmu4cpp {
             }
         }
 
-        return std::to_string(std::hash<std::string>{}(ss.str()));
+        return std::to_string(fnv1a(ss.str()));
     }
 
 }// namespace fmu4cpp
