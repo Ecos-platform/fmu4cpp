@@ -18,10 +18,8 @@ Such easy, such wow.
 
 #### Cross-compilation
 
-Currently, this has to be done manually (Build the project on the target platform and copy the binaries into an existing FMU).
-
-On Windows this is fairly straightforward using WSL.
-In the future the process might be automated using GitHub runners.
+Cross-compilation (64-bit linux/windows) occurs automatically when you push your changes to GitHub. 
+Simply rename the produced `model.zip` to `<modelName>.fmu`.
 
 
 ### Requirements
