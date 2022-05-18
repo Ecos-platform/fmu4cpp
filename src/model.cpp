@@ -71,7 +71,7 @@ public:
         integer_ = 0;
         real_ = 0;
         boolean_ = false;
-        string_ = "";
+        string_ = "empty";
     }
 
 private:

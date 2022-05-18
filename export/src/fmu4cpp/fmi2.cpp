@@ -344,6 +344,31 @@ fmi2Status fmi2GetStringStatus(
     return fmi2Error;
 }
 
+
+fmi2Status fmi2SetDebugLogging(fmi2Component c,
+                               fmi2Boolean loggingOn,
+                               size_t nCategories,
+                               const fmi2String categories[]) {
+    auto component = reinterpret_cast<Component *>(c);
+    return fmi2Error;
+}
+
+fmi2Status fmi2SetRealInputDerivatives(fmi2Component c,
+                                       const fmi2ValueReference vr[], size_t nvr,
+                                       const fmi2Integer order[],
+                                       const fmi2Real value[]) {
+    auto component = reinterpret_cast<Component *>(c);
+    return fmi2Error;
+}
+
+fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c,
+                                        const fmi2ValueReference vr[], size_t nvr,
+                                        const fmi2Integer order[],
+                                        fmi2Real value[]) {
+    auto component = reinterpret_cast<Component *>(c);
+    return fmi2Error;
+}
+
 void fmi2FreeInstance(fmi2Component c) {
     auto component = reinterpret_cast<Component *>(c);
     delete (component);

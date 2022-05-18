@@ -89,7 +89,7 @@ namespace fmu4cpp {
         }
     };
 
-    template<class T>
+    template<class T, class V>
     class Variable : public VariableBase {
     private:
         std::function<T()> getter_;
@@ -110,9 +110,33 @@ namespace fmu4cpp {
         void set(T value) {
             if (setter_) setter_->operator()(value);
         }
+
+        V &setCausality(causality_t causality) {
+            causality_ = causality;
+            return *static_cast<V *>(this);
+        }
+
+        V &setVariability(variability_t variability) {
+            variability_ = variability;
+            return *static_cast<V *>(this);
+        }
+
+        V &setInitial(initial_t initial) {
+            initial_ = initial;
+            return *static_cast<V *>(this);
+        }
+
+        V &setDependencies(const std::vector<size_t> &dependencies) {
+            for (auto i: dependencies) {
+//                dependencies_.emplace_back(i);
+            }
+            return *static_cast<V *>(this);
+        }
+
+        virtual ~Variable() = default;
     };
 
-    class IntVariable : public Variable<int> {
+    class IntVariable : public Variable<int, IntVariable> {
     private:
         std::optional<int> min_;
         std::optional<int> max_;
@@ -123,7 +147,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<int()> &getter,
                 const std::optional<std::function<void(int)>> &setter)
-            : Variable<int>(name, vr, index, getter, setter) {}
+            : Variable<int, IntVariable>(name, vr, index, getter, setter) {}
 
         [[nodiscard]] std::optional<int> getMin() const {
             return min_;
@@ -142,31 +166,9 @@ namespace fmu4cpp {
             max_ = max;
             return *this;
         }
-
-        IntVariable &setCausality(causality_t causality) {
-            causality_ = causality;
-            return *this;
-        }
-
-        IntVariable &setVariability(variability_t variability) {
-            variability_ = variability;
-            return *this;
-        }
-
-        IntVariable &setInitial(initial_t initial) {
-            initial_ = initial;
-            return *this;
-        }
-
-        IntVariable &setDependencies(const std::vector<size_t> &dependencies) {
-            for (auto i: dependencies) {
-                dependencies_.emplace_back(i);
-            }
-            return *this;
-        }
     };
 
-    class RealVariable : public Variable<double> {
+    class RealVariable : public Variable<double, RealVariable> {
     private:
         std::optional<double> min_;
         std::optional<double> max_;
@@ -177,7 +179,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter)
-            : Variable<double>(name, vr, index, getter, setter) {}
+            : Variable<double, RealVariable>(name, vr, index, getter, setter) {}
 
         [[nodiscard]] std::optional<double> getMin() const {
             return min_;
@@ -196,31 +198,9 @@ namespace fmu4cpp {
             max_ = max;
             return *this;
         }
-
-        RealVariable &setCausality(causality_t causality) {
-            causality_ = causality;
-            return *this;
-        }
-
-        RealVariable &setVariability(variability_t variability) {
-            variability_ = variability;
-            return *this;
-        }
-
-        RealVariable &setInitial(initial_t initial) {
-            initial_ = initial;
-            return *this;
-        }
-
-        RealVariable &setDependencies(const std::vector<size_t> &dependencies) {
-            for (auto i: dependencies) {
-                dependencies_.emplace_back(i);
-            }
-            return *this;
-        }
     };
 
-    class BoolVariable : public Variable<bool> {
+    class BoolVariable : public Variable<bool, BoolVariable> {
 
     public:
         BoolVariable(
@@ -228,32 +208,10 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<bool()> &getter,
                 const std::optional<std::function<void(bool)>> &setter)
-            : Variable<bool>(name, vr, index, getter, setter) {}
-
-        BoolVariable &setCausality(causality_t causality) {
-            causality_ = causality;
-            return *this;
-        }
-
-        BoolVariable &setVariability(variability_t variability) {
-            variability_ = variability;
-            return *this;
-        }
-
-        BoolVariable &setInitial(initial_t initial) {
-            initial_ = initial;
-            return *this;
-        }
-
-        BoolVariable &setDependencies(const std::vector<size_t> &dependencies) {
-            for (auto i: dependencies) {
-                dependencies_.emplace_back(i);
-            }
-            return *this;
-        }
+            : Variable<bool, BoolVariable>(name, vr, index, getter, setter) {}
     };
 
-    class StringVariable : public Variable<std::string> {
+    class StringVariable : public Variable<std::string, StringVariable> {
 
     public:
         StringVariable(
@@ -261,29 +219,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<std::string()> &getter,
                 const std::optional<std::function<void(std::string)>> &setter)
-            : Variable<std::string>(name, vr, index, getter, setter) {}
-
-        StringVariable &setCausality(causality_t causality) {
-            causality_ = causality;
-            return *this;
-        }
-
-        StringVariable &setVariability(variability_t variability) {
-            variability_ = variability;
-            return *this;
-        }
-
-        StringVariable &setInitial(initial_t initial) {
-            initial_ = initial;
-            return *this;
-        }
-
-        StringVariable &setDependencies(const std::vector<size_t> &dependencies) {
-            for (auto i: dependencies) {
-                dependencies_.emplace_back(i);
-            }
-            return *this;
-        }
+            : Variable<std::string, StringVariable>(name, vr, index, getter, setter) {}
     };
 
     bool requires_start(const VariableBase &v);
