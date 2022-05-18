@@ -54,6 +54,10 @@ jobs:
          name: modelDescription
          path: model
 
+     - name: "Set permissions"
+       run: |
+         sudo chmod -R +x model/binaries
+
      - name: "Upload FMU"
        uses: actions/upload-artifact@v2
        with:
