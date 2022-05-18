@@ -1,7 +1,7 @@
 
-#include "fmu_base.hpp"
-#include "lib_info.hpp"
-#include "model_info.hpp"
+#include "fmu4cpp/fmu_base.hpp"
+#include "fmu4cpp/lib_info.hpp"
+#include "fmu4cpp/model_info.hpp"
 
 #include "time.hpp"
 #include <functional>
