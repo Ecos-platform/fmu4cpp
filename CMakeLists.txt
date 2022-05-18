@@ -41,3 +41,17 @@ endif ()
 
 add_subdirectory(export)
 add_subdirectory(src)
+
+if (FMU4CPP_BUILD_TESTS)
+    Include(FetchContent)
+
+    FetchContent_Declare(
+            Catch2
+            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+            GIT_TAG        v2.13.8
+    )
+    FetchContent_MakeAvailable(Catch2)
+
+    enable_testing()
+    add_subdirectory(export/tests)
+endif ()

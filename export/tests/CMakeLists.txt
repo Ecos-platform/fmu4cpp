@@ -3,8 +3,12 @@ include_directories(
         "${CMAKE_CURRENT_SOURCE_DIR}/../include"
         "${CMAKE_CURRENT_SOURCE_DIR}/../src"
 )
-link_libraries(Catch2::Catch2)
 
-add_executable(basic_test basic_test.cpp "$<TARGET_OBJECTS:fmu4cpp>")
-target_compile_definitions(basic_test PRIVATE FMU4CPP_MODEL_IDENTIFIER="basic_test")
-add_test(NAME basic_test COMMAND basic_test)
+function(make_test modelIdentifier sources)
+    add_executable(${modelIdentifier} ${sources} "$<TARGET_OBJECTS:fmu4cpp>")
+    target_link_libraries(${modelIdentifier} PUBLIC Catch2::Catch2)
+    target_compile_definitions(${modelIdentifier} PRIVATE FMU4CPP_MODEL_IDENTIFIER="${modelIdentifier}")
+    add_test(NAME ${modelIdentifier} COMMAND ${modelIdentifier})
+endfunction()
+
+make_test(basic_test basic_test.cpp)
