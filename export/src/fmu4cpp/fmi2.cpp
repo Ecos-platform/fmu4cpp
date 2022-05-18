@@ -52,6 +52,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
                               fmi2Boolean loggingOn) {
 
     if (fmuType != fmi2CoSimulation) {
+        std::cerr << "[fmu4cpp] Error. Unsupported fmuType!" << std::endl;
         return nullptr;
     }
 
@@ -75,6 +76,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     auto slave = fmu4cpp::createInstance(instanceName, resources);
     auto guid = slave->guid();
     if (guid != fmuGUID) {
+        std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
         return nullptr;
     }
     return new Component(std::move(slave), *functions);
