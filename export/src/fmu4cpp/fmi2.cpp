@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "fmu_base.hpp"
+#include "fmu4cpp/fmu_base.hpp"
 
 namespace {
 

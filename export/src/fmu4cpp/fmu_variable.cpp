@@ -1,5 +1,5 @@
 
-#include "fmu_variable.hpp"
+#include "fmu4cpp/fmu_variable.hpp"
 #include <stdexcept>
 
 namespace fmu4cpp {

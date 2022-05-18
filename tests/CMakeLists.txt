@@ -1,7 +1,7 @@
 
 include_directories(
-        "${CMAKE_SOURCE_DIR}/export"
-        "${CMAKE_SOURCE_DIR}/fmi_headers"
+        "${CMAKE_SOURCE_DIR}/export/include"
+        "${CMAKE_SOURCE_DIR}/export/src"
 )
 link_libraries(Catch2::Catch2)
 
