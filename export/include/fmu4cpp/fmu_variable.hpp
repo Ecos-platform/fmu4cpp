@@ -128,7 +128,7 @@ namespace fmu4cpp {
 
         V &setDependencies(const std::vector<size_t> &dependencies) {
             for (auto i: dependencies) {
-                dependencies_.emplace_back(i);
+//                dependencies_.emplace_back(i);
             }
             return *static_cast<V *>(this);
         }
