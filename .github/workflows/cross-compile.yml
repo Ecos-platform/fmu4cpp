@@ -12,10 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: "Configure and build"
+      - name: "Configure and build (Linux)"
+        if: startsWith(runner.os, 'Linux')
         run: |
           cmake . -B build
           cmake --build build
+
+      - name: "Configure and build (Windows)"
+        if: startsWith(runner.os, 'Windows')
+        run: |
+          cmake . -B build -A x64
+          cmake --build build --config Release
 
       - name: "Archive library"
         uses: actions/upload-artifact@v2
