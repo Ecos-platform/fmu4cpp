@@ -1,0 +1,59 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [ ubuntu-18.04, windows-2019 ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Configure and build"
+        run: |
+          cmake . -B build
+          cmake --build build
+
+      - name: "Archive library"
+        uses: actions/upload-artifact@v2
+        with:
+          name: model
+          path: build/binaries
+
+      - name: "Archive modelDescription.xml"
+        if: startsWith(runner.os, 'Linux')
+        uses: actions/upload-artifact@v2
+        with:
+          name: modelDescription
+          path: build/modelDescription.xml
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-18.04
+
+    steps:
+     - name: "Download wrappers"
+       uses: actions/download-artifact@v2
+       with:
+         name: binaries
+         path: model
+
+     - name: "Download binaries"
+         uses: actions/download-artifact@v2
+         with:
+           name: binaries
+           path: model
+
+     - name: "Download modelDescription.xml"
+         uses: actions/download-artifact@v2
+         with:
+           name: modelDescription
+           path: model
+
+     - name: action-zip
+       uses: montudor/action-zip@v1.0.0
+       with:
+         args: zip -qq -r model.fmu model
