@@ -20,7 +20,7 @@ jobs:
       - name: "Archive library"
         uses: actions/upload-artifact@v2
         with:
-          name: model
+          name: binaries
           path: build/binaries
 
       - name: "Archive modelDescription.xml"
@@ -35,12 +35,6 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-     - name: "Download wrappers"
-       uses: actions/download-artifact@v2
-       with:
-         name: binaries
-         path: model
-
      - name: "Download binaries"
        uses: actions/download-artifact@v2
        with:
