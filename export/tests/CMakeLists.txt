@@ -1,7 +1,7 @@
 
 include_directories(
-        "${CMAKE_SOURCE_DIR}/export/include"
-        "${CMAKE_SOURCE_DIR}/export/src"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../src"
 )
 link_libraries(Catch2::Catch2)
 
