@@ -1,9 +1,9 @@
 # FMU4cpp (early prototype)
 
-FMU4cpp is a CMake template repository that allows you to easily create FMUs compatible with [FMI 2.0](https://fmi-standard.org/downloads/)
-for Co-simulation using in C++.
+FMU4cpp is a CMake template repository that allows you to easily create cross-platform FMUs compatible with [FMI 2.0](https://fmi-standard.org/downloads/)
+for Co-simulation using C++.
 
-FMU4cpp handles everything including generating the `modelDescription.xml`, 
+The framework handles everything including generating the `modelDescription.xml`, 
 and packaging of the content into an FMU archive.
 
 ### How do I get started?
