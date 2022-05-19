@@ -15,6 +15,7 @@ if (WIN32)
 else ()
     set_target_properties(${modelIdentifier}
             PROPERTIES
+            PREFIX ""
             LIBRARY_OUTPUT_DIRECTORY "${outputDir}"
             )
 endif ()
@@ -24,10 +25,16 @@ add_custom_command(TARGET ${modelIdentifier} POST_BUILD
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
         COMMAND descriptionGenerator "${outputDir}/$<TARGET_FILE_NAME:${modelIdentifier}>")
 
-# Generate FMU
-add_custom_command(TARGET ${modelIdentifier} POST_BUILD
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
-        "${CMAKE_BINARY_DIR}/binaries"
-        "${CMAKE_BINARY_DIR}/modelDescription.xml")
+function(generateFMU name)
+    add_custom_command(TARGET ${modelIdentifier} POST_BUILD
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E tar "c" "${name}.fmu" --format=zip
+            "${CMAKE_BINARY_DIR}/binaries"
+            "${CMAKE_BINARY_DIR}/modelDescription.xml")
+endfunction()
 
+# Generate FMU
+generateFMU("${modelIdentifier}")
+
+# Make a copy for testing purposes
+generateFMU("model")
