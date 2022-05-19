@@ -15,6 +15,7 @@ if (WIN32)
 else ()
     set_target_properties(${modelIdentifier}
             PROPERTIES
+            PREFIX ""
             LIBRARY_OUTPUT_DIRECTORY "${outputDir}"
             )
 endif ()

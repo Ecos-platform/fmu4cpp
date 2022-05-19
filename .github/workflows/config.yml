@@ -17,7 +17,6 @@ jobs:
         run: |
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON
           cmake --build build
-          ls build/binaries/linux64
 
       - name: Download and run FMUchecker
         run: |
