@@ -18,16 +18,16 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON
           cmake --build build
 
-      - name: Test
-        run: |
-          cd build/export/tests
-          ctest --output-on-failure
-
       - name: Download and run FMUchecker
         run: |
           wget https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip
           7z x FMUChecker-2.0.4-linux64.zip && cd FMUChecker-2.0.4-linux64
           ./fmuCheck.linux64 build/model.fmu
+
+      - name: Test
+        run: |
+          cd build/export/tests
+          ctest --output-on-failure
 
 
   build-on-windows:
@@ -45,14 +45,14 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -A x64 
           cmake --build build --config Release
 
-      - name: Test
-        run: |
-          cd build/export/tests
-          ctest -C Release --output-on-failure
-
       - name: Download and run FMUchecker
         run: |
           curl --output FMUChecker-2.0.4-win64.zip --url https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip -L
           7z x FMUChecker-2.0.4-win64.zip && cd FMUChecker-2.0.4-win64
           ./fmuCheck.win64.exe build/model.fmu
         shell: bash
+
+      - name: Test
+        run: |
+          cd build/export/tests
+          ctest -C Release --output-on-failure
