@@ -85,5 +85,13 @@ TEST_CASE("basic") {
 
         t += dt;
     }
+
+    instance->reset();
+
+    REQUIRE(real->get() == 0);
+    REQUIRE(boolean->get() == false);
+    REQUIRE(integer->get() == 0);
+    REQUIRE(str->get() == "0");
+
     instance->terminate();
 }
