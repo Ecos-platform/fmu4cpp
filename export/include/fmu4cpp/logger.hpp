@@ -22,10 +22,8 @@ namespace fmu4cpp {
         // Logs a message.
         template<typename... Args>
         void log(fmi2Status s, const std::string &message, Args &&...args) {
-            if (debugLogging_) {
-                msgBuf_ = message;
-                fmiLogger_(c_, instanceName_.c_str(), s, msgBuf_.c_str(), "", std::forward<Args>(args)...);
-            }
+            msgBuf_ = message;
+            fmiLogger_(c_, instanceName_.c_str(), s, "", msgBuf_.c_str(), std::forward<Args>(args)...);
         }
 
         // Logs a message.
@@ -37,7 +35,7 @@ namespace fmu4cpp {
         }
 
     private:
-        bool debugLogging_;
+        bool debugLogging_{false};
         std::string instanceName_;
         fmi2ComponentEnvironment c_;
         fmi2CallbackLogger fmiLogger_;

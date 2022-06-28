@@ -180,7 +180,7 @@ namespace fmu4cpp {
 
 
     private:
-        logger* logger_;
+        logger* logger_ = nullptr;
         size_t numVariables_{};
 
         std::string instanceName_;
