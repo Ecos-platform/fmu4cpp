@@ -9,18 +9,33 @@
 //https://stackoverflow.com/questions/66764096/calculating-stdhash-using-different-compilers
 inline uint64_t fnv1a(std::string const &text) {
 
-    // assumes 64 bit
-    uint64_t constexpr fnv_prime = 1099511628211ULL;
-    uint64_t constexpr fnv_offset_basis = 14695981039346656037ULL;
+    if (sizeof(void*)==4) {
+        // 32-bit environment
+        uint32_t  constexpr fnv_prime = 16777619U;
+        uint32_t  constexpr fnv_offset_basis = 2166136261U;
 
-    uint64_t hash = fnv_offset_basis;
+        uint32_t  hash = fnv_offset_basis;
 
-    for (auto c: text) {
-        hash ^= c;
-        hash *= fnv_prime;
+        for (auto c: text) {
+            hash ^= c;
+            hash *= fnv_prime;
+        }
+
+        return hash;
+    } else {
+        // 64-bit environment
+        uint64_t constexpr fnv_prime = 1099511628211ULL;
+        uint64_t constexpr fnv_offset_basis = 14695981039346656037ULL;
+
+        uint64_t hash = fnv_offset_basis;
+
+        for (auto c: text) {
+            hash ^= c;
+            hash *= fnv_prime;
+        }
+
+        return hash;
     }
-
-    return hash;
 }
 
 #endif//FMU4CPP_TEMPLATE_HASH_HPP
