@@ -8,6 +8,7 @@
 #include <string>
 
 #include "fmu4cpp/fmu_base.hpp"
+#include "fmu4cpp/logger.hpp"
 
 namespace {
 
@@ -15,12 +16,15 @@ namespace {
     struct Component {
 
         Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi2CallbackFunctions callbackFunctions)
-            : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()}, callbackFunctions(callbackFunctions), slave(std::move(slave)) {}
+            : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()},
+              slave(std::move(slave)),
+              logger(slave.get(), callbackFunctions, slave->instanceName()) {
+            //this->slave->__set_logger(&logger);
+        }
 
-        // Co-simulation
         double lastSuccessfulTime;
-        fmi2CallbackFunctions callbackFunctions;
         std::unique_ptr<fmu4cpp::fmu_base> slave;
+        fmu4cpp::logger logger;
     };
 
 }// namespace
@@ -79,6 +83,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
         std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
         return nullptr;
     }
+
     return new Component(std::move(slave), *functions);
 }
 

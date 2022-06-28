@@ -14,12 +14,14 @@
 #include "fmu_except.hpp"
 #include "fmu_variable.hpp"
 #include "model_info.hpp"
+#include "logger.hpp"
 
 namespace fmu4cpp {
 
     class fmu_base {
 
     public:
+
         fmu_base(std::string instance_name, std::string resourceLocation)
             : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
 
@@ -136,6 +138,22 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::string make_description() const;
 
+        void __set_logger(logger* logger) {
+            logger_ = logger;
+        }
+
+        void log(fmi2Status s, const std::string &message) {
+            if (logger_) {
+                logger_->log(s, message);
+            }
+        }
+
+        void debugLog(fmi2Status s, const std::string &message) {
+            if (logger_) {
+                logger_->debug(s, message);
+            }
+        }
+
         virtual ~fmu_base() = default;
 
     protected:
@@ -160,8 +178,10 @@ namespace fmu4cpp {
         void register_variable(BoolVariable v);
         void register_variable(StringVariable v);
 
+
     private:
-        size_t numVariables{};
+        logger* logger_;
+        size_t numVariables_{};
 
         std::string instanceName_;
         std::string resourceLocation_;

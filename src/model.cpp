@@ -64,6 +64,7 @@ public:
     }
 
     bool do_step(double currentTime, double dt) override {
+        //log(fmi2OK, "hei");
         return true;
     }
 
