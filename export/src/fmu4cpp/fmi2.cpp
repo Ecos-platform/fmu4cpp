@@ -362,7 +362,7 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c,
                                const fmi2String categories[]) {
     auto component = reinterpret_cast<Component *>(c);
     component->logger.setDebugLogging(loggingOn);
-    return fmi2Error;
+    return fmi2OK;
 }
 
 fmi2Status fmi2SetRealInputDerivatives(fmi2Component c,
