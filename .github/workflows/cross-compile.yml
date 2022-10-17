@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-18.04, windows-2019 ]
+        os: [ ubuntu-20.04, windows-2019 ]
 
     steps:
       - uses: actions/checkout@v2
@@ -39,7 +39,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
      - name: "Download binaries"
