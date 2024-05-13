@@ -13,15 +13,14 @@
 #include "fmu_base.hpp"
 #include "fmu_except.hpp"
 #include "fmu_variable.hpp"
-#include "model_info.hpp"
 #include "logger.hpp"
+#include "model_info.hpp"
 
 namespace fmu4cpp {
 
     class fmu_base {
 
     public:
-
         fmu_base(std::string instance_name, std::string resourceLocation)
             : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
 
@@ -37,28 +36,28 @@ namespace fmu4cpp {
         }
 
         std::optional<IntVariable> get_int_variable(const std::string &name) {
-            for (auto &v: integers_) {
+            for (const auto &v: integers_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
         std::optional<RealVariable> get_real_variable(const std::string &name) {
-            for (auto &v: reals_) {
+            for (const auto &v: reals_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
         std::optional<BoolVariable> get_bool_variable(const std::string &name) {
-            for (auto &v: booleans_) {
+            for (const auto &v: booleans_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
         std::optional<StringVariable> get_string_variable(const std::string &name) {
-            for (auto &v: strings_) {
+            for (const auto &v: strings_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
@@ -138,7 +137,7 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::string make_description() const;
 
-        void __set_logger(logger* logger) {
+        void __set_logger(logger *logger) {
             logger_ = logger;
         }
 
@@ -180,7 +179,7 @@ namespace fmu4cpp {
 
 
     private:
-        logger* logger_ = nullptr;
+        logger *logger_ = nullptr;
         size_t numVariables_{};
 
         std::string instanceName_;
