@@ -130,7 +130,7 @@ namespace fmu4cpp {
         void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 unsigned int ref = vr[i];
-                booleans_[ref].set(value[i]);
+                strings_[ref].set(value[i]);
             }
         }
 
