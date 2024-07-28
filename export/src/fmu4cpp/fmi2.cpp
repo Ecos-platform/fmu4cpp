@@ -306,9 +306,10 @@ fmi2Status fmi2SetString(
 }
 
 fmi2Status fmi2GetStatus(
-        fmi2Component c,
+        fmi2Component,
         const fmi2StatusKind,
         fmi2Status *) {
+
     return fmi2Error;
 }
 
@@ -320,29 +321,30 @@ fmi2Status fmi2GetRealStatus(
     if (s == fmi2LastSuccessfulTime) {
         *value = component->lastSuccessfulTime;
         return fmi2OK;
-    } else {
-        return fmi2Error;
     }
+
+    return fmi2Error;
 }
 
 fmi2Status fmi2GetIntegerStatus(
-        fmi2Component c,
+        fmi2Component,
         const fmi2StatusKind,
         fmi2Integer *) {
     return fmi2Error;
 }
 
 fmi2Status fmi2GetBooleanStatus(
-        fmi2Component c,
+        fmi2Component,
         const fmi2StatusKind,
         fmi2Boolean *) {
     return fmi2Error;
 }
 
 fmi2Status fmi2GetStringStatus(
-        fmi2Component c,
+        fmi2Component,
         const fmi2StatusKind,
         fmi2String *) {
+
     return fmi2Error;
 }
 
@@ -355,24 +357,62 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c,
     return fmi2Error;
 }
 
-fmi2Status fmi2SetRealInputDerivatives(fmi2Component c,
-                                       const fmi2ValueReference vr[], size_t nvr,
-                                       const fmi2Integer order[],
-                                       const fmi2Real value[]) {
-    auto component = reinterpret_cast<Component *>(c);
+fmi2Status fmi2SetRealInputDerivatives(fmi2Component,
+                                       const fmi2ValueReference[], size_t,
+                                       const fmi2Integer[],
+                                       const fmi2Real[]) {
     return fmi2Error;
 }
 
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c,
-                                        const fmi2ValueReference vr[], size_t nvr,
-                                        const fmi2Integer order[],
-                                        fmi2Real value[]) {
-    auto component = reinterpret_cast<Component *>(c);
+                                        const fmi2ValueReference[], size_t,
+                                        const fmi2Integer[],
+                                        fmi2Real[]) {
+    return fmi2Error;
+}
+
+
+fmi2Status fmi2GetDirectionalDerivative(fmi2Component,
+                                        const fmi2ValueReference[], size_t,
+                                        const fmi2ValueReference[], size_t,
+                                        const fmi2Real[],
+                                        fmi2Real[]) {
+
+    return fmi2Error;
+}
+
+
+fmi2Status fmi2GetFMUstate(fmi2Component, fmi2FMUstate *) {
+    return fmi2Error;
+}
+
+fmi2Status fmi2SetFMUstate(fmi2Component, fmi2FMUstate) {
+
+    return fmi2Error;
+}
+
+fmi2Status fmi2SerializedFMUstateSize(fmi2Component, fmi2FMUstate, size_t *) {
+
+    return fmi2Error;
+}
+
+fmi2Status fmi2SerializeFMUstate(fmi2Component, fmi2FMUstate, fmi2Byte[], size_t) {
+
+    return fmi2Error;
+}
+
+fmi2Status fmi2DeSerializeFMUstate(fmi2Component, const fmi2Byte[], size_t, fmi2FMUstate *) {
+
+    return fmi2Error;
+}
+
+fmi2Status fmi2FreeFMUstate(fmi2Component, fmi2FMUstate *) {
+
     return fmi2Error;
 }
 
 void fmi2FreeInstance(fmi2Component c) {
     auto component = reinterpret_cast<Component *>(c);
-    delete (component);
+    delete component;
 }
 }
