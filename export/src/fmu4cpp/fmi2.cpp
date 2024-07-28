@@ -8,6 +8,7 @@
 #include <string>
 
 #include "fmu4cpp/fmu_base.hpp"
+#include "fmu4cpp/logger.hpp"
 
 namespace {
 
@@ -15,12 +16,15 @@ namespace {
     struct Component {
 
         Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi2CallbackFunctions callbackFunctions)
-            : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()}, callbackFunctions(callbackFunctions), slave(std::move(slave)) {}
+            : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()},
+              slave(std::move(slave)),
+              logger(this->slave.get(), callbackFunctions, this->slave->instanceName()) {
+            this->slave->__set_logger(&logger);
+        }
 
-        // Co-simulation
         double lastSuccessfulTime;
-        fmi2CallbackFunctions callbackFunctions;
         std::unique_ptr<fmu4cpp::fmu_base> slave;
+        fmu4cpp::logger logger;
     };
 
 }// namespace
@@ -48,7 +52,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
                               fmi2String fmuGUID,
                               fmi2String fmuResourceLocation,
                               const fmi2CallbackFunctions *functions,
-                              fmi2Boolean visible,
+                              fmi2Boolean /*visible*/,
                               fmi2Boolean loggingOn) {
 
     if (fmuType != fmi2CoSimulation) {
@@ -77,9 +81,14 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     auto guid = slave->guid();
     if (guid != fmuGUID) {
         std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
+        fmu4cpp::logger l(nullptr, *functions, instanceName);
+        l.log(fmi2Fatal, "", "Error. Wrong guid!");
         return nullptr;
     }
-    return new Component(std::move(slave), *functions);
+
+    auto c = new Component(std::move(slave), *functions);
+    c->logger.setDebugLogging(loggingOn);
+    return c;
 }
 
 fmi2Status fmi2SetupExperiment(fmi2Component c,
@@ -354,7 +363,8 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c,
                                size_t nCategories,
                                const fmi2String categories[]) {
     auto component = reinterpret_cast<Component *>(c);
-    return fmi2Error;
+    component->logger.setDebugLogging(loggingOn);
+    return fmi2OK;
 }
 
 fmi2Status fmi2SetRealInputDerivatives(fmi2Component,

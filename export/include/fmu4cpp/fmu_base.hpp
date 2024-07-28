@@ -13,6 +13,7 @@
 #include "fmu_base.hpp"
 #include "fmu_except.hpp"
 #include "fmu_variable.hpp"
+#include "logger.hpp"
 #include "model_info.hpp"
 
 namespace fmu4cpp {
@@ -35,28 +36,28 @@ namespace fmu4cpp {
         }
 
         std::optional<IntVariable> get_int_variable(const std::string &name) {
-            for (auto &v: integers_) {
+            for (const auto &v: integers_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
         std::optional<RealVariable> get_real_variable(const std::string &name) {
-            for (auto &v: reals_) {
+            for (const auto &v: reals_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
         std::optional<BoolVariable> get_bool_variable(const std::string &name) {
-            for (auto &v: booleans_) {
+            for (const auto &v: booleans_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
         std::optional<StringVariable> get_string_variable(const std::string &name) {
-            for (auto &v: strings_) {
+            for (const auto &v: strings_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
@@ -128,13 +129,29 @@ namespace fmu4cpp {
         void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 unsigned int ref = vr[i];
-                booleans_[ref].set(value[i]);
+                strings_[ref].set(value[i]);
             }
         }
 
         [[nodiscard]] std::string guid() const;
 
         [[nodiscard]] std::string make_description() const;
+
+        void __set_logger(logger *logger) {
+            logger_ = logger;
+        }
+
+        void log(fmi2Status s, const std::string &message) {
+            if (logger_) {
+                logger_->log(s, message);
+            }
+        }
+
+        void debugLog(fmi2Status s, const std::string &message) {
+            if (logger_) {
+                logger_->debug(s, message);
+            }
+        }
 
         virtual ~fmu_base() = default;
 
@@ -160,8 +177,10 @@ namespace fmu4cpp {
         void register_variable(BoolVariable v);
         void register_variable(StringVariable v);
 
+
     private:
-        size_t numVariables{};
+        logger *logger_ = nullptr;
+        size_t numVariables_{};
 
         std::string instanceName_;
         std::string resourceLocation_;
