@@ -63,7 +63,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
          name: modelDescription
-         path: ${{ env.MODEL_PATH }}/model
+         path: ${{ env.MODEL_PATH }}
 
       - name: "Set permissions"
         run: |

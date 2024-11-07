@@ -18,11 +18,16 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON
           cmake --build build
 
+      - name: "Read model name"
+        id: read_model_name
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+
       - name: Download and run FMUchecker
         run: |
           wget https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip
           7z x FMUChecker-2.0.4-linux64.zip && cd FMUChecker-2.0.4-linux64
-          ./fmuCheck.linux64 ../build/model.fmu
+          ./fmuCheck.linux64 ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_PATH }}.fmu
 
       - name: Test
         run: |
