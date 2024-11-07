@@ -19,7 +19,6 @@ jobs:
           cmake --build build
 
       - name: "Read model name"
-        id: read_model_name
         run: |
           echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
 
@@ -51,9 +50,8 @@ jobs:
           cmake --build build --config Release
 
       - name: "Read model name"
-        id: read_model_name
         run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: "Download and run FMUChecker"
         run: |

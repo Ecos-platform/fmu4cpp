@@ -24,10 +24,15 @@ jobs:
           cmake . -B build -A x64
           cmake --build build --config Release
 
-      - name: "Read model name"
-        id: read_model_name
+      - name: "Read model name (Linux)"
         run: |
           echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+        if: runner.os != 'Windows'
+
+      - name: "Read model name (Windows)"
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
+        if: runner.os == 'Windows'
 
       - name: "Archive library"
         uses: actions/upload-artifact@v3
@@ -48,22 +53,27 @@ jobs:
 
     steps:
 
-      - name: "Read model name"
-        id: read_model_name
+      - name: "Read model name (Linux)"
         run: |
-            echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+        if: runner.os != 'Windows'
+
+      - name: "Read model name (Windows)"
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
+        if: runner.os == 'Windows'
 
       - name: "Download binaries"
         uses: actions/download-artifact@v3
         with:
          name: binaries
-         path: model/binaries
+         path: ${{ env.MODEL_PATH }}/binaries
 
       - name: "Download modelDescription.xml"
         uses: actions/download-artifact@v3
         with:
          name: modelDescription
-         path: model
+         path: ${{ env.MODEL_PATH }}
 
       - name: "Set permissions"
         run: |
@@ -72,5 +82,5 @@ jobs:
       - name: "Upload FMU"
         uses: actions/upload-artifact@v3
         with:
-         name: model
-         path: model
+         name: ${{ env.MODEL_PATH }}
+         path: ${{ env.MODEL_PATH }}
