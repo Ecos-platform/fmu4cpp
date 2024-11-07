@@ -7,11 +7,12 @@
 #include "fmi2/fmi2FunctionTypes.h"
 
 namespace fmu4cpp {
+
     class logger {
 
     public:
-        logger(fmi2ComponentEnvironment c, fmi2CallbackFunctions f, std::string instanceName)
-            : c_(c),
+        logger(const fmi2CallbackFunctions &f, std::string instanceName)
+            : c_(f.componentEnvironment),
               fmiLogger_(f.logger),
               instanceName_(std::move(instanceName)) {}
 
@@ -35,10 +36,11 @@ namespace fmu4cpp {
         }
 
     private:
-        bool debugLogging_{false};
-        std::string instanceName_;
         fmi2ComponentEnvironment c_;
         fmi2CallbackLogger fmiLogger_;
+
+        bool debugLogging_{false};
+        std::string instanceName_;
         std::string msgBuf_;
     };
 

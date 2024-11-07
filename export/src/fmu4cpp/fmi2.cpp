@@ -15,10 +15,11 @@ namespace {
     // A struct that holds all the data for one model instance.
     struct Component {
 
-        Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi2CallbackFunctions callbackFunctions)
+        Component(std::unique_ptr<fmu4cpp::fmu_base> slave, const fmi2CallbackFunctions &callbackFunctions)
             : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()},
               slave(std::move(slave)),
-              logger(this->slave.get(), callbackFunctions, this->slave->instanceName()) {
+              logger(callbackFunctions, this->slave->instanceName()) {
+
             this->slave->__set_logger(&logger);
         }
 
@@ -81,7 +82,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     const auto guid = slave->guid();
     if (guid != fmuGUID) {
         std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
-        fmu4cpp::logger l(nullptr, *functions, instanceName);
+        fmu4cpp::logger l(*functions, instanceName);
         l.log(fmi2Fatal, "", "Error. Wrong guid!");
         return nullptr;
     }
@@ -107,9 +108,9 @@ fmi2Status fmi2SetupExperiment(fmi2Component c,
     try {
         component->slave->setup_experiment(startTime, stop, tol);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -120,9 +121,9 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
     try {
         component->slave->enter_initialisation_mode();
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -132,9 +133,9 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
     try {
         component->slave->exit_initialisation_mode();
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -144,9 +145,9 @@ fmi2Status fmi2Terminate(fmi2Component c) {
     try {
         component->slave->terminate();
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -177,7 +178,7 @@ fmi2Status fmi2DoStep(
     }
 }
 
-fmi2Status fmi2CancelStep(fmi2Component c) {
+fmi2Status fmi2CancelStep(fmi2Component) {
     return fmi2Error;
 }
 
@@ -197,9 +198,9 @@ fmi2Status fmi2GetInteger(
     try {
         component->slave->get_integer(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -214,9 +215,9 @@ fmi2Status fmi2GetReal(
     try {
         component->slave->get_real(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -231,9 +232,9 @@ fmi2Status fmi2GetBoolean(
     try {
         component->slave->get_boolean(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -248,9 +249,9 @@ fmi2Status fmi2GetString(
     try {
         component->slave->get_string(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -265,9 +266,9 @@ fmi2Status fmi2SetInteger(
     try {
         component->slave->set_integer(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -282,9 +283,9 @@ fmi2Status fmi2SetReal(
     try {
         component->slave->set_real(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -299,9 +300,9 @@ fmi2Status fmi2SetBoolean(
     try {
         component->slave->set_boolean(vr, nvr, value);
         return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
+    } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
-    } catch (const std::exception &ex) {
+    } catch (const std::exception &) {
         return fmi2Error;
     }
 }
@@ -385,7 +386,7 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component,
     return fmi2Error;
 }
 
-fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c,
+fmi2Status fmi2GetRealOutputDerivatives(fmi2Component,
                                         const fmi2ValueReference[], size_t,
                                         const fmi2Integer[],
                                         fmi2Real[]) {
@@ -404,6 +405,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component,
 
 
 fmi2Status fmi2GetFMUstate(fmi2Component, fmi2FMUstate *) {
+
     return fmi2Error;
 }
 
@@ -436,5 +438,4 @@ void fmi2FreeInstance(fmi2Component c) {
     const auto component = static_cast<Component *>(c);
     delete component;
 }
-
 }
