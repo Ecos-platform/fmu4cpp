@@ -40,17 +40,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Read model name"
-        id: read_model_name
-        run: |
-          echo "MODEL_PATH=$(cat model.txt)" >> $GITHUB_ENV
-
-      - name: Configure and build
+      - name: "Configure and build"
         run: |
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -A x64 
           cmake --build build --config Release
 
-      - name: Download and run FMUchecker
+      - name: "Read model name"
+        id: read_model_name
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+
+      - name: "Download and run FMUChecker"
         run: |
           curl --output FMUChecker-2.0.4-win64.zip --url https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip -L
           7z x FMUChecker-2.0.4-win64.zip && cd FMUChecker-2.0.4-win64

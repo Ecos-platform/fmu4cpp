@@ -27,7 +27,7 @@ jobs:
       - name: "Read model name"
         id: read_model_name
         run: |
-          echo "MODEL_PATH=$(cat model.txt)" >> $GITHUB_ENV
+          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
 
       - name: "Archive library"
         uses: actions/upload-artifact@v3
@@ -51,7 +51,7 @@ jobs:
       - name: "Read model name"
         id: read_model_name
         run: |
-            echo "MODEL_PATH=$(cat model.txt)" >> $GITHUB_ENV
+            echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
 
       - name: "Download binaries"
         uses: actions/download-artifact@v3
