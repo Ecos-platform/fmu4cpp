@@ -60,7 +60,6 @@ jobs:
           curl --output FMUChecker-2.0.4-win64.zip --url https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip -L
           7z x FMUChecker-2.0.4-win64.zip && cd FMUChecker-2.0.4-win64
           ./fmuCheck.win64.exe ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_PATH }}.fmu
-        shell: bash
 
       - name: Test
         run: |

@@ -57,20 +57,20 @@ jobs:
         uses: actions/download-artifact@v3
         with:
          name: binaries
-         path: ${{ env.MODEL_PATH }}/binaries
+         path: binaries
 
       - name: "Download modelDescription.xml"
         uses: actions/download-artifact@v3
         with:
          name: modelDescription
-         path: ${{ env.MODEL_PATH }}
+         path: model
 
       - name: "Set permissions"
         run: |
-         sudo chmod -R +x ${{ env.MODEL_PATH }}/binaries
+         sudo chmod -R +x model/binaries
 
       - name: "Upload FMU"
         uses: actions/upload-artifact@v3
         with:
-         name: ${{ env.MODEL_PATH }}
-         path: ${{ env.MODEL_PATH }}
+         name: model
+         path: model
