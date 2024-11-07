@@ -18,7 +18,7 @@ namespace {
         Component(std::unique_ptr<fmu4cpp::fmu_base> slave, const fmi2CallbackFunctions &callbackFunctions)
             : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()},
               slave(std::move(slave)),
-              logger(this, callbackFunctions, this->slave->instanceName()) {
+              logger(callbackFunctions, this->slave->instanceName()) {
 
             this->slave->__set_logger(&logger);
         }
