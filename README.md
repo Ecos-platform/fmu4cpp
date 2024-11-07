@@ -12,7 +12,7 @@ the necessary content into a ready-to-use FMU archive.
 2. Edit the content of [model.cpp](src/model.cpp).
 3. Build.
 
-An FMU named `<modelIdentifier>.fmu` is now located in your build folder.
+An FMU named `<modelIdentifier>.fmu` is now located in a folder `\<modelIdentifier>` within your build folder.
 
 
 #### Cross-compilation
