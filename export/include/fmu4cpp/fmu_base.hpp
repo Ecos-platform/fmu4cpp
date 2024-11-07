@@ -178,7 +178,7 @@ namespace fmu4cpp {
 
     private:
         logger *logger_ = nullptr;
-        size_t numVariables_{};
+        size_t numVariables_{1};
 
         std::string instanceName_;
         std::string resourceLocation_;

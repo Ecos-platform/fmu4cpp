@@ -51,10 +51,7 @@ namespace fmu4cpp {
         std::vector<size_t> dependencies_;
 
     public:
-        VariableBase(
-                std::string name,
-                unsigned int vr,
-                size_t index)
+        VariableBase(std::string name, unsigned int vr, size_t index)
             : name_(std::move(name)), vr_(vr), index_(index) {}
 
         [[nodiscard]] const std::string &name() const {
@@ -87,6 +84,8 @@ namespace fmu4cpp {
             }
             return dependencies_;
         }
+
+        virtual ~VariableBase() = default;
     };
 
     template<class T, class V>
@@ -128,12 +127,10 @@ namespace fmu4cpp {
 
         V &setDependencies(const std::vector<size_t> &dependencies) {
             for (auto i: dependencies) {
-//                dependencies_.emplace_back(i);
+                dependencies_.emplace_back(i);
             }
             return *static_cast<V *>(this);
         }
-
-        virtual ~Variable() = default;
     };
 
     class IntVariable : public Variable<int, IntVariable> {
@@ -147,7 +144,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<int()> &getter,
                 const std::optional<std::function<void(int)>> &setter)
-            : Variable<int, IntVariable>(name, vr, index, getter, setter) {}
+            : Variable(name, vr, index, getter, setter) {}
 
         [[nodiscard]] std::optional<int> getMin() const {
             return min_;
@@ -179,7 +176,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter)
-            : Variable<double, RealVariable>(name, vr, index, getter, setter) {}
+            : Variable(name, vr, index, getter, setter) {}
 
         [[nodiscard]] std::optional<double> getMin() const {
             return min_;
@@ -208,7 +205,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<bool()> &getter,
                 const std::optional<std::function<void(bool)>> &setter)
-            : Variable<bool, BoolVariable>(name, vr, index, getter, setter) {}
+            : Variable(name, vr, index, getter, setter) {}
     };
 
     class StringVariable : public Variable<std::string, StringVariable> {
@@ -219,7 +216,7 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<std::string()> &getter,
                 const std::optional<std::function<void(std::string)>> &setter)
-            : Variable<std::string, StringVariable>(name, vr, index, getter, setter) {}
+            : Variable(name, vr, index, getter, setter) {}
     };
 
     bool requires_start(const VariableBase &v);

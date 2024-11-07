@@ -7,38 +7,39 @@
 #include "hash.hpp"
 #include "time.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <sstream>
 #include <utility>
 
 namespace {
 
-    std::vector<fmu4cpp::VariableBase> collect(
+    std::vector<const fmu4cpp::VariableBase*> collect(
             const std::vector<fmu4cpp::IntVariable> &v1,
             const std::vector<fmu4cpp::RealVariable> &v2,
             const std::vector<fmu4cpp::BoolVariable> &v3,
             const std::vector<fmu4cpp::StringVariable> &v4,
             const std::function<bool(const fmu4cpp::VariableBase &)> &predicate = [](auto &v) { return true; }) {
 
-        std::vector<fmu4cpp::VariableBase> vars;
+        std::vector<const fmu4cpp::VariableBase*> vars;
         for (const fmu4cpp::VariableBase &v: v1) {
             if (predicate(v)) {
-                vars.push_back(v);
+                vars.push_back(&v);
             }
         }
         for (const fmu4cpp::VariableBase &v: v2) {
             if (predicate(v)) {
-                vars.push_back(v);
+                vars.push_back(&v);
             }
         }
         for (const fmu4cpp::VariableBase &v: v3) {
             if (predicate(v)) {
-                vars.push_back(v);
+                vars.push_back(&v);
             }
         }
         for (const fmu4cpp::VariableBase &v: v4) {
             if (predicate(v)) {
-                vars.push_back(v);
+                vars.push_back(&v);
             }
         }
         return vars;
@@ -94,34 +95,19 @@ namespace fmu4cpp {
 
         ss << "\t<ModelVariables>\n";
 
-        for (const auto &v: integers_) {
-            const auto variability = v.variability();
-            const auto initial = v.initial();
-            ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
-               << " causality=\"" << to_string(v.causality()) << "\"";
-            if (variability) {
-                ss << " variability=\"" << to_string(*variability) << "\"";
-            }
-            if (initial) {
-                ss << " initial=\"" << to_string(*initial) << "\"";
-            }
-            ss << ">\n";
-            ss << "\t\t\t<Integer";
-            if (requires_start(v)) {
-                ss << " start=\"" << v.get() << "\"";
-            }
-            ss << "/>\n";
-            ss << "\t\t</ScalarVariable>"
-               << "\n";
-        }
+        auto allVars = collect(integers_, reals_, booleans_, strings_);
+        std::sort(allVars.begin(), allVars.end(), [](const VariableBase* v1, const VariableBase* v2) {
+            return v1->index() < v2->index();
+        });
 
-        for (const auto &v: reals_) {
-            const auto variability = v.variability();
-            const auto initial = v.initial();
-            ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
-               << " causality=\"" << to_string(v.causality()) << "\"";
+        for (const auto &v: allVars) {
+            const auto variability = v->variability();
+            const auto initial = v->initial();
+            ss << "\t\t<!--"
+               << "index=" << v->index() << "-->\n"
+               << "\t\t<ScalarVariable name=\""
+               << v->name() << "\" valueReference=\"" << v->value_reference() << "\""
+               << " causality=\"" << to_string(v->causality()) << "\"";
             if (variability) {
                 ss << " variability=\"" << to_string(*variability) << "\"";
             }
@@ -129,58 +115,31 @@ namespace fmu4cpp {
                 ss << " initial=\"" << to_string(*initial) << "\"";
             }
             ss << ">\n";
-            ss << "\t\t\t<Real";
-            if (requires_start(v)) {
-                ss << " start=\"" << v.get() << "\"";
-            }
-            const auto min = v.getMin();
-            const auto max = v.getMax();
-            if (min && max) {
-                ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
-            }
-            ss << "/>\n";
-            ss << "\t\t</ScalarVariable>"
-               << "\n";
-        }
-
-        for (const auto &v: booleans_) {
-            const auto variability = v.variability();
-            const auto initial = v.initial();
-            ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
-               << " causality=\"" << to_string(v.causality()) << "\"";
-            if (variability) {
-                ss << " variability=\"" << to_string(*variability) << "\"";
-            }
-            if (initial) {
-                ss << " initial=\"" << to_string(*initial) << "\"";
-            }
-            ss << ">\n";
-            ss << "\t\t\t<Boolean";
-            if (requires_start(v)) {
-                ss << " start=\"" << v.get() << "\"";
-            }
-            ss << "/>\n";
-            ss << "\t\t</ScalarVariable>"
-               << "\n";
-        }
-
-        for (const auto &v: strings_) {
-            const auto variability = v.variability();
-            const auto initial = v.initial();
-            ss << "\t\t<ScalarVariable name=\""
-               << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
-               << " causality=\"" << to_string(v.causality()) << "\"";
-            if (variability) {
-                ss << " variability=\"" << to_string(*variability) << "\"";
-            }
-            if (initial) {
-                ss << " initial=\"" << to_string(*initial) << "\"";
-            }
-            ss << ">\n";
-            ss << "\t\t\t<String";
-            if (requires_start(v)) {
-                ss << " start=\"" << v.get() << "\"";
+            if (auto i = dynamic_cast<const IntVariable*>(v)) {
+                ss << "\t\t\t<Integer";
+                if (requires_start(*v)) {
+                    ss << " start=\"" << i->get() << "\"";
+                }
+            } else if (auto r = dynamic_cast<const RealVariable*>(v)) {
+                ss << "\t\t\t<Real";
+                if (requires_start(*v)) {
+                    ss << " start=\"" << r->get() << "\"";
+                }
+                const auto min = r->getMin();
+                const auto max = r->getMax();
+                if (min && max) {
+                    ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
+                }
+            }  else if (auto s = dynamic_cast<const StringVariable*>(v)) {
+                ss << "\t\t\t<String";
+                if (requires_start(*v)) {
+                    ss << " start=\"" << s->get() << "\"";
+                }
+            }  else if (auto b = dynamic_cast<const BoolVariable*>(v)) {
+                ss << "\t\t\t<Boolean";
+                if (requires_start(*v)) {
+                    ss << " start=\"" << b->get() << "\"";
+                }
             }
             ss << "/>\n";
             ss << "\t\t</ScalarVariable>"
@@ -191,15 +150,15 @@ namespace fmu4cpp {
 
         ss << "\t<ModelStructure>\n";
 
-        std::vector<VariableBase> outputs = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
+        std::vector<const VariableBase*> outputs = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
             return v.causality() == causality_t::OUTPUT;
         });
 
         if (!outputs.empty()) {
             ss << "\t\t<Outputs>\n";
             for (const auto &v: outputs) {
-                ss << "\t\t\t<Unknown index=\"" << v.index() << "\"";
-                const auto deps = v.getDependencies();
+                ss << "\t\t\t<Unknown index=\"" << v->index() << "\"";
+                const auto deps = v->getDependencies();
                 if (!deps.empty()) {
                     ss << " dependencies=\"";
                     for (unsigned i = 0; i < deps.size(); i++) {
@@ -270,15 +229,15 @@ namespace fmu4cpp {
 
         const auto vars = collect(integers_, reals_, booleans_, strings_);
         for (const auto &v: vars) {
-            ss << v.name();
-            ss << std::to_string(v.index());
-            ss << std::to_string(v.value_reference());
-            ss << to_string(v.causality());
-            if (v.variability()) {
-                ss << to_string(*v.variability());
+            ss << v->name();
+            ss << std::to_string(v->index());
+            ss << std::to_string(v->value_reference());
+            ss << to_string(v->causality());
+            if (v->variability()) {
+                ss << to_string(*v->variability());
             }
-            if (v.initial()) {
-                ss << to_string(*v.initial());
+            if (v->initial()) {
+                ss << to_string(*v->initial());
             }
         }
 
