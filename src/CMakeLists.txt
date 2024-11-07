@@ -35,6 +35,3 @@ endfunction()
 
 # Generate FMU
 generateFMU("${modelIdentifier}")
-
-# Make a copy for testing purposes
-generateFMU("model")
