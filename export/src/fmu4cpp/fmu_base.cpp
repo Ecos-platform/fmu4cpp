@@ -16,25 +16,26 @@ namespace {
             const std::vector<fmu4cpp::RealVariable> &v2,
             const std::vector<fmu4cpp::BoolVariable> &v3,
             const std::vector<fmu4cpp::StringVariable> &v4,
-            const std::function<bool(const fmu4cpp::VariableBase &)> &f = [](auto &v) { return true; }) {
+            const std::function<bool(const fmu4cpp::VariableBase &)> &predicate = [](auto &v) { return true; }) {
+
         std::vector<fmu4cpp::VariableBase> vars;
         for (const fmu4cpp::VariableBase &v: v1) {
-            if (f(v)) {
+            if (predicate(v)) {
                 vars.push_back(v);
             }
         }
         for (const fmu4cpp::VariableBase &v: v2) {
-            if (f(v)) {
+            if (predicate(v)) {
                 vars.push_back(v);
             }
         }
         for (const fmu4cpp::VariableBase &v: v3) {
-            if (f(v)) {
+            if (predicate(v)) {
                 vars.push_back(v);
             }
         }
         for (const fmu4cpp::VariableBase &v: v4) {
-            if (f(v)) {
+            if (predicate(v)) {
                 vars.push_back(v);
             }
         }
@@ -62,9 +63,8 @@ namespace fmu4cpp {
 
     std::string fmu_base::make_description() const {
 
+        const model_info m = get_model_info();
         std::stringstream ss;
-        model_info m = get_model_info();
-
         ss << R"(<?xml version="1.0" encoding="UTF-8"?>)"
            << "\n"
            << R"(<fmiModelDescription fmiVersion="2.0")"
@@ -93,8 +93,8 @@ namespace fmu4cpp {
         ss << "\t<ModelVariables>\n";
 
         for (const auto &v: integers_) {
-            auto variability = v.variability();
-            auto initial = v.initial();
+            const auto variability = v.variability();
+            const auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
                << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
                << " causality=\"" << to_string(v.causality()) << "\"";
@@ -115,8 +115,8 @@ namespace fmu4cpp {
         }
 
         for (const auto &v: reals_) {
-            auto variability = v.variability();
-            auto initial = v.initial();
+            const auto variability = v.variability();
+            const auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
                << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
                << " causality=\"" << to_string(v.causality()) << "\"";
@@ -131,8 +131,8 @@ namespace fmu4cpp {
             if (requires_start(v)) {
                 ss << " start=\"" << v.get() << "\"";
             }
-            auto min = v.getMin();
-            auto max = v.getMax();
+            const auto min = v.getMin();
+            const auto max = v.getMax();
             if (min && max) {
                 ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
             }
@@ -142,8 +142,8 @@ namespace fmu4cpp {
         }
 
         for (const auto &v: booleans_) {
-            auto variability = v.variability();
-            auto initial = v.initial();
+            const auto variability = v.variability();
+            const auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
                << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
                << " causality=\"" << to_string(v.causality()) << "\"";
@@ -164,8 +164,8 @@ namespace fmu4cpp {
         }
 
         for (const auto &v: strings_) {
-            auto variability = v.variability();
-            auto initial = v.initial();
+            const auto variability = v.variability();
+            const auto initial = v.initial();
             ss << "\t\t<ScalarVariable name=\""
                << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
                << " causality=\"" << to_string(v.causality()) << "\"";
@@ -197,7 +197,7 @@ namespace fmu4cpp {
             ss << "\t\t<Outputs>\n";
             for (const auto &v: outputs) {
                 ss << "\t\t\t<Unknown index=\"" << v.index() << "\"";
-                auto deps = v.getDependencies();
+                const auto deps = v.getDependencies();
                 if (!deps.empty()) {
                     ss << " dependencies=\"";
                     for (unsigned i = 0; i < deps.size(); i++) {
@@ -253,8 +253,8 @@ namespace fmu4cpp {
     }
 
     [[maybe_unused]] std::string fmu_base::guid() const {
-        model_info info = get_model_info();
-        std::vector<std::string> content{
+        const model_info info = get_model_info();
+        const std::vector content{
                 info.author,
                 info.version,
                 info.modelIdentifier,
@@ -266,7 +266,7 @@ namespace fmu4cpp {
             ss << str;
         }
 
-        auto vars = collect(integers_, reals_, booleans_, strings_);
+        const auto vars = collect(integers_, reals_, booleans_, strings_);
         for (const auto &v: vars) {
             ss << v.name();
             ss << std::to_string(v.index());
