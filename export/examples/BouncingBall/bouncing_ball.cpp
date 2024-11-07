@@ -1,9 +1,8 @@
 
 #include <fmu4cpp/fmu_base.hpp>
-#include <utility>
-
 
 using namespace fmu4cpp;
+
 
 class BouncingBall : public fmu_base {
 
