@@ -53,27 +53,17 @@ jobs:
 
     steps:
 
-      - name: "Read model name (Linux)"
-        run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
-        if: runner.os != 'Windows'
-
-      - name: "Read model name (Windows)"
-        run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
-        if: runner.os == 'Windows'
-
       - name: "Download binaries"
         uses: actions/download-artifact@v3
         with:
          name: binaries
-         path: ${{ env.MODEL_PATH }}/binaries
+         path: model/binaries
 
       - name: "Download modelDescription.xml"
         uses: actions/download-artifact@v3
         with:
          name: modelDescription
-         path: ${{ env.MODEL_PATH }}
+         path: model
 
       - name: "Set permissions"
         run: |
@@ -82,5 +72,5 @@ jobs:
       - name: "Upload FMU"
         uses: actions/upload-artifact@v3
         with:
-         name: ${{ env.MODEL_PATH }}
-         path: ${{ env.MODEL_PATH }}
+         name: model
+         path: model
