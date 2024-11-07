@@ -9,7 +9,7 @@
 //https://stackoverflow.com/questions/66764096/calculating-stdhash-using-different-compilers
 inline uint64_t fnv1a(std::string const &text) {
 
-    if (sizeof(void *) == 4) {
+    if constexpr (sizeof(void *) == 4) {
         // 32-bit environment
         uint32_t constexpr fnv_prime = 16777619U;
         uint32_t constexpr fnv_offset_basis = 2166136261U;

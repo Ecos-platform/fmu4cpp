@@ -59,10 +59,10 @@ typedef void modelDescriptionTYPE(const char *);
 
 int main(int argc, char **argv) {
 
-    if (argc != 2) return -1;
+    if (argc != 2) return 1;
 
     std::string libName = argv[1];
-    auto handle = load_library(libName);
+    const auto handle = load_library(libName);
 
     if (!handle) {
         const auto err = "Unable to load dynamic library '" + libName + "'! " + getLastError();
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    auto f = load_function<modelDescriptionTYPE*>(handle, "write_description");
+    const auto f = load_function<modelDescriptionTYPE*>(handle, "write_description");
     f("modelDescription.xml");
 
     free_library(handle);

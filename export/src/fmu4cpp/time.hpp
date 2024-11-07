@@ -6,24 +6,27 @@
 #include <string>
 
 namespace fmu4cpp {
-    std::string now() {
+    inline std::string now() {
         time_t now = time(nullptr);
-        char buf[42];
+        constexpr size_t buf_size = 42;
+        char buf[buf_size];
         tm now_tm{};
 
 #ifdef _MSC_VER
-        auto err = gmtime_s(&now_tm, &now);
-        if (!err) {
+        if (const auto err = gmtime_s(&now_tm, &now); !err) {
             std::strftime(buf, sizeof(buf), "%FT%TZ", &now_tm);
             return buf;
-        } else {
-            return "1970-01-01T00:00:00Z";
         }
+
+
 #else
-        gmtime_r(&now, &now_tm);
-        std::strftime(buf, sizeof(buf), "%FT%TZ", &now_tm);
-        return buf;
+        if (gmtime_r(&now, &now_tm)) {
+            std::strftime(buf, sizeof(buf), "%FT%TZ", &now_tm);
+            return buf;
+        }
 #endif
+
+        return "1970-01-01T00:00:00Z";// fallback
     }
 
 }// namespace fmu4cpp
