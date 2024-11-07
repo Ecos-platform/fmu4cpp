@@ -5,13 +5,11 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "fmu_base.hpp"
-#include "fmu_except.hpp"
 #include "fmu_variable.hpp"
 #include "logger.hpp"
 #include "model_info.hpp"

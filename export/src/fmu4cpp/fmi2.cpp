@@ -8,6 +8,7 @@
 #include <string>
 
 #include "fmu4cpp/fmu_base.hpp"
+#include "fmu4cpp/fmu_except.hpp"
 #include "fmu4cpp/logger.hpp"
 
 namespace {

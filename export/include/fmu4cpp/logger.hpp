@@ -2,8 +2,6 @@
 #ifndef FMU4CPP_TEMPLATE_LOGGER_HPP
 #define FMU4CPP_TEMPLATE_LOGGER_HPP
 
-#include <memory>
-
 #include "fmi2/fmi2FunctionTypes.h"
 
 namespace fmu4cpp {

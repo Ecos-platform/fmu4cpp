@@ -1,10 +1,12 @@
 
 #include "fmu4cpp/fmu_base.hpp"
+#include "fmu4cpp/fmu_except.hpp"
 #include "fmu4cpp/lib_info.hpp"
 #include "fmu4cpp/model_info.hpp"
 
 #include "hash.hpp"
 #include "time.hpp"
+
 #include <functional>
 #include <sstream>
 #include <utility>
