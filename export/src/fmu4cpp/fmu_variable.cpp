@@ -11,7 +11,7 @@ namespace fmu4cpp {
             case causality_t::INPUT:
                 return "input";
             case causality_t::CALCULATED_PARAMETER:
-                return "calculated_parameter";
+                return "calculatedParameter";
             case causality_t::LOCAL:
                 return "local";
             case causality_t::OUTPUT:

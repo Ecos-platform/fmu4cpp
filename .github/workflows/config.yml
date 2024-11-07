@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Configure and build
         run: |
@@ -38,7 +38,12 @@ jobs:
         os: [windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: "Read model name"
+        id: read_model_name
+        run: |
+          echo "MODEL_PATH=$(cat model.txt)" >> $GITHUB_ENV
 
       - name: Configure and build
         run: |
@@ -49,7 +54,7 @@ jobs:
         run: |
           curl --output FMUChecker-2.0.4-win64.zip --url https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip -L
           7z x FMUChecker-2.0.4-win64.zip && cd FMUChecker-2.0.4-win64
-          ./fmuCheck.win64.exe ../build/model.fmu
+          ./fmuCheck.win64.exe ../build/${{ env.MODEL_PATH }}/model.fmu
         shell: bash
 
       - name: Test
