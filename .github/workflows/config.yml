@@ -57,9 +57,10 @@ jobs:
 
       - name: "Download and run FMUChecker"
         run: |
-          curl --output FMUChecker-2.0.4-win64.zip --url https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip -L
-          7z x FMUChecker-2.0.4-win64.zip && cd FMUChecker-2.0.4-win64
-          ./fmuCheck.win64.exe ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_PATH }}.fmu
+          Invoke-WebRequest -Uri "https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip" -OutFile "FMUChecker-2.0.4-win64.zip"
+          Expand-Archive -Path "FMUChecker-2.0.4-win64.zip" -DestinationPath "." -Force
+          cd "FMUChecker-2.0.4-win64"
+          ./fmuCheck.win64.exe "../build/${env:MODEL_PATH}/${env:MODEL_PATH}.fmu"
 
       - name: Test
         run: |

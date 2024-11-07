@@ -44,7 +44,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
 
@@ -57,7 +57,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
          name: binaries
-         path: binaries
+         path: model/binaries
 
       - name: "Download modelDescription.xml"
         uses: actions/download-artifact@v3
