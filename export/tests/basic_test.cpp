@@ -1,6 +1,6 @@
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <fmu4cpp/fmu_base.hpp>
 
@@ -8,7 +8,7 @@ class Model : public fmu4cpp::fmu_base {
 
 public:
     Model(const std::string &instanceName, const std::string &resources)
-        : fmu4cpp::fmu_base(instanceName, resources) {
+        : fmu_base(instanceName, resources) {
 
         register_variable(real("myReal", [this] { return real_; })
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
@@ -45,7 +45,7 @@ private:
 };
 
 fmu4cpp::model_info fmu4cpp::get_model_info() {
-    fmu4cpp::model_info m;
+    model_info m;
     m.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     return m;
 }
@@ -56,7 +56,7 @@ std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &in
 
 TEST_CASE("basic") {
 
-    auto instance = fmu4cpp::createInstance("", "");
+    const auto instance = fmu4cpp::createInstance("", "");
 
     double t = 0;
     double dt = 0.1;
@@ -78,7 +78,7 @@ TEST_CASE("basic") {
     while (t < 10) {
         instance->do_step(t, dt);
 
-        REQUIRE(real->get() == Approx(t));
+        REQUIRE(real->get() == Catch::Approx(t));
         REQUIRE(boolean->get() == (i % 2 == 0));
         REQUIRE(integer->get() == ++i);
         REQUIRE(str->get() == std::to_string(i));

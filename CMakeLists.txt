@@ -38,7 +38,7 @@ if (FMU4CPP_BUILD_TESTS)
     FetchContent_Declare(
             Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG v2.13.8
+            GIT_TAG v3.7.1
     )
     FetchContent_MakeAvailable(Catch2)
 

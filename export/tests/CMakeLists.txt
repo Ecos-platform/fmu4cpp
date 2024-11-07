@@ -6,7 +6,7 @@ include_directories(
 
 function(make_test modelIdentifier sources)
     add_executable(${modelIdentifier} ${sources} "$<TARGET_OBJECTS:fmu4cpp>")
-    target_link_libraries(${modelIdentifier} PUBLIC Catch2::Catch2)
+    target_link_libraries(${modelIdentifier} PUBLIC Catch2::Catch2WithMain)
     target_compile_definitions(${modelIdentifier} PRIVATE FMU4CPP_MODEL_IDENTIFIER="${modelIdentifier}")
     add_test(NAME ${modelIdentifier} COMMAND ${modelIdentifier})
 endfunction()
