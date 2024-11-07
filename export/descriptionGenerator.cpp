@@ -59,9 +59,10 @@ typedef void modelDescriptionTYPE(const char *);
 
 int main(int argc, char **argv) {
 
-    if (argc != 2) return 1;
+    if (argc != 3) return 1;
 
-    std::string libName = argv[1];
+    const std::string saveLocation = std::string(argv[1]) + "/modelDescription.xml";
+    const std::string libName = argv[2];
     const auto handle = load_library(libName);
 
     if (!handle) {
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
     }
 
     const auto f = load_function<modelDescriptionTYPE*>(handle, "write_description");
-    f("modelDescription.xml");
+    f(saveLocation.c_str());
 
     free_library(handle);
 

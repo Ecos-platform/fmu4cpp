@@ -11,18 +11,22 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Configure and build
         run: |
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON
           cmake --build build
 
+      - name: "Read model name"
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+
       - name: Download and run FMUchecker
         run: |
           wget https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip
           7z x FMUChecker-2.0.4-linux64.zip && cd FMUChecker-2.0.4-linux64
-          ./fmuCheck.linux64 ../build/model.fmu
+          ./fmuCheck.linux64 ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_PATH }}.fmu
 
       - name: Test
         run: |
@@ -38,19 +42,23 @@ jobs:
         os: [windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Configure and build
+      - name: "Configure and build"
         run: |
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -A x64 
           cmake --build build --config Release
 
-      - name: Download and run FMUchecker
+      - name: "Read model name"
         run: |
-          curl --output FMUChecker-2.0.4-win64.zip --url https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip -L
-          7z x FMUChecker-2.0.4-win64.zip && cd FMUChecker-2.0.4-win64
-          ./fmuCheck.win64.exe ../build/model.fmu
-        shell: bash
+          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: "Download and run FMUChecker"
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip" -OutFile "FMUChecker-2.0.4-win64.zip"
+          Expand-Archive -Path "FMUChecker-2.0.4-win64.zip" -DestinationPath "." -Force
+          cd "FMUChecker-2.0.4-win64"
+          ./fmuCheck.win64.exe "../build/${env:MODEL_PATH}/${env:MODEL_PATH}.fmu"
 
       - name: Test
         run: |

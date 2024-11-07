@@ -10,7 +10,7 @@ jobs:
         os: [ ubuntu-20.04, windows-2019 ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: "Configure and build (Linux)"
         if: startsWith(runner.os, 'Linux')
@@ -24,42 +24,53 @@ jobs:
           cmake . -B build -A x64
           cmake --build build --config Release
 
+      - name: "Read model name (Linux)"
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+        if: runner.os != 'Windows'
+
+      - name: "Read model name (Windows)"
+        run: |
+          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
+        if: runner.os == 'Windows'
+
       - name: "Archive library"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: binaries
-          path: build/binaries
+          path: build/${{ env.MODEL_PATH }}/binaries
 
       - name: "Archive modelDescription.xml"
         if: startsWith(runner.os, 'Linux')
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: modelDescription
-          path: build/modelDescription.xml
+          path: build/${{ env.MODEL_PATH }}/modelDescription.xml
 
   deploy:
     needs: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-     - name: "Download binaries"
-       uses: actions/download-artifact@v2
-       with:
+
+      - name: "Download binaries"
+        uses: actions/download-artifact@v3
+        with:
          name: binaries
          path: model/binaries
 
-     - name: "Download modelDescription.xml"
-       uses: actions/download-artifact@v2
-       with:
+      - name: "Download modelDescription.xml"
+        uses: actions/download-artifact@v3
+        with:
          name: modelDescription
          path: model
 
-     - name: "Set permissions"
-       run: |
+      - name: "Set permissions"
+        run: |
          sudo chmod -R +x model/binaries
 
-     - name: "Upload FMU"
-       uses: actions/upload-artifact@v2
-       with:
+      - name: "Upload FMU"
+        uses: actions/upload-artifact@v3
+        with:
          name: model
          path: model

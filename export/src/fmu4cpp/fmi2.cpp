@@ -40,8 +40,8 @@ const char *fmi2GetVersion(void) {
 }
 
 void write_description(const char *location) {
-    auto instance = fmu4cpp::createInstance("", "");
-    auto xml = instance->make_description();
+    const auto instance = fmu4cpp::createInstance("", "");
+    const auto xml = instance->make_description();
     std::ofstream of(location);
     of << xml;
     of.close();
