@@ -25,13 +25,16 @@ public:
 
         register_variable(
                 real(
-                        "gravity", [this] { return gravity; })
+                        "gravity", [this] { return gravity; },
+                        [this](const auto &input) { gravity = input; })
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::TUNABLE));
 
         register_variable(
                 real(
-                        "bounceFactor", [this] { return bounceFactor; })
+                        "bounceFactor",
+                        [this] { return bounceFactor; },
+                        [this](const auto &input) { bounceFactor = input; })
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::TUNABLE));
 
