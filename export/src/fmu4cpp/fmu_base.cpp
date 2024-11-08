@@ -14,14 +14,14 @@
 
 namespace {
 
-    std::vector<const fmu4cpp::VariableBase*> collect(
+    std::vector<const fmu4cpp::VariableBase *> collect(
             const std::vector<fmu4cpp::IntVariable> &v1,
             const std::vector<fmu4cpp::RealVariable> &v2,
             const std::vector<fmu4cpp::BoolVariable> &v3,
             const std::vector<fmu4cpp::StringVariable> &v4,
             const std::function<bool(const fmu4cpp::VariableBase &)> &predicate = [](auto &v) { return true; }) {
 
-        std::vector<const fmu4cpp::VariableBase*> vars;
+        std::vector<const fmu4cpp::VariableBase *> vars;
         for (const fmu4cpp::VariableBase &v: v1) {
             if (predicate(v)) {
                 vars.push_back(&v);
@@ -96,7 +96,7 @@ namespace fmu4cpp {
         ss << "\t<ModelVariables>\n";
 
         auto allVars = collect(integers_, reals_, booleans_, strings_);
-        std::sort(allVars.begin(), allVars.end(), [](const VariableBase* v1, const VariableBase* v2) {
+        std::sort(allVars.begin(), allVars.end(), [](const VariableBase *v1, const VariableBase *v2) {
             return v1->index() < v2->index();
         });
 
@@ -115,12 +115,12 @@ namespace fmu4cpp {
                 ss << " initial=\"" << to_string(*initial) << "\"";
             }
             ss << ">\n";
-            if (auto i = dynamic_cast<const IntVariable*>(v)) {
+            if (auto i = dynamic_cast<const IntVariable *>(v)) {
                 ss << "\t\t\t<Integer";
                 if (requires_start(*v)) {
                     ss << " start=\"" << i->get() << "\"";
                 }
-            } else if (auto r = dynamic_cast<const RealVariable*>(v)) {
+            } else if (auto r = dynamic_cast<const RealVariable *>(v)) {
                 ss << "\t\t\t<Real";
                 if (requires_start(*v)) {
                     ss << " start=\"" << r->get() << "\"";
@@ -130,12 +130,12 @@ namespace fmu4cpp {
                 if (min && max) {
                     ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
                 }
-            }  else if (auto s = dynamic_cast<const StringVariable*>(v)) {
+            } else if (auto s = dynamic_cast<const StringVariable *>(v)) {
                 ss << "\t\t\t<String";
                 if (requires_start(*v)) {
                     ss << " start=\"" << s->get() << "\"";
                 }
-            }  else if (auto b = dynamic_cast<const BoolVariable*>(v)) {
+            } else if (auto b = dynamic_cast<const BoolVariable *>(v)) {
                 ss << "\t\t\t<Boolean";
                 if (requires_start(*v)) {
                     ss << " start=\"" << b->get() << "\"";
@@ -150,13 +150,13 @@ namespace fmu4cpp {
 
         ss << "\t<ModelStructure>\n";
 
-        std::vector<const VariableBase*> outputs = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
+        std::vector<const VariableBase *> unknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
             return v.causality() == causality_t::OUTPUT;
         });
 
-        if (!outputs.empty()) {
+        if (!unknowns.empty()) {
             ss << "\t\t<Outputs>\n";
-            for (const auto &v: outputs) {
+            for (const auto &v: unknowns) {
                 ss << "\t\t\t<Unknown index=\"" << v->index() << "\"";
                 const auto deps = v->getDependencies();
                 if (!deps.empty()) {
@@ -173,6 +173,20 @@ namespace fmu4cpp {
             }
             ss << "\t\t</Outputs>\n";
         }
+
+
+        std::vector<const VariableBase *> initialUnknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
+            return (v.causality() == causality_t::OUTPUT && v.initial() == initial_t::APPROX || v.initial() == initial_t::CALCULATED) || v.causality() == causality_t::CALCULATED_PARAMETER;
+        });
+        if (!initialUnknowns.empty()) {
+            ss << "\t\t<InitialUnknowns>\n";
+            for (const auto &v: initialUnknowns) {
+                ss << "\t\t\t<Unknown index=\"" << v->index() << "\"";
+                ss << "/>\n";
+            }
+            ss << "\t\t</InitialUnknowns>\n";
+        }
+
 
         ss << "\t</ModelStructure>\n";
 

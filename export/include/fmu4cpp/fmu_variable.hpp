@@ -176,7 +176,10 @@ namespace fmu4cpp {
                 unsigned int vr, size_t index,
                 const std::function<double()> &getter,
                 const std::optional<std::function<void(double)>> &setter)
-            : Variable(name, vr, index, getter, setter) {}
+            : Variable(name, vr, index, getter, setter) {
+
+            variability_ = variability_t::CONTINUOUS;
+        }
 
         [[nodiscard]] std::optional<double> getMin() const {
             return min_;

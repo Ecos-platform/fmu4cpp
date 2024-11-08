@@ -18,46 +18,54 @@ public:
                 integer(
                         "integerIn", [this] { return integer_; }, [this](int value) { integer_ = value; })
                         .setCausality(causality_t::INPUT)
-                        .setVariability(variability_t::DISCRETE));
+                        .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::EXACT));
         register_variable(
                 real(
                         "realIn", [this] { return real_; }, [this](double value) { real_ = value; })
                         .setCausality(causality_t::INPUT)
-                        .setVariability(variability_t::DISCRETE));
+                        .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::EXACT));
         register_variable(
                 boolean(
                         "booleanIn", [this] { return boolean_; }, [this](bool value) { boolean_ = value; })
                         .setCausality(causality_t::INPUT)
-                        .setVariability(variability_t::DISCRETE));
+                        .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::EXACT));
         register_variable(
                 string(
                         "stringIn", [this] { return string_; }, [this](std::string value) { string_ = std::move(value); })
                         .setCausality(causality_t::INPUT)
-                        .setVariability(variability_t::DISCRETE));
+                        .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::EXACT));
 
         register_variable(
                 integer(
                         "integerOut", [this] { return integer_; })
                         .setCausality(causality_t::OUTPUT)
                         .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::CALCULATED)
                         .setDependencies({get_int_variable("integerIn")->index()}));
         register_variable(
                 real(
                         "realOut", [this] { return real_; })
                         .setCausality(causality_t::OUTPUT)
                         .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::CALCULATED)
                         .setDependencies({get_real_variable("realIn")->index()}));
         register_variable(
                 boolean(
                         "booleanOut", [this] { return boolean_; })
                         .setCausality(causality_t::OUTPUT)
                         .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::CALCULATED)
                         .setDependencies({get_bool_variable("booleanIn")->index()}));
         register_variable(
                 string(
                         "stringOut", [this] { return string_; })
                         .setCausality(causality_t::OUTPUT)
                         .setVariability(variability_t::DISCRETE)
+                        .setInitial(initial_t::CALCULATED)
                         .setDependencies({get_string_variable("stringIn")->index()}));
 
         Model::reset();
