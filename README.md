@@ -37,15 +37,15 @@ public:
         register_variable(
                 real(
                         "velocity", [this] { return velocity; })
-                        .setCausality(causality_t::CALCULATED_PARAMETER)
-                        .setVariability(variability_t::TUNABLE));
+                        .setCausality(causality_t::LOCAL)
+                        .setVariability(variability_t::CONTINUOUS));
 
         register_variable(
                 real(
                         "gravity", [this] { return gravity; },
                         [this](const auto &input) { gravity = input; })
                         .setCausality(causality_t::PARAMETER)
-                        .setVariability(variability_t::TUNABLE));
+                        .setVariability(variability_t::FIXED));
 
         register_variable(
                 real(
@@ -53,7 +53,7 @@ public:
                         [this] { return bounceFactor; },
                         [this](const auto &input) { bounceFactor = input; })
                         .setCausality(causality_t::PARAMETER)
-                        .setVariability(variability_t::TUNABLE));
+                        .setVariability(variability_t::FIXED));
 
 
         BouncingBall::reset();
