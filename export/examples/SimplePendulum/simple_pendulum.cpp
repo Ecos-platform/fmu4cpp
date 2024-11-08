@@ -1,6 +1,7 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
+#include <cmath>
 #include <numbers>
 
 using namespace fmu4cpp;
@@ -43,7 +44,7 @@ public:
     }
 
     bool do_step(double currentTime, double dt) override {
-        angularVelocity_ += (-gravity_ / length_) * sin(angle_) * dt - damping_ * angularVelocity_ * dt;
+        angularVelocity_ += (-gravity_ / length_) * std::sin(angle_) * dt - damping_ * angularVelocity_ * dt;
         angle_ += angularVelocity_ * dt;
         return true;
     }
