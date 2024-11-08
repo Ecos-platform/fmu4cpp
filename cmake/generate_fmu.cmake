@@ -1,6 +1,11 @@
 
 function(generateFMU modelIdentifier)
 
+    target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp>")
+    target_include_directories("${modelIdentifier}" PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
+    target_compile_definitions("${modelIdentifier}" PRIVATE FMU4CPP_MODEL_IDENTIFIER="${modelIdentifier}")
+
+
     set(outputDir "$<1:${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries/${TARGET_PLATFORM}>")
 
     if (WIN32)

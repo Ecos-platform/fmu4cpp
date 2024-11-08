@@ -1,7 +1,7 @@
 add_subdirectory(src)
 add_subdirectory(examples)
 
-add_executable(descriptionGenerator descriptionGenerator.cpp)
+add_executable(descriptionGenerator "descriptionGenerator.cpp")
 if (UNIX)
     target_link_libraries(descriptionGenerator PRIVATE dl)
 endif()
