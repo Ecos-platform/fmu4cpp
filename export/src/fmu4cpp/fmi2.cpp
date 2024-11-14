@@ -84,7 +84,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
     if (guid != fmuGUID) {
         std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
         fmu4cpp::logger l(*functions, instanceName);
-        l.log(fmi2Fatal, "", "Error. Wrong guid!");
+        l.log(fmi2Fatal, "Error. Wrong guid!");
         return nullptr;
     }
 
