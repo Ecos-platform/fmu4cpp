@@ -31,7 +31,7 @@ namespace fmu4cpp {
             return instanceName_;
         }
 
-        [[nodiscard]] const std::filesystem::path& resourceLocation() const {
+        [[nodiscard]] const std::filesystem::path &resourceLocation() const {
             return resourceLocation_;
         }
 
@@ -152,6 +152,23 @@ namespace fmu4cpp {
                 logger_->debug(s, message);
             }
         }
+
+
+        virtual void *getFMUState() {
+
+            return nullptr;
+        }
+
+        virtual bool setFmuState(void *state) {
+
+            return false;
+        }
+
+        virtual bool freeFmuState(void **state) {
+
+            return false;
+        }
+
 
         virtual ~fmu_base() = default;
 

@@ -161,17 +161,12 @@ fmi2Status fmi2DoStep(
 
     const auto component = static_cast<Component *>(c);
     try {
-        const double endTime = currentCommunicationPoint;
-        const auto ok = component->slave->do_step(
-                currentCommunicationPoint,
-                communicationStepSize);
-        if (ok) {
+        if (component->slave->do_step(currentCommunicationPoint, communicationStepSize)) {
             component->lastSuccessfulTime = currentCommunicationPoint + communicationStepSize;
             return fmi2OK;
-        } else {
-            component->lastSuccessfulTime = endTime;
-            return fmi2Discard;
         }
+
+        return fmi2Discard;
     } catch (const fmu4cpp::fatal_error &) {
         return fmi2Fatal;
     } catch (const std::exception &) {
@@ -405,12 +400,34 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component,
 }
 
 
-fmi2Status fmi2GetFMUstate(fmi2Component, fmi2FMUstate *) {
+fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
+    const auto component = static_cast<Component *>(c);
+
+    if (auto s = component->slave->getFMUState()) {
+        state = &s;
+        return fmi2OK;
+    }
 
     return fmi2Error;
 }
 
-fmi2Status fmi2SetFMUstate(fmi2Component, fmi2FMUstate) {
+fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate state) {
+    const auto component = static_cast<Component *>(c);
+
+    if (component->slave->setFmuState(state)) {
+        return fmi2OK;
+    }
+
+    return fmi2Error;
+}
+
+
+fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate *state) {
+    const auto component = static_cast<Component *>(c);
+
+    if (component->slave->freeFmuState(state)) {
+        return fmi2OK;
+    }
 
     return fmi2Error;
 }
@@ -426,11 +443,6 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component, fmi2FMUstate, fmi2Byte[], size_t
 }
 
 fmi2Status fmi2DeSerializeFMUstate(fmi2Component, const fmi2Byte[], size_t, fmi2FMUstate *) {
-
-    return fmi2Error;
-}
-
-fmi2Status fmi2FreeFMUstate(fmi2Component, fmi2FMUstate *) {
 
     return fmi2Error;
 }
