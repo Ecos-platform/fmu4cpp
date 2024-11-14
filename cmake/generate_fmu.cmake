@@ -1,5 +1,5 @@
 
-function(generateFMU modelIdentifier)
+function(generateFMU modelIdentifier resourceFolder)
 
     target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp>")
     target_include_directories("${modelIdentifier}" PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
@@ -26,10 +26,25 @@ function(generateFMU modelIdentifier)
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
             COMMAND descriptionGenerator ${modelIdentifier} "${outputDir}/$<TARGET_FILE_NAME:${modelIdentifier}>")
 
+    if (resourceFolder STREQUAL "")
+        add_custom_command(TARGET ${modelIdentifier} POST_BUILD
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
+                COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
+                "${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries"
+                "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
 
-    add_custom_command(TARGET ${modelIdentifier} POST_BUILD
-            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
-            COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
-            "${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries"
-            "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
+    else ()
+        message("[generateFMU] Using resourceFolder=${resourceFolder} for ${modelIdentifier}")
+
+        file(COPY "${resourceFolder}/" DESTINATION "${CMAKE_BINARY_DIR}/${modelIdentifier}/resources")
+
+        add_custom_command(TARGET ${modelIdentifier} POST_BUILD
+                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
+                COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
+                "resources"
+                "${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries"
+                "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
+    endif ()
+
+
 endfunction()

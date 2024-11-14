@@ -7,7 +7,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::string &resources)
+    Model(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
         register_variable(real("myReal", [this] { return real_; })
@@ -50,7 +50,7 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return m;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
+std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation) {
     return std::make_unique<Model>(instanceName, fmuResourceLocation);
 }
 

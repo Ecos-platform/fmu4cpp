@@ -14,12 +14,14 @@
 #include "logger.hpp"
 #include "model_info.hpp"
 
+#include <filesystem>
+
 namespace fmu4cpp {
 
     class fmu_base {
 
     public:
-        fmu_base(std::string instance_name, std::string resourceLocation)
+        fmu_base(std::string instance_name, std::filesystem::path resourceLocation)
             : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
 
         fmu_base(const fmu_base &) = delete;
@@ -29,7 +31,7 @@ namespace fmu4cpp {
             return instanceName_;
         }
 
-        [[nodiscard]] std::string resourceLocation() const {
+        [[nodiscard]] const std::filesystem::path& resourceLocation() const {
             return resourceLocation_;
         }
 
@@ -181,7 +183,7 @@ namespace fmu4cpp {
         size_t numVariables_{1};
 
         std::string instanceName_;
-        std::string resourceLocation_;
+        std::filesystem::path resourceLocation_;
 
         std::vector<IntVariable> integers_;
         std::vector<RealVariable> reals_;
@@ -193,7 +195,7 @@ namespace fmu4cpp {
 
     model_info get_model_info();
 
-    std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::string &fmuResourceLocation);
+    std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation);
 
 }// namespace fmu4cpp
 

@@ -11,7 +11,7 @@ using namespace fmu4cpp;
 class Model : public fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::string &resources)
+    Model(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
         register_variable(integer(
@@ -96,6 +96,6 @@ model_info fmu4cpp::get_model_info() {
 }
 
 std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName,
-                                                  const std::string &fmuResourceLocation) {
+                                                  const std::filesystem::path &fmuResourceLocation) {
     return std::make_unique<Model>(instanceName, fmuResourceLocation);
 }
