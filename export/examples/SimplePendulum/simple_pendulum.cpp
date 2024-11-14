@@ -9,7 +9,7 @@ using namespace fmu4cpp;
 
 class SimplePendulum : public fmu_base {
 public:
-    SimplePendulum(const std::string &instanceName, const std::string &resources)
+    SimplePendulum(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
         register_variable(real("angle",
@@ -74,6 +74,6 @@ model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
+std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation) {
     return std::make_unique<SimplePendulum>(instanceName, fmuResourceLocation);
 }

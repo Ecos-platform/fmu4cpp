@@ -7,7 +7,7 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const std::string &instanceName, const std::string &resources)
+    BouncingBall(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
         register_variable(
@@ -79,6 +79,6 @@ model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
+std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation) {
     return std::make_unique<BouncingBall>(instanceName, fmuResourceLocation);
 }
