@@ -42,12 +42,11 @@ endforeach()
 
 add_library(fmu4cpp OBJECT
         "${lib_info}"
-        "${model_info}"
         "${publicHeadersFull}"
         "${privateHeadersFull}"
         "${sources}"
         )
-target_compile_features(fmu4cpp PUBLIC "cxx_std_17")
+target_compile_features(fmu4cpp PUBLIC "cxx_std_20")
 set_target_properties(fmu4cpp PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(fmu4cpp
         PUBLIC
