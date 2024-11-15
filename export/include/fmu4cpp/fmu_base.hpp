@@ -96,7 +96,7 @@ namespace fmu4cpp {
             }
         }
 
-        void get_string(const unsigned int vr[], size_t nvr, const char *value[]) const {
+        void get_string(const unsigned int vr[], size_t nvr, const char *value[]) {
             stringBuffer_.clear();
             for (unsigned i = 0; i < nvr; i++) {
                 unsigned int ref = vr[i];
@@ -200,7 +200,7 @@ namespace fmu4cpp {
         std::vector<BoolVariable> booleans_;
         std::vector<StringVariable> strings_;
 
-        mutable std::vector<std::string> stringBuffer_;
+        std::vector<std::string> stringBuffer_;
     };
 
     model_info get_model_info();
