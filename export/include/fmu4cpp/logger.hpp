@@ -22,7 +22,7 @@ namespace fmu4cpp {
         template<typename... Args>
         void log(fmi2Status s, const std::string &message, Args &&...args) {
             msgBuf_ = message;
-            fmiLogger_(c_, instanceName_.c_str(), s, "", msgBuf_.c_str(), std::forward<Args>(args)...);
+            fmiLogger_(c_, instanceName_.c_str(), s, nullptr, msgBuf_.c_str(), std::forward<Args>(args)...);
         }
 
         // Logs a message.
