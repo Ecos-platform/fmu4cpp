@@ -1,6 +1,7 @@
 add_subdirectory(src)
 add_subdirectory(examples)
 
+# internal executable invoked by CMake to generate the modelDescription.xml from a shared library
 add_executable(descriptionGenerator "descriptionGenerator.cpp")
 if (UNIX)
     target_link_libraries(descriptionGenerator PRIVATE dl)

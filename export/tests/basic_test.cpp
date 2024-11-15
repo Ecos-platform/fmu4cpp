@@ -54,7 +54,49 @@ std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &in
     return std::make_unique<Model>(instanceName, fmuResourceLocation);
 }
 
-TEST_CASE("basic") {
+TEST_CASE("basic_test") {
+
+    const auto instance = fmu4cpp::createInstance("", "");
+
+    double t = 0;
+    double dt = 0.1;
+
+    auto real = instance->get_real_variable("myReal");
+    REQUIRE(real);
+    auto integer = instance->get_int_variable("myInteger");
+    REQUIRE(integer);
+    auto boolean = instance->get_bool_variable("myBoolean");
+    REQUIRE(boolean);
+    auto str = instance->get_string_variable("myString");
+    REQUIRE(str);
+
+    instance->setup_experiment(t, {}, {});
+    instance->enter_initialisation_mode();
+    instance->exit_initialisation_mode();
+
+    int i = 0;
+    while (t < 10) {
+        instance->do_step(t, dt);
+
+        REQUIRE(real->get() == Catch::Approx(t));
+        REQUIRE(boolean->get() == (i % 2 == 0));
+        REQUIRE(integer->get() == ++i);
+        REQUIRE(str->get() == std::to_string(i));
+
+        t += dt;
+    }
+
+    instance->reset();
+
+    REQUIRE(real->get() == 0);
+    REQUIRE(boolean->get() == false);
+    REQUIRE(integer->get() == 0);
+    REQUIRE(str->get() == "0");
+
+    instance->terminate();
+}
+
+TEST_CASE("wrong call order") {
 
     const auto instance = fmu4cpp::createInstance("", "");
 
