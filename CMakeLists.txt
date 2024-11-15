@@ -5,9 +5,16 @@ project(fmu4cpp-template VERSION ${projectVersion})
 option(FMU4CPP_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+if (MSVC)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif ()
+
+
+############modelIdentifier###################
 
 set(modelIdentifier identity) # <-- CHANGE ME
+
+################################################
 
 include("cmake/generate_fmu.cmake")
 

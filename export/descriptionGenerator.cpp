@@ -1,3 +1,5 @@
+//this program is used internally to extract data from the model to populate the modelDescription.xml
+//invoked during CMake configuration
 
 #if defined(_MSC_VER) || defined(WIN32) || defined(__MINGW32__)
 #define WIN32_LEAN_AND_MEAN
