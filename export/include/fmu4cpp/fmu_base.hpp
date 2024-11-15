@@ -141,18 +141,11 @@ namespace fmu4cpp {
             logger_ = logger;
         }
 
-        void log(fmi2Status s, const std::string &message) {
+        void log(const fmi2Status s, const std::string &message) {
             if (logger_) {
                 logger_->log(s, message);
             }
         }
-
-        void debugLog(fmi2Status s, const std::string &message) {
-            if (logger_) {
-                logger_->debug(s, message);
-            }
-        }
-
 
         virtual void *getFMUState() {
 
