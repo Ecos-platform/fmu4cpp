@@ -34,7 +34,7 @@ function(generateFMU modelIdentifier resourceFolder)
                 "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
 
     else ()
-        message("[generateFMU] Using resourceFolder=${resourceFolder} for ${modelIdentifier}")
+        message("[generateFMU] Using resourceFolder=${resourceFolder} for model with identifier='${modelIdentifier}'")
 
         file(COPY "${resourceFolder}/" DESTINATION "${CMAKE_BINARY_DIR}/${modelIdentifier}/resources")
 
