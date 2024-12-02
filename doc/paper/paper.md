@@ -1,9 +1,7 @@
 ---
 title: 'FMU4cpp: A GitHub template repository for creating Functional Mockup Units in C++'
 tags:
-  - FMI
-  - FMI 2.0
-  - FMU
+  - Functional Mockup Interface
   - Simulation and Modelling
   - CMake
   - GitHub Actions
@@ -42,6 +40,11 @@ on an Ubuntu and Windows runner.
 The resulting shared libraries are then joined into a final archive which can be directly downloaded and 
 imported into a simulation tool.
 
+\autoref{fig:bb} demonstrates simulation of a simple *BouncingBall* model generated with FMU4cpp within the Python simulation library FMPy [@FMPy].
+Similarly, the generated FMU can be imported into any of the many available simulation tools compatible with FMI 2.0 for Co-simulation.
+
+![Bouncing ball model created with FMU4cpp simulated with FMPy.\label{fig:bb}](figures/bouncing_ball.png)
+
 
 # Statement of need
 
@@ -66,16 +69,13 @@ Thus, FMU4cpp provides a significant usability improvement over these alternativ
 1. Provides a simplified API to implement. 
 2. Generates the required XML metadata.
 3. Verifies the FMU against the standard.
-4. Cross-compiles the shared library
-5. Packages the FMU
+4. Cross-compiles the shared library.
+5. Packages the FMU.
 
 A framework like FMU4cpp is useful for generating both simple and more complex models that does not fit with the restrictions
 of a specialized modelling tools. Targeting C++ is also useful compared to similar solutions for Python and Java,
 as a runtime is not necessarily required to invoke the model, increasing portability.
 
-Figure \autoref{fig:bb} demonstrates simulation of a simple *BouncingBall* model generated with FMU4cpp within the Python simulation library FMPy [@FMPy].
-
-![Bouncing ball model created with FMU4cpp simulated with FMPy.\label{fig:bb}](figures/bouncing_ball.png)
 
 # Future of FMU4cpp
 
