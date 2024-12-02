@@ -63,11 +63,11 @@ The non-native solutions listed here provide similar capabilities as FMU4cpp,
 however the native solutions require a substantial expert knowledge
 and users are required to manually generate XML metadata as well as packaging the necessary files into an FMU.
 Thus, FMU4cpp provides a significant usability improvement over these alternatives as it:
-1. Provides a simplified API to implement.
-2. Generates the required XML metadata.
-3. Verifies the FMU against the standard.
-4. Cross-compiles the shared library
-5. Packages the FMU
+#.  Provides a simplified API to implement.
+#.  Generates the required XML metadata.
+#.  Verifies the FMU against the standard.
+#.  Cross-compiles the shared library
+#.  Packages the FMU
 
 A framework like FMU4cpp is useful for generating both simple and more complex models that does not fit with the restrictions
 of a specialized modelling tools. Targeting C++ is also useful compared to similar solutions for Python and Java,
