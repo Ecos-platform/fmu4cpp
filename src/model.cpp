@@ -69,7 +69,7 @@ public:
     }
 
     bool do_step(double currentTime, double dt) override {
-        debugLog(fmi2OK, "hello@ " + std::to_string(currentTime));
+        log(fmi2OK, "hello@ " + std::to_string(currentTime));
         return true;
     }
 

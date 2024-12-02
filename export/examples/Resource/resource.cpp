@@ -29,7 +29,7 @@ public:
 
     bool do_step(double currentTime, double dt) override {
 
-        debugLog(fmi2OK, get_string_variable("content")->get());
+        log(fmi2OK, get_string_variable("content")->get());
         return true;
     }
 
