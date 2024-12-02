@@ -13,7 +13,7 @@ authors:
     affiliation: 1
 
 affiliations:
- - name: Norwegian University of Science and Technology, Norway
+ - name: Norwegian University of Science and Technology, Department of ICT and Natural Sciences, Norway
    index: 1
 date: 2 December 2024
 bibliography: paper.bib
@@ -22,12 +22,15 @@ bibliography: paper.bib
 # Summary
 
 FMU4cpp is a CMake template repository that acts as a framework for creating 
-Functional Mockup Units (FMUs) compatible with the Functional Mockup Interface (FMI) standard [@blochwitz2011functional], which is an open standard for model exchange and co-simulation of dynamic systems,
-in idiomatic C++. Currently, version 2.0 for Co-simulation [@blochwitz2012functional] is supported.
-In short, an FMU is a component implementation the FMI standard. They are distributed as zipped archive consisting 
-of shared libraries implementing a known 
-C interface together with a _modelDescription.xml_ file detailing their capabilities and available variables. 
-Additionally, model specific resources may be embedded.
+Functional Mockup Units (FMUs) compatible with the Functional Mockup Interface (FMI) standard [@blochwitz2011functional]
+in idiomatic C++. The FMI is an open standard for model exchange and co-simulation of dynamic systems. 
+Currently, version 2.0 for Co-simulation [@blochwitz2012functional] is supported.
+In short, an FMU (Functional Mock-up Unit) is a self-contained component that implements the FMI standard.
+It is packaged as a zip archive containing:
+- A shared library for each supported platform, which implements a standardized C interface.
+- A modelDescription.xml file, describing the FMU's capabilities and available variables.
+- Optionally, component-specific resources embedded within the archive.
+
 The intention of FMU4cpp is to provide a streamlined way of generating such FMUs based on C++ source code.
 To do so, the framework provides skeleton code for the user to implement, 
 so that many of the low level details of the FMI standard is abstracted away. 
