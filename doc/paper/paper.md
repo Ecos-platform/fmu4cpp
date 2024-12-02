@@ -28,7 +28,7 @@ Currently, version 2.0 for Co-simulation [@blochwitz2012functional] is supported
 In short, an FMU (Functional Mock-up Unit) is a self-contained component that implements the FMI standard.
 It is packaged as a zip archive containing:
 - A shared library for each supported platform, which implements a standardized C interface.
-- A modelDescription.xml file, describing the FMU's capabilities and available variables.
+- A *modelDescription.xml* file, describing the FMU's capabilities and available variables.
 - Optionally, component-specific resources embedded within the archive.
 
 The intention of FMU4cpp is to provide a streamlined way of generating such FMUs based on C++ source code.
@@ -63,19 +63,24 @@ The non-native solutions listed here provide similar capabilities as FMU4cpp,
 however the native solutions require a substantial expert knowledge
 and users are required to manually generate XML metadata as well as packaging the necessary files into an FMU.
 Thus, FMU4cpp provides a significant usability improvement over these alternatives as it:
-#.  Provides a simplified API to implement.
-#.  Generates the required XML metadata.
-#.  Verifies the FMU against the standard.
-#.  Cross-compiles the shared library
-#.  Packages the FMU
+1. Provides a simplified API to implement. 
+2. Generates the required XML metadata.
+3. Verifies the FMU against the standard.
+4. Cross-compiles the shared library
+5. Packages the FMU
 
 A framework like FMU4cpp is useful for generating both simple and more complex models that does not fit with the restrictions
 of a specialized modelling tools. Targeting C++ is also useful compared to similar solutions for Python and Java,
 as a runtime is not necessarily required to invoke the model, increasing portability.
 
+Figure \autoref{fig:bb} demonstrates simulation of a simple *BouncingBall* model generated with FMU4cpp within the Python simulation library FMPy [@FMPy].
+
+![Bouncing ball model created with FMU4cpp simulated with FMPy.\label{fig:bb}](figures/bouncing_ball.png)
+
 # Future of FMU4cpp
 
 With FMI 3.0 [@junghanns2021functional] released in 2022, an obvious and planned enhancement 
-to FMU4cpp is to support this newer version of the standard. 
+to FMU4cpp is to support this newer version of the standard. While version 2.0 of the standard is still the most widely supported by importing tools, 
+adding support through FMU4cpp would further drive adoption and accommodate more effective simulations.
 
 # References
