@@ -38,10 +38,6 @@ namespace fmu4cpp {
     std::string to_string(const initial_t &i);
 
     class VariableBase {
-    private:
-        std::string name_;
-        unsigned int vr_;
-        size_t index_;
 
     protected:
         causality_t causality_ = causality_t::LOCAL;
@@ -86,13 +82,15 @@ namespace fmu4cpp {
         }
 
         virtual ~VariableBase() = default;
+
+    private:
+        std::string name_;
+        unsigned int vr_;
+        size_t index_;
     };
 
     template<class T, class V>
     class Variable : public VariableBase {
-    private:
-        std::function<T()> getter_;
-        std::optional<std::function<void(T)>> setter_;
 
     public:
         Variable(
@@ -131,12 +129,13 @@ namespace fmu4cpp {
             }
             return *static_cast<V *>(this);
         }
+
+    private:
+        std::function<T()> getter_;
+        std::optional<std::function<void(T)>> setter_;
     };
 
-    class IntVariable : public Variable<int, IntVariable> {
-    private:
-        std::optional<int> min_;
-        std::optional<int> max_;
+    class IntVariable final : public Variable<int, IntVariable> {
 
     public:
         IntVariable(
@@ -163,12 +162,13 @@ namespace fmu4cpp {
             max_ = max;
             return *this;
         }
+
+    private:
+        std::optional<int> min_;
+        std::optional<int> max_;
     };
 
-    class RealVariable : public Variable<double, RealVariable> {
-    private:
-        std::optional<double> min_;
-        std::optional<double> max_;
+    class RealVariable final : public Variable<double, RealVariable> {
 
     public:
         RealVariable(
@@ -198,9 +198,13 @@ namespace fmu4cpp {
             max_ = max;
             return *this;
         }
+
+    private:
+        std::optional<double> min_;
+        std::optional<double> max_;
     };
 
-    class BoolVariable : public Variable<bool, BoolVariable> {
+    class BoolVariable final : public Variable<bool, BoolVariable> {
 
     public:
         BoolVariable(
@@ -211,7 +215,7 @@ namespace fmu4cpp {
             : Variable(name, vr, index, getter, setter) {}
     };
 
-    class StringVariable : public Variable<std::string, StringVariable> {
+    class StringVariable final : public Variable<std::string, StringVariable> {
 
     public:
         StringVariable(

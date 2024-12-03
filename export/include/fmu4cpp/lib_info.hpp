@@ -7,7 +7,7 @@
 namespace fmu4cpp {
 
     /// Software version
-    struct version {
+    struct version final {
         int major = 0;
         int minor = 0;
         int patch = 0;

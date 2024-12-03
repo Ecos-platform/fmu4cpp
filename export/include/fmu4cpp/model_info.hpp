@@ -6,7 +6,7 @@
 
 namespace fmu4cpp {
 
-    struct model_info {
+    struct model_info final {
         std::string modelName;
         std::string author;
         std::string description;

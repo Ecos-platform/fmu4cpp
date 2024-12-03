@@ -7,7 +7,7 @@
 
 namespace fmu4cpp {
 
-    class fatal_error : public std::runtime_error {
+    class fatal_error final : public std::runtime_error {
     public:
         explicit fatal_error(const std::string &msg) : std::runtime_error(msg) {}
     };
