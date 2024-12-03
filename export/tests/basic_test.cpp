@@ -10,13 +10,13 @@ public:
     Model(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
-        register_variable(real("myReal", [this] { return real_; })
+        register_variable(real("myReal", &real_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(integer("myInteger", [this] { return integer_; })
+        register_variable(integer("myInteger", &integer_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(boolean("myBoolean", [this] { return boolean_; })
+        register_variable(boolean("myBoolean", &boolean_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(string("myString", [this] { return str_; })
+        register_variable(string("myString", &str_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
 
         Model::reset();
@@ -73,6 +73,10 @@ TEST_CASE("basic_test") {
     instance->setup_experiment(t, {}, {});
     instance->enter_initialisation_mode();
     instance->exit_initialisation_mode();
+
+    unsigned int vr = boolean->value_reference();
+    int testFail = false;
+    REQUIRE_THROWS(instance->set_boolean(&vr, 1, &testFail));
 
     int i = 0;
     while (t < 10) {

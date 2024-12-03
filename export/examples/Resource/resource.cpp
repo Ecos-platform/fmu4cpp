@@ -15,12 +15,11 @@ public:
 
         std::ifstream ifs(resources / "file.txt");
 
-        std::string line;
-        std::getline(ifs, line);
+        std::getline(ifs, content_);
 
         register_variable(
                 string(
-                        "content", [line] { return line; })
+                        "content", &content_)
                         .setVariability(variability_t::CONSTANT)
                         .setCausality(causality_t::OUTPUT));
 
@@ -36,6 +35,9 @@ public:
     void reset() override {
         // do nothing
     }
+
+private:
+    std::string content_;
 
 };
 
