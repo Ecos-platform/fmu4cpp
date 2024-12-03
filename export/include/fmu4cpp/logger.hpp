@@ -6,7 +6,7 @@
 
 namespace fmu4cpp {
 
-    class logger {
+    class logger final {
 
     public:
         logger(const fmi2CallbackFunctions &f, std::string instanceName)

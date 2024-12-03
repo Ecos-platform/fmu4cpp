@@ -35,28 +35,28 @@ namespace fmu4cpp {
             return resourceLocation_;
         }
 
-        std::optional<IntVariable> get_int_variable(const std::string &name) {
+        [[nodiscard]] std::optional<IntVariable> get_int_variable(const std::string &name) const {
             for (const auto &v: integers_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
-        std::optional<RealVariable> get_real_variable(const std::string &name) {
+        [[nodiscard]] std::optional<RealVariable> get_real_variable(const std::string &name) const {
             for (const auto &v: reals_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
-        std::optional<BoolVariable> get_bool_variable(const std::string &name) {
+        [[nodiscard]] std::optional<BoolVariable> get_bool_variable(const std::string &name) const {
             for (const auto &v: booleans_) {
                 if (v.name() == name) return v;
             }
             return std::nullopt;
         }
 
-        std::optional<StringVariable> get_string_variable(const std::string &name) {
+        [[nodiscard]] std::optional<StringVariable> get_string_variable(const std::string &name) const {
             for (const auto &v: strings_) {
                 if (v.name() == name) return v;
             }
@@ -77,21 +77,21 @@ namespace fmu4cpp {
 
         void get_integer(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 value[i] = integers_[ref].get();
             }
         }
 
         void get_real(const unsigned int vr[], size_t nvr, double value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 value[i] = reals_[ref].get();
             }
         }
 
         void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 value[i] = static_cast<int>(booleans_[ref].get());
             }
         }
@@ -99,7 +99,7 @@ namespace fmu4cpp {
         void get_string(const unsigned int vr[], size_t nvr, const char *value[]) {
             stringBuffer_.clear();
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 stringBuffer_.push_back(strings_[ref].get());
                 value[i] = stringBuffer_.back().c_str();
             }
@@ -107,28 +107,28 @@ namespace fmu4cpp {
 
         void set_integer(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 integers_[ref].set(value[i]);
             }
         }
 
         void set_real(const unsigned int vr[], size_t nvr, const double value[]) {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 reals_[ref].set(value[i]);
             }
         }
 
         void set_boolean(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 booleans_[ref].set(static_cast<bool>(value[i]));
             }
         }
 
         void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
             for (unsigned i = 0; i < nvr; i++) {
-                unsigned int ref = vr[i];
+                const auto ref = vr[i];
                 strings_[ref].set(value[i]);
             }
         }
