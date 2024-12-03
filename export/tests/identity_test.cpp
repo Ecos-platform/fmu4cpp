@@ -54,7 +54,7 @@ public:
                                   .setInitial(fmu4cpp::initial_t::CALCULATED)
                                   .setDependencies({get_bool_variable("booleanIn")->index()}));
 
-        register_variable(string("stringOut", &string_)
+        register_variable(string("stringOut", [this] { return string_; })
                                   .setCausality(fmu4cpp::causality_t::OUTPUT)
                                   .setVariability(fmu4cpp::variability_t::DISCRETE)
                                   .setInitial(fmu4cpp::initial_t::CALCULATED)
@@ -64,7 +64,6 @@ public:
     }
 
     bool do_step(double currentTime, double dt) override {
-        log(fmi2OK, "hello@ " + std::to_string(currentTime));
         return true;
     }
 

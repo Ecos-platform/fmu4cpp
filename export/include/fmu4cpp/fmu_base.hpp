@@ -167,12 +167,24 @@ namespace fmu4cpp {
 
     protected:
         IntVariable integer(const std::string &name, int *ptr);
+        IntVariable integer(const std::string &name,
+                            const std::function<int()> &getter,
+                            const std::optional<std::function<void(int)>> &setter = std::nullopt);
 
         RealVariable real(const std::string &name, double *ptr);
+        RealVariable real(const std::string &name,
+                          const std::function<double()> &getter,
+                          const std::optional<std::function<void(double)>> &setter = std::nullopt);
 
         BoolVariable boolean(const std::string &name, bool *ptr);
+        BoolVariable boolean(const std::string &name,
+                                       const std::function<bool()> &getter,
+                                       const std::optional<std::function<void(bool)>> &setter);
 
         StringVariable string(const std::string &name, std::string *ptr);
+        StringVariable string(const std::string &name,
+                              const std::function<std::string()> &getter,
+                              const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
         void register_variable(IntVariable v);
         void register_variable(RealVariable v);
