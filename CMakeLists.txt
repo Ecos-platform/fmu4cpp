@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" projectVersion)
 project(fmu4cpp-template VERSION ${projectVersion})
 
-option(FMU4CPP_BUILD_TESTS "Build tests" OFF)
+option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
 if (MSVC)
