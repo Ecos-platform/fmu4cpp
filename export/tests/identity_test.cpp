@@ -194,7 +194,7 @@ TEST_CASE("test_identity") {
 
 
     double t{0};
-    double dt{0.1};
+    const double dt{0.1};
 
     bool b{false};
     int counter{0};

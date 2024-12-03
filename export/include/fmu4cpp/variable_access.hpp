@@ -1,6 +1,6 @@
 
-#ifndef VARIABLEACCESS_HPP
-#define VARIABLEACCESS_HPP
+#ifndef FMU4CPP_VARIABLEACCESS_HPP
+#define FMU4CPP_VARIABLEACCESS_HPP
 
 #include <functional>
 #include <optional>
@@ -59,4 +59,4 @@ namespace fmu4cpp {
 
 }// namespace fmu4cpp
 
-#endif//VARIABLEACCESS_HPP
+#endif//FMU4CPP_VARIABLEACCESS_HPP
