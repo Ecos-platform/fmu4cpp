@@ -21,8 +21,8 @@ namespace fmu4cpp {
         throw std::logic_error("Invalid causality encountered");
     }
 
-    std::string to_string(const variability_t &c) {
-        switch (c) {
+    std::string to_string(const variability_t &v) {
+        switch (v) {
             case variability_t::CONTINUOUS:
                 return "continuous";
             case variability_t::CONSTANT:
@@ -37,8 +37,8 @@ namespace fmu4cpp {
         throw std::logic_error("Invalid variability encountered");
     }
 
-    std::string to_string(const initial_t &c) {
-        switch (c) {
+    std::string to_string(const initial_t &i) {
+        switch (i) {
             case initial_t::APPROX:
                 return "approx";
             case initial_t::EXACT:
