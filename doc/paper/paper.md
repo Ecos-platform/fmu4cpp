@@ -19,7 +19,7 @@ bibliography: paper.bib
 
 # Summary
 
-FMU4cpp is a CMake template repository that acts as a framework for creating 
+FMU4cpp is a GitHub template repository that acts as a framework for creating 
 Functional Mockup Units (FMUs) compatible with the Functional Mockup Interface (FMI) standard [@blochwitz2011functional]
 in idiomatic C++. The FMI is an open standard for model exchange and co-simulation of dynamic systems. 
 Currently, version 2.0 for Co-simulation [@blochwitz2012functional] is supported.
@@ -66,9 +66,9 @@ The non-native solutions listed here provide similar capabilities as FMU4cpp,
 however the native solutions require a substantial expert knowledge
 and users are required to manually generate XML metadata as well as packaging the necessary files into an FMU.
 Thus, FMU4cpp provides a significant usability improvement over these alternatives as it:
-1. Provides a simplified API to implement. 
+1. Provides a simplified C++ based API to implement. 
 2. Generates the required XML metadata.
-3. Verifies the FMU against the standard.
+3. Verifies the FMU through automated compliance tests.
 4. Cross-compiles the shared library.
 5. Packages the FMU.
 
