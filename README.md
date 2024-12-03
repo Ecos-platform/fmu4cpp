@@ -30,28 +30,25 @@ public:
 
         register_variable(
                 real(
-                        "height", [this] { return height; })
+                        "height", &height)
                         .setCausality(causality_t::OUTPUT)
                         .setVariability(variability_t::CONTINUOUS));
 
         register_variable(
                 real(
-                        "velocity", [this] { return velocity; })
+                        "velocity", &velocity)
                         .setCausality(causality_t::LOCAL)
                         .setVariability(variability_t::CONTINUOUS));
 
         register_variable(
                 real(
-                        "gravity", [this] { return gravity; },
-                        [this](const auto &input) { gravity = input; })
+                        "gravity", &gravity)
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::FIXED));
 
         register_variable(
                 real(
-                        "bounceFactor",
-                        [this] { return bounceFactor; },
-                        [this](const auto &input) { bounceFactor = input; })
+                        "bounceFactor", &bounceFactor)
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::FIXED));
 

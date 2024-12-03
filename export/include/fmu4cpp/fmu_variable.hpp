@@ -2,7 +2,6 @@
 #ifndef FMU4CPP_FMU_VARIABLE_HPP
 #define FMU4CPP_FMU_VARIABLE_HPP
 
-#include <functional>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -95,17 +94,19 @@ namespace fmu4cpp {
     public:
         Variable(
                 const std::string &name,
-                unsigned int vr, size_t index,
-                std::function<T()> getter,
-                std::optional<std::function<void(T)>> setter)
-            : VariableBase(name, vr, index), getter_(std::move(getter)), setter_(std::move(setter)) {}
+                unsigned int vr, size_t index, T *ptr)
+            : VariableBase(name, vr, index), ptr_(ptr) {}
 
         [[nodiscard]] T get() const {
-            return getter_();
+            return *ptr_;
         }
 
         void set(T value) {
-            if (setter_) setter_->operator()(value);
+            if (causality_ == causality_t::LOCAL || causality_ == causality_t::OUTPUT) {
+                throw std::logic_error("Cannot set value for variable with causality: " + to_string(causality_));
+            }
+
+            *ptr_ = value;
         }
 
         V &setCausality(causality_t causality) {
@@ -131,8 +132,7 @@ namespace fmu4cpp {
         }
 
     private:
-        std::function<T()> getter_;
-        std::optional<std::function<void(T)>> setter_;
+        T *ptr_;
     };
 
     class IntVariable final : public Variable<int, IntVariable> {
@@ -140,10 +140,8 @@ namespace fmu4cpp {
     public:
         IntVariable(
                 const std::string &name,
-                unsigned int vr, size_t index,
-                const std::function<int()> &getter,
-                const std::optional<std::function<void(int)>> &setter)
-            : Variable(name, vr, index, getter, setter) {}
+                unsigned int vr, size_t index, int *ptr)
+            : Variable(name, vr, index, ptr) {}
 
         [[nodiscard]] std::optional<int> getMin() const {
             return min_;
@@ -173,10 +171,8 @@ namespace fmu4cpp {
     public:
         RealVariable(
                 const std::string &name,
-                unsigned int vr, size_t index,
-                const std::function<double()> &getter,
-                const std::optional<std::function<void(double)>> &setter)
-            : Variable(name, vr, index, getter, setter) {
+                unsigned int vr, size_t index, double *ptr)
+            : Variable(name, vr, index, ptr) {
 
             variability_ = variability_t::CONTINUOUS;
         }
@@ -209,10 +205,8 @@ namespace fmu4cpp {
     public:
         BoolVariable(
                 const std::string &name,
-                unsigned int vr, size_t index,
-                const std::function<bool()> &getter,
-                const std::optional<std::function<void(bool)>> &setter)
-            : Variable(name, vr, index, getter, setter) {}
+                unsigned int vr, size_t index, bool *ptr)
+            : Variable(name, vr, index, ptr) {}
     };
 
     class StringVariable final : public Variable<std::string, StringVariable> {
@@ -220,10 +214,8 @@ namespace fmu4cpp {
     public:
         StringVariable(
                 const std::string &name,
-                unsigned int vr, size_t index,
-                const std::function<std::string()> &getter,
-                const std::optional<std::function<void(std::string)>> &setter)
-            : Variable(name, vr, index, getter, setter) {}
+                unsigned int vr, size_t index, std::string *ptr)
+            : Variable(name, vr, index, ptr) {}
     };
 
     bool requires_start(const VariableBase &v);
