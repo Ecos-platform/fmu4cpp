@@ -12,31 +12,23 @@ public:
     SimplePendulum(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
-        register_variable(real("angle",
-                               [this] { return angle_; })
+        register_variable(real("angle", &angle_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::CONTINUOUS));
 
-        register_variable(real("angularVelocity",
-                               [this] { return angularVelocity_; })
+        register_variable(real("angularVelocity", &angularVelocity_)
                                   .setCausality(causality_t::LOCAL)
                                   .setVariability(variability_t::CONTINUOUS));
         register_variable(real(
-                                  "gravity",
-                                  [this] { return gravity_; },
-                                  [this](double input) { gravity_ = input; })
+                                  "gravity", &gravity_)
                                   .setCausality(causality_t::PARAMETER)
                                   .setVariability(variability_t::FIXED));
         register_variable(real(
-                                  "length",
-                                  [this] { return length_; },
-                                  [this](double input) { length_ = input; })
+                                  "length", &length_)
                                   .setCausality(causality_t::PARAMETER)
                                   .setVariability(variability_t::FIXED));
         register_variable(real(
-                                  "damping",
-                                  [this] { return damping_; },
-                                  [this](double input) { damping_ = input; })
+                                  "damping", &damping_)
                                   .setCausality(causality_t::PARAMETER)
                                   .setVariability(variability_t::FIXED));
 

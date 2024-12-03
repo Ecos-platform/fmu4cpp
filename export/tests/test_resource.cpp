@@ -1,6 +1,5 @@
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_approx.hpp>
 
 #include <fmu4cpp/fmu_base.hpp>
 #include <fstream>
@@ -13,10 +12,9 @@ public:
 
         std::ifstream file(resources.string() + "/data.txt");
 
-        std::string data;
-        std::getline(file, data);
+        std::getline(file, data_);
 
-        register_variable(string("data", [data] { return data; })
+        register_variable(string("data", &data_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
 
         Model::reset();
@@ -32,10 +30,7 @@ public:
     }
 
 private:
-    bool boolean_;
-    int integer_;
-    double real_;
-    std::string str_;
+    std::string data_;
 };
 
 fmu4cpp::model_info fmu4cpp::get_model_info() {

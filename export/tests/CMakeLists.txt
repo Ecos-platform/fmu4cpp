@@ -16,5 +16,7 @@ function(make_test modelIdentifier sources)
 
 endfunction()
 
+make_test(array_test array_test.cpp)
 make_test(basic_test basic_test.cpp)
+make_test(identity_test identity_test.cpp)
 make_test(test_resource test_resource.cpp)

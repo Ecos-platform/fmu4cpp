@@ -195,16 +195,32 @@ namespace fmu4cpp {
         return ss.str();
     }
 
+    IntVariable fmu_base::integer(const std::string &name, int *ptr) {
+        return {name, static_cast<unsigned int>(integers_.size()), numVariables_++, ptr};
+    }
+
     IntVariable fmu_base::integer(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
         return {name, static_cast<unsigned int>(integers_.size()), numVariables_++, getter, setter};
+    }
+
+    RealVariable fmu_base::real(const std::string &name, double *ptr) {
+        return {name, static_cast<unsigned int>(reals_.size()), numVariables_++, ptr};
     }
 
     RealVariable fmu_base::real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
         return {name, static_cast<unsigned int>(reals_.size()), numVariables_++, getter, setter};
     }
 
+    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr) {
+        return {name, static_cast<unsigned int>(booleans_.size()), numVariables_++, ptr};
+    }
+
     BoolVariable fmu_base::boolean(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
         return {name, static_cast<unsigned int>(booleans_.size()), numVariables_++, getter, setter};
+    }
+
+    StringVariable fmu_base::string(const std::string &name, std::string *ptr) {
+        return {name, static_cast<unsigned int>(strings_.size()), numVariables_++, ptr};
     }
 
     StringVariable fmu_base::string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {

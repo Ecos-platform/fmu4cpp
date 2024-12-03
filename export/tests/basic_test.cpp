@@ -10,13 +10,13 @@ public:
     Model(const std::string &instanceName, const std::filesystem::path &resources)
         : fmu_base(instanceName, resources) {
 
-        register_variable(real("myReal", [this] { return real_; })
+        register_variable(real("myReal", &real_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(integer("myInteger", [this] { return integer_; })
+        register_variable(integer("myInteger", &integer_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(boolean("myBoolean", [this] { return boolean_; })
+        register_variable(boolean("myBoolean", &boolean_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(string("myString", [this] { return str_; })
+        register_variable(string("myString", &str_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
 
         Model::reset();
@@ -59,7 +59,7 @@ TEST_CASE("basic_test") {
     const auto instance = fmu4cpp::createInstance("", "");
 
     double t = 0;
-    double dt = 0.1;
+    const double dt = 0.1;
 
     auto real = instance->get_real_variable("myReal");
     REQUIRE(real);
@@ -74,47 +74,9 @@ TEST_CASE("basic_test") {
     instance->enter_initialisation_mode();
     instance->exit_initialisation_mode();
 
-    int i = 0;
-    while (t < 10) {
-        instance->do_step(t, dt);
-
-        REQUIRE(real->get() == Catch::Approx(t));
-        REQUIRE(boolean->get() == (i % 2 == 0));
-        REQUIRE(integer->get() == ++i);
-        REQUIRE(str->get() == std::to_string(i));
-
-        t += dt;
-    }
-
-    instance->reset();
-
-    REQUIRE(real->get() == 0);
-    REQUIRE(boolean->get() == false);
-    REQUIRE(integer->get() == 0);
-    REQUIRE(str->get() == "0");
-
-    instance->terminate();
-}
-
-TEST_CASE("wrong call order") {
-
-    const auto instance = fmu4cpp::createInstance("", "");
-
-    double t = 0;
-    double dt = 0.1;
-
-    auto real = instance->get_real_variable("myReal");
-    REQUIRE(real);
-    auto integer = instance->get_int_variable("myInteger");
-    REQUIRE(integer);
-    auto boolean = instance->get_bool_variable("myBoolean");
-    REQUIRE(boolean);
-    auto str = instance->get_string_variable("myString");
-    REQUIRE(str);
-
-    instance->setup_experiment(t, {}, {});
-    instance->enter_initialisation_mode();
-    instance->exit_initialisation_mode();
+    unsigned int vr = boolean->value_reference();
+    int testFail = false;
+    REQUIRE_THROWS(instance->set_boolean(&vr, 1, &testFail));
 
     int i = 0;
     while (t < 10) {
