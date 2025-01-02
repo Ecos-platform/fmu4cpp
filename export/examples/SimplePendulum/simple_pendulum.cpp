@@ -1,8 +1,8 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
+#define _USE_MATH_DEFINES
 #include <cmath>
-#include <numbers>
 
 using namespace fmu4cpp;
 
@@ -42,7 +42,7 @@ public:
     }
 
     void reset() override {
-        angle_ = std::numbers::pi / 4;// 45 degrees
+        angle_ = M_PI / 4;// 45 degrees
         angularVelocity_ = 0;
         gravity_ = -9.81;
         length_ = 1.0;

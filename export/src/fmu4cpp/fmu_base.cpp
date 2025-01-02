@@ -96,7 +96,7 @@ namespace fmu4cpp {
         ss << "\t<ModelVariables>\n";
 
         auto allVars = collect(integers_, reals_, booleans_, strings_);
-        std::ranges::sort(allVars, [](const VariableBase *v1, const VariableBase *v2) {
+        std::sort(allVars.begin(), allVars.end(), [](const VariableBase* v1, const VariableBase* v2) {
             return v1->index() < v2->index();
         });
 
