@@ -1,11 +1,11 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 using namespace fmu4cpp;
 
+constexpr double pi = 3.14159265358979323846;
 
 class SimplePendulum : public fmu_base {
 public:
@@ -42,7 +42,7 @@ public:
     }
 
     void reset() override {
-        angle_ = M_PI / 4;// 45 degrees
+        angle_ = pi / 4;// 45 degrees
         angularVelocity_ = 0;
         gravity_ = -9.81;
         length_ = 1.0;
