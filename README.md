@@ -110,5 +110,5 @@ Such easy, such wow.
 
 
 ### Requirements
-* C++20 compiler
+* C++17 compiler
 * CMake >= 3.15
