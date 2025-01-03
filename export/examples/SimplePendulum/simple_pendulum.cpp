@@ -30,7 +30,8 @@ public:
         register_variable(real(
                                   "damping", &damping_)
                                   .setCausality(causality_t::PARAMETER)
-                                  .setVariability(variability_t::FIXED));
+                                  .setVariability(variability_t::FIXED)
+                                  .addAnnotation("<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific variable annotation\"</documentation>\n</Tool>"));
 
         SimplePendulum::reset();
     }
@@ -63,6 +64,7 @@ model_info fmu4cpp::get_model_info() {
     info.modelName = "SimplePendulum";
     info.description = "A simple pendulum model";
     info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
+    info.vendorAnnotations = {"<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific annotation data\"</documentation>\n</Tool>"};
     return info;
 }
 
