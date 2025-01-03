@@ -64,6 +64,17 @@ namespace fmu4cpp {
         throw fatal_error("Reset is unimplemented in slave");
     }
 
+    std::string indent_multiline_string(const std::string &input, const int indents) {
+        const std::string tabs(indents, '\t');
+        std::string indentedString = tabs + input; // add initial indentation
+        size_t pos = 0;
+        while ((pos = indentedString.find('\n', pos)) != std::string::npos) {
+            indentedString.replace(pos, 1, "\n" + tabs);
+            pos += 3;
+        }
+        return indentedString;
+    }
+
     std::string fmu_base::make_description() const {
 
         const model_info m = get_model_info();
@@ -93,6 +104,15 @@ namespace fmu4cpp {
            << "\t</CoSimulation>"
            << "\n";
 
+        if (!m.vendorAnnotations.empty()) {
+            ss << "\t<VendorAnnotations>\n";
+            for (const auto &annotation: m.vendorAnnotations) {
+                std::string indentedAnnotation = indent_multiline_string(annotation, 3);
+                ss <<  indentedAnnotation << "\n";
+            }
+            ss << "\t</VendorAnnotations>\n";
+        }
+
         ss << "\t<ModelVariables>\n";
 
         auto allVars = collect(integers_, reals_, booleans_, strings_);
@@ -103,6 +123,7 @@ namespace fmu4cpp {
         for (const auto &v: allVars) {
             const auto variability = v->variability();
             const auto initial = v->initial();
+            const auto annotations = v->getAnnotations();
             ss << "\t\t<!--"
                << "index=" << v->index() << "-->\n"
                << "\t\t<ScalarVariable name=\""
@@ -142,6 +163,14 @@ namespace fmu4cpp {
                 }
             }
             ss << "/>\n";
+            if (!annotations.empty()) {
+                ss << "\t\t\t<Annotations>\n";
+                for (const auto &annotation: annotations) {
+                    std::string indentedAnnotation = indent_multiline_string(annotation, 4);
+                    ss << indentedAnnotation << "\n";
+                }
+                ss << "\t\t\t</Annotations>\n";
+            }
             ss << "\t\t</ScalarVariable>"
                << "\n";
         }

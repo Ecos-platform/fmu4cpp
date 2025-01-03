@@ -13,6 +13,7 @@ namespace fmu4cpp {
         std::string modelIdentifier;
         std::string version;
         std::string variableNamingConvention{"structured"};
+        std::vector<std::string> vendorAnnotations;
         bool needsExecutionTool{false};
         bool canHandleVariableCommunicationStepSize{true};
         bool canBeInstantiatedOnlyOncePerProcess{false};

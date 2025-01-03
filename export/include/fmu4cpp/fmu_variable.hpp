@@ -46,7 +46,7 @@ namespace fmu4cpp {
         causality_t causality_ = causality_t::LOCAL;
         std::optional<variability_t> variability_;
         std::optional<initial_t> initial_;
-
+        std::vector<std::string> annotations_;
         std::vector<size_t> dependencies_;
 
     public:
@@ -82,6 +82,10 @@ namespace fmu4cpp {
                 throw std::logic_error("Can only declare dependencies for outputs!");
             }
             return dependencies_;
+        }
+
+        [[nodiscard]] std::vector<std::string> getAnnotations() const {
+            return annotations_;
         }
 
         virtual ~VariableBase() = default;
@@ -141,6 +145,18 @@ namespace fmu4cpp {
             for (auto i: dependencies) {
                 dependencies_.emplace_back(i);
             }
+            return *static_cast<V *>(this);
+        }
+
+        V &setAnnotations(const std::vector<std::string> &annotations) {
+            for (auto i: annotations) {
+                annotations_.emplace_back(i);
+            }
+            return *static_cast<V *>(this);
+        }
+
+        V &addAnnotation(const std::string &annotation) {
+            annotations_.emplace_back(annotation);
             return *static_cast<V *>(this);
         }
 
