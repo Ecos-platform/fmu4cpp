@@ -35,14 +35,14 @@ jobs:
         if: runner.os == 'Windows'
 
       - name: "Archive library"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{ matrix.os }}
           path: build/${{ env.MODEL_PATH }}/binaries
 
       - name: "Archive modelDescription.xml"
         if: startsWith(runner.os, 'Linux')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: modelDescription
           path: build/${{ env.MODEL_PATH }}/modelDescription.xml
@@ -54,13 +54,14 @@ jobs:
     steps:
 
       - name: "Download binaries"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-         name: binaries
-         path: model/binaries
+          pattern: binaries-*
+          path: model/binaries
+          merge-multiple: true
 
       - name: "Download modelDescription.xml"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
          name: modelDescription
          path: model
@@ -70,7 +71,7 @@ jobs:
          sudo chmod -R +x model/binaries
 
       - name: "Upload FMU"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
          name: model
          path: model
