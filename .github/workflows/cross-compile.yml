@@ -34,19 +34,11 @@ jobs:
           echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
         if: runner.os == 'Windows'
 
-      - name: "Archive library (Linux)"
-        if: runner.os == 'Linux'
+      - name: "Archive library"
         uses: actions/upload-artifact@v4
         with:
-          name: binaries/linux64
-          path: build/${{ env.MODEL_PATH }}/binaries/linux64
-
-      - name: "Archive library (Windows)"
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries/win64
-          path: build/${{ env.MODEL_PATH }}/binaries/win64
+          name: binaries-${{ matrix.os }}
+          path: build/${{ env.MODEL_PATH }}/binaries
 
       - name: "Archive modelDescription.xml"
         if: startsWith(runner.os, 'Linux')
@@ -64,8 +56,9 @@ jobs:
       - name: "Download binaries"
         uses: actions/download-artifact@v4
         with:
-         name: binaries
-         path: model/binaries
+          pattern: binaries-*
+          path: model/binaries
+          merge-multiple: true
 
       - name: "Download modelDescription.xml"
         uses: actions/download-artifact@v4
