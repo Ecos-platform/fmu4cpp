@@ -46,7 +46,7 @@ add_library(fmu4cpp OBJECT
         "${privateHeadersFull}"
         "${sources}"
         )
-target_compile_features(fmu4cpp PUBLIC "cxx_std_17")
+target_compile_features(fmu4cpp PRIVATE "cxx_std_17")
 set_target_properties(fmu4cpp PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(fmu4cpp
         PUBLIC

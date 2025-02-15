@@ -5,9 +5,6 @@ project(fmu4cpp-template VERSION ${projectVersion})
 option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
-if (MSVC)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif ()
 
 
 ############modelIdentifier###################
