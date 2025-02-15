@@ -34,11 +34,17 @@ jobs:
           echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
         if: runner.os == 'Windows'
 
-      - name: "Archive library"
+      - name: "Archive library (Linux)"
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
-          path: build/${{ env.MODEL_PATH }}/binaries
+          name: binaries/linux64
+          path: build/${{ env.MODEL_PATH }}/binaries/linux64
+
+      - name: "Archive library (Windows)"
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries/win64
+          path: build/${{ env.MODEL_PATH }}/binaries/win64
 
       - name: "Archive modelDescription.xml"
         if: startsWith(runner.os, 'Linux')
