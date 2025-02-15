@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.15)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" projectVersion)
 project(fmu4cpp-template VERSION ${projectVersion})
 
+if (POLICY CMP0091)
+    cmake_policy(SET CMP0091 NEW)
+    if (WIN32)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif ()
+endif ()
+
 option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -14,12 +21,6 @@ set(modelIdentifier identity) # <-- CHANGE ME
 ################################################
 
 include("cmake/generate_fmu.cmake")
-
-if (MSVC)
-    # link statically against the the Visual C runtime
-    string(REPLACE "/MD" "/MT" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-    string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-endif ()
 
 if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     set(BITNESS 64)
