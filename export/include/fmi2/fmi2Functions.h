@@ -3,7 +3,7 @@
 
 /* This header file must be utilized when compiling a FMU.
    It defines all functions of the
-         FMI 2.0.3 Model Exchange and Co-Simulation Interface.
+         FMI 2.0.5 Model Exchange and Co-Simulation Interface.
 
    In order to have unique function names even if several FMUs
    are compiled together (e.g. for embedded systems), every "real" function name
@@ -21,6 +21,7 @@
    names are used and "FMI2_FUNCTION_PREFIX" must not be defined.
 
    Revisions:
+   - Sep. 13, 2022: Provide FMI2_OVERRIDE_FUNCTION_PREFIX functionality
    - Sep. 29, 2019: License changed to 2-clause BSD License (without extensions)
    - Apr.  9, 2014: All prefixes "fmi" renamed to "fmi2" (decision from April 8)
    - Mar. 26, 2014: FMI_Export set to empty value if FMI_Export and FMI_FUNCTION_PREFIX
@@ -103,7 +104,7 @@
 
 
    Copyright (C) 2008-2011 MODELISAR consortium,
-                 2012-2021 Modelica Association Project "FMI"
+                 2012-2024 Modelica Association Project "FMI"
                  All rights reserved.
 
    This file is licensed by the copyright holders under the 2-Clause BSD License
@@ -142,6 +143,15 @@ extern "C" {
 #include "fmi2FunctionTypes.h"
 #include <stdlib.h>
 
+/*
+Allow override of FMI2_FUNCTION_PREFIX: If FMI2_OVERRIDE_FUNCTION_PREFIX
+is defined, then FMI2_ACTUAL_FUNCTION_PREFIX will be used, if defined,
+or no prefix if undefined. Otherwise FMI2_FUNCTION_PREFIX will be used,
+if defined.
+*/
+#if !defined(FMI2_OVERRIDE_FUNCTION_PREFIX) && defined(FMI2_FUNCTION_PREFIX)
+  #define FMI2_ACTUAL_FUNCTION_PREFIX FMI2_FUNCTION_PREFIX
+#endif
 
 /*
   Export FMI2 API functions on Windows and under GCC.
@@ -150,7 +160,7 @@ extern "C" {
   it may be set to __declspec(dllimport).
 */
 #if !defined(FMI2_Export)
-  #if !defined(FMI2_FUNCTION_PREFIX)
+  #if !defined(FMI2_ACTUAL_FUNCTION_PREFIX)
     #if defined _WIN32 || defined __CYGWIN__
      /* Note: both gcc & MSVC on Windows support this syntax. */
         #define FMI2_Export __declspec(dllexport)
@@ -168,10 +178,10 @@ extern "C" {
 
 /* Macros to construct the real function name
    (prepend function name by FMI2_FUNCTION_PREFIX) */
-#if defined(FMI2_FUNCTION_PREFIX)
+#if defined(FMI2_ACTUAL_FUNCTION_PREFIX)
   #define fmi2Paste(a,b)     a ## b
   #define fmi2PasteB(a,b)    fmi2Paste(a,b)
-  #define fmi2FullName(name) fmi2PasteB(FMI2_FUNCTION_PREFIX, name)
+  #define fmi2FullName(name) fmi2PasteB(FMI2_ACTUAL_FUNCTION_PREFIX, name)
 #else
   #define fmi2FullName(name) name
 #endif
