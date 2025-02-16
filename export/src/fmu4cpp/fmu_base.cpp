@@ -11,17 +11,24 @@
 #include <functional>
 #include <sstream>
 #include <utility>
+#include <variant>
 
 namespace {
 
-    std::vector<std::reference_wrapper<const fmu4cpp::VariableBase>> collect(
+    using VariableRef = std::variant<
+            std::reference_wrapper<const fmu4cpp::IntVariable>,
+            std::reference_wrapper<const fmu4cpp::RealVariable>,
+            std::reference_wrapper<const fmu4cpp::BoolVariable>,
+            std::reference_wrapper<const fmu4cpp::StringVariable>>;
+
+    std::vector<VariableRef> collect(
             const std::vector<fmu4cpp::IntVariable> &v1,
             const std::vector<fmu4cpp::RealVariable> &v2,
             const std::vector<fmu4cpp::BoolVariable> &v3,
             const std::vector<fmu4cpp::StringVariable> &v4,
             const std::function<bool(const fmu4cpp::VariableBase &)> &predicate = [](auto &v) { return true; }) {
 
-        std::vector<std::reference_wrapper<const fmu4cpp::VariableBase>> vars;
+        std::vector<VariableRef> vars;
 
         const auto add_if_predicate = [&vars, &predicate](const auto &vec) {
             for (const auto &v: vec) {
@@ -111,108 +118,120 @@ namespace fmu4cpp {
 
         const auto allVars = [&] {
             auto allVars = collect(integers_, reals_, booleans_, strings_);
-            std::sort(allVars.begin(), allVars.end(), [](const auto &v1, const auto &v2) {
-                return v1.get().index() < v2.get().index();
+            std::sort(allVars.begin(), allVars.end(), [](const VariableRef &v1, const VariableRef &v2) {
+                return std::visit([](const auto &var1Ref, const auto &var2Ref) {
+                    return var1Ref.get().index() < var2Ref.get().index();
+                },
+                                  v1, v2);
             });
             return allVars;
         }();
-
-        for (const auto &v: allVars) {
-            const auto variability = v.get().variability();
-            const auto initial = v.get().initial();
-            const auto annotations = v.get().getAnnotations();
-            ss << "\t\t<!--"
-               << "index=" << v.get().index() << "-->\n"
-               << "\t\t<ScalarVariable name=\""
-               << v.get().name() << "\" valueReference=\"" << v.get().value_reference() << "\""
-               << " causality=\"" << to_string(v.get().causality()) << "\"";
-            if (variability) {
-                ss << " variability=\"" << to_string(*variability) << "\"";
-            }
-            if (initial) {
-                ss << " initial=\"" << to_string(*initial) << "\"";
-            }
-            ss << ">\n";
-            if (auto i = dynamic_cast<const IntVariable *>(&v.get())) {
-                ss << "\t\t\t<Integer";
-                if (requires_start(v.get())) {
-                    ss << " start=\"" << i->get() << "\"";
+        for (const auto &var: allVars) {
+            std::visit([&ss](const auto &varRef) {
+                const auto &v = varRef.get();
+                const auto variability = v.variability();
+                const auto initial = v.initial();
+                const auto annotations = v.getAnnotations();
+                ss << "\t\t<!--"
+                   << "index=" << v.index() << "-->\n"
+                   << "\t\t<ScalarVariable name=\""
+                   << v.name() << "\" valueReference=\"" << v.value_reference() << "\""
+                   << " causality=\"" << to_string(v.causality()) << "\"";
+                if (variability) {
+                    ss << " variability=\"" << to_string(*variability) << "\"";
                 }
-            } else if (auto r = dynamic_cast<const RealVariable *>(&v.get())) {
-                ss << "\t\t\t<Real";
-                if (requires_start(v.get())) {
-                    ss << " start=\"" << r->get() << "\"";
+                if (initial) {
+                    ss << " initial=\"" << to_string(*initial) << "\"";
                 }
-                const auto min = r->getMin();
-                const auto max = r->getMax();
-                if (min && max) {
-                    ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
+                ss << ">\n";
+                using T = std::decay_t<decltype(v)>;
+                if constexpr (std::is_same_v<T, IntVariable>) {
+                    ss << "\t\t\t<Integer";
+                    if (requires_start(v)) {
+                        ss << " start=\"" << v.get() << "\"";
+                    }
+                } else if constexpr (std::is_same_v<T, RealVariable>) {
+                    ss << "\t\t\t<Real";
+                    if (requires_start(v)) {
+                        ss << " start=\"" << v.get() << "\"";
+                    }
+                    const auto min = v.getMin();
+                    const auto max = v.getMax();
+                    if (min && max) {
+                        ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
+                    }
+                } else if constexpr (std::is_same_v<T, StringVariable>) {
+                    ss << "\t\t\t<String";
+                    if (requires_start(v)) {
+                        ss << " start=\"" << v.get() << "\"";
+                    }
+                } else if constexpr (std::is_same_v<T, BoolVariable>) {
+                    ss << "\t\t\t<Boolean";
+                    if (requires_start(v)) {
+                        ss << " start=\"" << v.get() << "\"";
+                    }
                 }
-            } else if (auto s = dynamic_cast<const StringVariable *>(&v.get())) {
-                ss << "\t\t\t<String";
-                if (requires_start(v.get())) {
-                    ss << " start=\"" << s->get() << "\"";
+                ss << "/>\n";
+                if (!annotations.empty()) {
+                    ss << "\t\t\t<Annotations>\n";
+                    for (const auto &annotation: annotations) {
+                        const auto indentedAnnotation = indent_multiline_string(annotation, 4);
+                        ss << indentedAnnotation << "\n";
+                    }
+                    ss << "\t\t\t</Annotations>\n";
                 }
-            } else if (auto b = dynamic_cast<const BoolVariable *>(&v.get())) {
-                ss << "\t\t\t<Boolean";
-                if (requires_start(v.get())) {
-                    ss << " start=\"" << b->get() << "\"";
-                }
-            }
-            ss << "/>\n";
-            if (!annotations.empty()) {
-                ss << "\t\t\t<Annotations>\n";
-                for (const auto &annotation: annotations) {
-                    std::string indentedAnnotation = indent_multiline_string(annotation, 4);
-                    ss << indentedAnnotation << "\n";
-                }
-                ss << "\t\t\t</Annotations>\n";
-            }
-            ss << "\t\t</ScalarVariable>"
-               << "\n";
+                ss << "\t\t</ScalarVariable>"
+                   << "\n";
+            },
+                       var);
         }
 
         ss << "\t</ModelVariables>\n";
 
         ss << "\t<ModelStructure>\n";
 
-        const auto unknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
-            return v.causality() == causality_t::OUTPUT;
-        });
-
-        if (!unknowns.empty()) {
+        if (const auto unknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
+                return v.causality() == causality_t::OUTPUT;
+            });
+            !unknowns.empty()) {
             ss << "\t\t<Outputs>\n";
-            for (const auto &v: unknowns) {
-                ss << "\t\t\t<Unknown index=\"" << v.get().index() << "\"";
-                const auto deps = v.get().getDependencies();
-                if (!deps.empty()) {
-                    ss << " dependencies=\"";
-                    for (unsigned i = 0; i < deps.size(); i++) {
-                        ss << deps[i];
-                        if (i != deps.size() - 1) {
-                            ss << " ";
+            for (const auto &var: unknowns) {
+                std::visit([&ss](const auto &varRef) {
+                    const auto &v = varRef.get();
+                    ss << "\t\t\t<Unknown index=\"" << v.index() << "\"";
+                    const auto deps = v.getDependencies();
+                    if (!deps.empty()) {
+                        ss << " dependencies=\"";
+                        for (unsigned i = 0; i < deps.size(); i++) {
+                            ss << deps[i];
+                            if (i != deps.size() - 1) {
+                                ss << " ";
+                            }
                         }
+                        ss << "\"";
                     }
-                    ss << "\"";
-                }
-                ss << "/>\n";
+                    ss << "/>\n";
+                },
+                           var);
             }
             ss << "\t\t</Outputs>\n";
         }
 
-
-        const auto initialUnknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
-            return (v.causality() == causality_t::OUTPUT && v.initial() == initial_t::APPROX || v.initial() == initial_t::CALCULATED) || v.causality() == causality_t::CALCULATED_PARAMETER;
-        });
-        if (!initialUnknowns.empty()) {
+        if (const auto initialUnknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
+                return (v.causality() == causality_t::OUTPUT && v.initial() == initial_t::APPROX || v.initial() == initial_t::CALCULATED) || v.causality() == causality_t::CALCULATED_PARAMETER;
+            });
+            !initialUnknowns.empty()) {
             ss << "\t\t<InitialUnknowns>\n";
-            for (const auto &v: initialUnknowns) {
-                ss << "\t\t\t<Unknown index=\"" << v.get().index() << "\"";
-                ss << "/>\n";
+            for (const auto &var: initialUnknowns) {
+                std::visit([&ss](const auto &varRef) {
+                    const auto &v = varRef.get();
+                    ss << "\t\t\t<Unknown index=\"" << v.index() << "\"";
+                    ss << "/>\n";
+                },
+                           var);
             }
             ss << "\t\t</InitialUnknowns>\n";
         }
-
 
         ss << "\t</ModelStructure>\n";
 
@@ -284,17 +303,21 @@ namespace fmu4cpp {
         }
 
         const auto vars = collect(integers_, reals_, booleans_, strings_);
-        for (const auto &v: vars) {
-            ss << v.get().name();
-            ss << std::to_string(v.get().index());
-            ss << std::to_string(v.get().value_reference());
-            ss << to_string(v.get().causality());
-            if (v.get().variability()) {
-                ss << to_string(*v.get().variability());
-            }
-            if (v.get().initial()) {
-                ss << to_string(*v.get().initial());
-            }
+        for (const auto &var: vars) {
+            std::visit([&ss](const auto &varRef) {
+                const auto &v = varRef.get();
+                ss << v.name();
+                ss << std::to_string(v.index());
+                ss << std::to_string(v.value_reference());
+                ss << to_string(v.causality());
+                if (v.variability()) {
+                    ss << to_string(*v.variability());
+                }
+                if (v.initial()) {
+                    ss << to_string(*v.initial());
+                }
+            },
+                       var);
         }
 
         return std::to_string(fnv1a(ss.str()));
