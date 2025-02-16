@@ -17,26 +17,22 @@ public:
         register_variable(integer(
                                   "integerIn", &integer_)
                                   .setCausality(causality_t::INPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::EXACT));
+                                  .setVariability(variability_t::DISCRETE));
         register_variable(
                 real(
                         "realIn", &real_)
                         .setCausality(causality_t::INPUT)
-                        .setVariability(variability_t::DISCRETE)
-                        .setInitial(initial_t::EXACT));
+                        .setVariability(variability_t::DISCRETE));
 
         register_variable(boolean(
                                   "booleanIn", &boolean_)
                                   .setCausality(causality_t::INPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::EXACT));
+                                  .setVariability(variability_t::DISCRETE));
 
         register_variable(string(
                                   "stringIn", &string_)
                                   .setCausality(causality_t::INPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::EXACT));
+                                  .setVariability(variability_t::DISCRETE));
 
         register_variable(integer("integerOut", &integer_)
                                   .setCausality(causality_t::OUTPUT)
