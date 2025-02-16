@@ -17,23 +17,19 @@ public:
 
         register_variable(integer("integerIn", &integer_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::EXACT));
+                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
 
         register_variable(real("realIn", &real_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::EXACT));
+                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
 
         register_variable(boolean("booleanIn", &boolean_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::EXACT));
+                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
 
         register_variable(string("stringIn", &string_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::EXACT));
+                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
 
 
         register_variable(integer("integerOut", &integer_)
@@ -143,7 +139,7 @@ std::string readString(fmi2Component c) {
     return value;
 }
 
-void setString(fmi2Component c, const std::string& value) {
+void setString(fmi2Component c, const std::string &value) {
     fmi2ValueReference ref = 0;
     fmi2String value_ = value.c_str();
     REQUIRE(fmi2SetString(c, &ref, 1, &value_) == fmi2OK);
@@ -154,7 +150,7 @@ void setOutput(fmi2Component c) {
     fmi2Integer i = 0;
     fmi2String s = "";
     fmi2Real r = 0;
-    fmi2Boolean b= fmi2False;
+    fmi2Boolean b = fmi2False;
 
     REQUIRE(fmi2SetInteger(c, &ref, 1, &i) == fmi2Error);
     REQUIRE(fmi2SetReal(c, &ref, 1, &r) == fmi2Error);
@@ -162,8 +158,7 @@ void setOutput(fmi2Component c) {
     REQUIRE(fmi2SetBoolean(c, &ref, 1, &b) == fmi2Error);
 }
 
-void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String category, fmi2String message, ...)
-{
+void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String category, fmi2String message, ...) {
     va_list args;
     va_start(args, message);
     char msgstr[1024];
