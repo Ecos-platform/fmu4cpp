@@ -12,6 +12,10 @@ endif ()
 option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
+if (MSVC)
+    # fmt lib
+    add_compile_options(/utf-8)
+endif ()
 
 
 ############modelIdentifier###################
@@ -21,20 +25,6 @@ set(modelIdentifier identity) # <-- CHANGE ME
 ################################################
 
 include("cmake/generate_fmu.cmake")
-
-if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-    set(BITNESS 64)
-else ()
-    set(BITNESS 32)
-endif ()
-
-if (WIN32)
-    set(TARGET_PLATFORM win${BITNESS})
-elseif (APPLE)
-    set(TARGET_PLATFORM darwin${BITNESS})
-else ()
-    set(TARGET_PLATFORM linux${BITNESS})
-endif ()
 
 add_subdirectory(export)
 add_subdirectory(src)

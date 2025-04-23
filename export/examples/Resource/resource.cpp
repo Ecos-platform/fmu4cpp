@@ -28,7 +28,7 @@ public:
 
     bool do_step(double currentTime, double dt) override {
 
-        log(fmi2OK, get_string_variable("content")->get());
+        log(fmiOK, get_string_variable("content")->get());
         return true;
     }
 

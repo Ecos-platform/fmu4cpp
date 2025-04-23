@@ -49,7 +49,7 @@ std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &in
     return std::make_unique<Model>(instanceName, fmuResourceLocation);
 }
 
-void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String category, fmi2String message, ...) {
+void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String /*category*/, fmi2String message, ...) {
     va_list args;
     va_start(args, message);
     char msgstr[1024];

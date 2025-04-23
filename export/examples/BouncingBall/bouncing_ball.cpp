@@ -1,6 +1,9 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
+#define FMT_HEADER_ONLY
+#include <fmt/core.h>
+
 using namespace fmu4cpp;
 
 
@@ -50,6 +53,8 @@ public:
             height_ = 0.0f;                        // Reset height to ground level
             velocity_ = -velocity_ * bounceFactor_;// Reverse velocity and apply bounce factor
         }
+
+        log(fmiOK, fmt::format("Current height: {:.2f}, Current velocity: {:.2f}", height_, velocity_));
 
         return true;
     }

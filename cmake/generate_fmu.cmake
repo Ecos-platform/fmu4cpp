@@ -1,7 +1,47 @@
 
-function(generateFMU modelIdentifier resourceFolder)
+function(generateFMU modelIdentifier fmiVersion resourceFolder)
 
-    target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp>")
+    target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_base>")
+
+    set(TARGET_PLATFORM)
+    if (fmiVersion STREQUAL "fmi2")
+
+        if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+            set(BITNESS 64)
+        else ()
+            set(BITNESS 32)
+        endif ()
+
+        if (WIN32)
+            set(TARGET_PLATFORM win${BITNESS})
+        elseif (APPLE)
+            set(TARGET_PLATFORM darwin${BITNESS})
+        else ()
+            set(TARGET_PLATFORM linux${BITNESS})
+        endif ()
+
+        target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
+    elseif (fmiVersion STREQUAL "fmi3")
+
+        set(TARGET_PLATFORM "x86")
+        if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+            set(TARGET_PLATFORM "${TARGET_PLATFORM}_64")
+        endif ()
+
+        if (WIN32)
+            set(TARGET_PLATFORM ${TARGET_PLATFORM}-windows)
+        elseif (APPLE)
+            set(TARGET_PLATFORM ${TARGET_PLATFORM}-darwin)
+        else ()
+            set(TARGET_PLATFORM ${TARGET_PLATFORM}-linux)
+        endif ()
+
+        target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
+
+    else ()
+        message(FATAL_ERROR "Unknown FMI version: ${fmiVersion}. Supported versions are 'fmi2' and 'fmi3'.")
+    endif ()
+
     target_include_directories("${modelIdentifier}" PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
     target_compile_definitions("${modelIdentifier}" PRIVATE FMU4CPP_MODEL_IDENTIFIER="${modelIdentifier}")
 

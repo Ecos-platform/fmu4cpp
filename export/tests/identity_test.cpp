@@ -158,7 +158,7 @@ void setOutput(fmi2Component c) {
     REQUIRE(fmi2SetBoolean(c, &ref, 1, &b) == fmi2Error);
 }
 
-void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String category, fmi2String message, ...) {
+void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String /*category*/, fmi2String message, ...) {
     va_list args;
     va_start(args, message);
     char msgstr[1024];

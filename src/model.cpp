@@ -3,7 +3,6 @@
 //
 
 #include <fmu4cpp/fmu_base.hpp>
-#include <utility>
 
 
 using namespace fmu4cpp;
@@ -62,7 +61,7 @@ public:
     }
 
     bool do_step(double currentTime, double dt) override {
-        log(fmi2OK, "hello@ " + std::to_string(currentTime));
+        log(fmiOK, "hello@ " + std::to_string(currentTime));
         return true;
     }
 

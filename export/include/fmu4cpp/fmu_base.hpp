@@ -22,7 +22,12 @@ namespace fmu4cpp {
 
     public:
         fmu_base(std::string instance_name, std::filesystem::path resourceLocation)
-            : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
+            : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {
+
+            register_variable(real("time", &time_)
+                                      .setCausality(causality_t::INDEPENDENT)
+                                      .setVariability(variability_t::CONTINUOUS));
+        }
 
         fmu_base(const fmu_base &) = delete;
         fmu_base(const fmu_base &&) = delete;
@@ -69,6 +74,12 @@ namespace fmu4cpp {
 
         virtual void exit_initialisation_mode();
 
+        bool step(double currentTime, double dt) {
+            if (do_step(currentTime, dt)) {
+                time_ += dt;
+            }
+        }
+
         virtual bool do_step(double currentTime, double dt) = 0;
 
         virtual void terminate();
@@ -89,10 +100,19 @@ namespace fmu4cpp {
             }
         }
 
+        //fmi2
         void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
                 value[i] = static_cast<int>(booleans_[ref].get());
+            }
+        }
+
+        //fmi3
+        void get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const {
+            for (unsigned i = 0; i < nvr; i++) {
+                const auto ref = vr[i];
+                value[i] = booleans_[ref].get();
             }
         }
 
@@ -119,10 +139,19 @@ namespace fmu4cpp {
             }
         }
 
+        //fmi2
         void set_boolean(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
                 booleans_[ref].set(static_cast<bool>(value[i]));
+            }
+        }
+
+        //fmi3
+        void set_boolean(const unsigned int vr[], size_t nvr, const bool value[]) {
+            for (unsigned i = 0; i < nvr; i++) {
+                const auto ref = vr[i];
+                booleans_[ref].set(value[i]);
             }
         }
 
@@ -135,13 +164,15 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::string guid() const;
 
-        [[nodiscard]] std::string make_description() const;
+        [[nodiscard]] std::string make_description_v2() const;
+
+        [[nodiscard]] std::string make_description_v3() const;
 
         void __set_logger(logger *logger) {
             logger_ = logger;
         }
 
-        void log(const fmi2Status s, const std::string &message) {
+        void log(const fmiStatus s, const std::string &message) {
             if (logger_) {
                 logger_->log(s, message);
             }
@@ -193,6 +224,7 @@ namespace fmu4cpp {
 
 
     private:
+        double time_{0};
         logger *logger_ = nullptr;
         size_t numVariables_{1};
 

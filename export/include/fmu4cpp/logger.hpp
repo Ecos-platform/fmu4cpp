@@ -2,36 +2,36 @@
 #ifndef FMU4CPP_TEMPLATE_LOGGER_HPP
 #define FMU4CPP_TEMPLATE_LOGGER_HPP
 
-#include "fmi2/fmi2FunctionTypes.h"
+#include "fmu4cpp/status.hpp"
 
 namespace fmu4cpp {
 
-    class logger final {
+    class logger {
 
     public:
-        logger(const fmi2CallbackFunctions &f, std::string instanceName)
-            : c_(f.componentEnvironment),
-              fmiLogger_(f.logger),
-              instanceName_(std::move(instanceName)) {}
+        explicit logger(std::string instanceName)
+            : instanceName_(std::move(instanceName)) {}
 
         void setDebugLogging(bool flag) {
             debugLogging_ = flag;
         }
 
         // Logs a message.
-        template<typename... Args>
-        void log(const fmi2Status s, const std::string &message, Args &&...args) {
+        virtual void log(fmiStatus s, const std::string &message) {
             if (debugLogging_) {
-                fmiLogger_(c_, instanceName_.c_str(), s, nullptr, message.c_str(), std::forward<Args>(args)...);
+                debugLog(s, message);
             }
         }
 
-    private:
-        fmi2ComponentEnvironment c_;
-        fmi2CallbackLogger fmiLogger_;
+        virtual ~logger() = default;
 
+    private:
         bool debugLogging_{false};
+
+    protected:
         std::string instanceName_;
+
+        virtual void debugLog(fmiStatus s, const std::string &message) = 0;
     };
 
 }// namespace fmu4cpp
