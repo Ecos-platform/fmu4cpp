@@ -104,7 +104,7 @@ void setInt(fmi2Component c, int value) {
 }
 
 double readReal(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+    fmi2ValueReference ref = 2;
     fmi2Real value;
     REQUIRE(fmi2GetReal(c, &ref, 1, &value) == fmi2OK);
 
@@ -112,7 +112,7 @@ double readReal(fmi2Component c) {
 }
 
 void setReal(fmi2Component c, double value) {
-    fmi2ValueReference ref = 0;
+    fmi2ValueReference ref = 1;
     REQUIRE(fmi2SetReal(c, &ref, 1, &value) == fmi2OK);
 }
 
@@ -145,15 +145,16 @@ void setString(fmi2Component c, const std::string &value) {
     REQUIRE(fmi2SetString(c, &ref, 1, &value_) == fmi2OK);
 }
 
-void setOutput(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+void setOutputFail(fmi2Component c) {
+    fmi2ValueReference ref = 1;         // out of bounds
+    fmi2ValueReference real_ref = 2;    // out of bounds
     fmi2Integer i = 0;
     fmi2String s = "";
     fmi2Real r = 0;
     fmi2Boolean b = fmi2False;
 
     REQUIRE(fmi2SetInteger(c, &ref, 1, &i) == fmi2Error);
-    REQUIRE(fmi2SetReal(c, &ref, 1, &r) == fmi2Error);
+    REQUIRE(fmi2SetReal(c, &real_ref, 1, &r) == fmi2Error);
     REQUIRE(fmi2SetString(c, &ref, 1, &s) == fmi2Error);
     REQUIRE(fmi2SetBoolean(c, &ref, 1, &b) == fmi2Error);
 }
@@ -210,7 +211,7 @@ TEST_CASE("test_identity") {
         b = !b;
     }
 
-    setOutput(c);
+    setOutputFail(c);
 
     REQUIRE(fmi2Terminate(c) == fmi2OK);
 

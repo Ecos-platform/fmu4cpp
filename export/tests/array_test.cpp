@@ -18,7 +18,7 @@ public:
 
         for (int i = 0; i < reals_.size(); i++) {
             register_variable(
-                    real("reals" + std::to_string(i), [this, i] { return reals_[i]; }, [this, i](double val) { reals_[i] = val; }).setCausality(fmu4cpp::causality_t::PARAMETER).setVariability(fmu4cpp::variability_t::TUNABLE));
+                    real("real[" + std::to_string(i) + "]", [this, i] { return reals_[i]; }, [this, i](double val) { reals_[i] = val; }).setCausality(fmu4cpp::causality_t::PARAMETER).setVariability(fmu4cpp::variability_t::TUNABLE));
         }
 
         Model::reset();
@@ -74,21 +74,21 @@ TEST_CASE("test_array") {
     REQUIRE(fmi2SetupExperiment(c, false, 0, 0, false, 0) == fmi2OK);
 
     std::vector<double> values(4);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 1; i <= 4; i++) { // account for time
         fmi2ValueReference ref = i;
-        fmi2GetReal(c, &ref, 1, &values[i]);
+        fmi2GetReal(c, &ref, 1, &values[i-1]);
     }
     REQUIRE(values == std::vector<double>{1, 2, 3, 4});
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 1; i <= 4; i++) {
         fmi2ValueReference ref = i;
         fmi2Real val = 9;
         fmi2SetReal(c, &ref, 1, &val);
     }
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 1; i <= 4; i++) {
         fmi2ValueReference ref = i;
-        fmi2GetReal(c, &ref, 1, &values[i]);
+        fmi2GetReal(c, &ref, 1, &values[i-1]);
     }
     REQUIRE(values == std::vector<double>{9, 9, 9, 9});
 
