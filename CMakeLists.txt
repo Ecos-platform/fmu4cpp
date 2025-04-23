@@ -18,11 +18,12 @@ if (MSVC)
 endif ()
 
 
-############modelIdentifier###################
+############modelIdentifier and export version###########
 
 set(modelIdentifier identity) # <-- CHANGE ME
+set(fmi_version "fmi2") # fmi2 and fmi3 is supported
 
-################################################
+########################################################
 
 include("cmake/generate_fmu.cmake")
 

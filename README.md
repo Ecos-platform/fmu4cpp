@@ -1,7 +1,7 @@
 # FMU4cpp
 
 FMU4cpp is a GitHub template repository that allows you to easily create cross-platform FMUs 
-compatible with [FMI 2.0](https://fmi-standard.org/downloads/) for Co-simulation using CMake and C++.
+compatible with [FMI 2.0](https://fmi-standard.org/downloads/) & [FMI 3.0](https://fmi-standard.org/docs/3.0/) for Co-simulation using CMake and C++.
 
 The framework generates the required `modelDescription.xml` and further packages 
 the necessary content into a ready-to-use FMU archive.
@@ -9,8 +9,9 @@ the necessary content into a ready-to-use FMU archive.
 ### How do I get started?
 
 1. Change the value of the `modelIdentifier` variable in `CMakeLists.txt` to something more appropriate.
-2. Edit the content of [model.cpp](src/model.cpp).
-3. Build.
+2. Select between FMI 2 or FMI 3 export.
+3. Edit the content of [model.cpp](src/model.cpp).
+4. Build.
 
 An FMU named `<modelIdentifier>.fmu` is now located in a folder `\<modelIdentifier>` within your build folder.
 
