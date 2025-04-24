@@ -12,10 +12,6 @@ endif ()
 option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
-if (MSVC)
-    # fmt lib
-    add_compile_options(/utf-8)
-endif ()
 
 
 ############modelIdentifier and export version###########

@@ -1,8 +1,8 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
-#define FMT_HEADER_ONLY
-#include <fmt/core.h>
+#include <sstream>
+#include <iomanip>
 
 using namespace fmu4cpp;
 
@@ -54,7 +54,12 @@ public:
             velocity_ = -velocity_ * bounceFactor_;// Reverse velocity and apply bounce factor
         }
 
-        log(fmiOK, fmt::format("Current height: {:.2f}, Current velocity: {:.2f}", height_, velocity_));
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2)
+            << "Current height: " << height_
+            << ", Current velocity: " << velocity_;
+
+        log(fmiOK, oss.str());
 
         return true;
     }
