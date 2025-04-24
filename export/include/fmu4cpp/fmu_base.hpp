@@ -69,12 +69,20 @@ namespace fmu4cpp {
         }
 
         void enter_initialisation_mode(double start, std::optional<double> stop, std::optional<double> tolerance) {
+            time_ = start;
+            stop_ = stop;
+            tolerance_ = tolerance;
             enter_initialisation_mode();
         }
 
         virtual void exit_initialisation_mode();
 
         bool step(double currentTime, double dt) {
+
+            if (stop_ && currentTime >= *stop_) {
+                log(fmiWarning, "Stop time reached");
+                return false;
+            }
 
             constexpr double TIME_TOLERANCE = 1e-9;
             if (std::abs(currentTime - time_) > TIME_TOLERANCE) {
@@ -204,7 +212,6 @@ namespace fmu4cpp {
         virtual ~fmu_base() = default;
 
     protected:
-
         IntVariable integer(const std::string &name, int *ptr);
         IntVariable integer(const std::string &name,
                             const std::function<int()> &getter,
@@ -217,8 +224,8 @@ namespace fmu4cpp {
 
         BoolVariable boolean(const std::string &name, bool *ptr);
         BoolVariable boolean(const std::string &name,
-                                       const std::function<bool()> &getter,
-                                       const std::optional<std::function<void(bool)>> &setter);
+                             const std::function<bool()> &getter,
+                             const std::optional<std::function<void(bool)>> &setter);
 
         StringVariable string(const std::string &name, std::string *ptr);
         StringVariable string(const std::string &name,
@@ -237,8 +244,15 @@ namespace fmu4cpp {
             return time_;
         }
 
+        [[nodiscard]] std::optional<double> tolerance() const {
+            return tolerance_;
+        }
+
     private:
         double time_{0};
+        std::optional<double> stop_;
+        std::optional<double> tolerance_;
+
         logger *logger_ = nullptr;
         size_t numVariables_{1};
 
