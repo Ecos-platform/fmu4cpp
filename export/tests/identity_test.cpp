@@ -59,7 +59,7 @@ public:
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         return true;
     }
 

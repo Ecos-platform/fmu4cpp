@@ -54,32 +54,36 @@ namespace {
     class fmi2Logger : public fmu4cpp::logger {
 
     public:
-        explicit fmi2Logger(const std::string &instanceName, const fmi2CallbackFunctions* f)
+        explicit fmi2Logger(const std::string &instanceName, const fmi2CallbackFunctions *f)
             : logger(instanceName), f_(f) {}
 
     protected:
         void debugLog(fmiStatus s, const std::string &message) override {
             f_->logger(f_->componentEnvironment, instanceName_.c_str(),
-                      toFmi2StatusFromCommon(s), nullptr, message.c_str());
+                       toFmi2StatusFromCommon(s), nullptr, message.c_str());
         }
 
     private:
-        const fmi2CallbackFunctions* f_;
+        const fmi2CallbackFunctions *f_;
     };
 
     // A struct that holds all the data for one model instance.
-    struct Component {
+    struct Fmi2Component {
 
-        Component(std::unique_ptr<fmu4cpp::fmu_base> slave, const fmi2CallbackFunctions* callbackFunctions)
+        Fmi2Component(std::unique_ptr<fmu4cpp::fmu_base> slave, const fmi2CallbackFunctions *callbackFunctions)
             : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()},
               slave(std::move(slave)),
               logger(std::make_unique<fmi2Logger>(this->slave->instanceName(), callbackFunctions)) {
             this->slave->__set_logger(logger.get());
         }
 
-        double lastSuccessfulTime;
+        double lastSuccessfulTime{0};
         std::unique_ptr<fmu4cpp::fmu_base> slave;
         std::unique_ptr<fmu4cpp::logger> logger;
+
+        double start{0};
+        std::optional<double> stop;
+        std::optional<double> tolerance;
     };
 
 }// namespace
@@ -141,7 +145,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
         return nullptr;
     }
 
-    auto c = std::make_unique<Component>(std::move(slave), functions);
+    auto c = std::make_unique<Fmi2Component>(std::move(slave), functions);
     c->logger->setDebugLogging(loggingOn);
     return c.release();
 }
@@ -158,24 +162,20 @@ fmi2Status fmi2SetupExperiment(fmi2Component c,
     if (stopTimeDefined) stop = stopTime;
     if (toleranceDefined) tol = tolerance;
 
-    const auto component = static_cast<Component *>(c);
-    try {
-        component->slave->setup_experiment(startTime, stop, tol);
-        return fmi2OK;
-    } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
-        return fmi2Fatal;
-    } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
-        return fmi2Error;
-    }
+    const auto component = static_cast<Fmi2Component *>(c);
+
+    component->start = startTime;
+    component->stop = stop;
+    component->tolerance = tol;
+
+    return fmi2OK;
 }
 
 fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
 
     try {
-        component->slave->enter_initialisation_mode();
+        component->slave->enter_initialisation_mode(component->start, component->stop, component->tolerance);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
         component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
@@ -187,7 +187,7 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
 }
 
 fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->exit_initialisation_mode();
         return fmi2OK;
@@ -201,7 +201,7 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 }
 
 fmi2Status fmi2Terminate(fmi2Component c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->terminate();
         return fmi2OK;
@@ -220,9 +220,9 @@ fmi2Status fmi2DoStep(
         fmi2Real communicationStepSize,
         fmi2Boolean /*noSetFMUStatePriorToCurrentPoint*/) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
-        if (component->slave->do_step(currentCommunicationPoint, communicationStepSize)) {
+        if (component->slave->step(currentCommunicationPoint, communicationStepSize)) {
             component->lastSuccessfulTime = currentCommunicationPoint + communicationStepSize;
             return fmi2OK;
         }
@@ -242,7 +242,7 @@ fmi2Status fmi2CancelStep(fmi2Component) {
 }
 
 fmi2Status fmi2Reset(fmi2Component c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     component->slave->reset();
     return fmi2OK;
 }
@@ -253,7 +253,7 @@ fmi2Status fmi2GetInteger(
         size_t nvr,
         fmi2Integer value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->get_integer(vr, nvr, value);
         return fmi2OK;
@@ -272,7 +272,7 @@ fmi2Status fmi2GetReal(
         size_t nvr,
         fmi2Real value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->get_real(vr, nvr, value);
         return fmi2OK;
@@ -291,7 +291,7 @@ fmi2Status fmi2GetBoolean(
         size_t nvr,
         fmi2Boolean value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->get_boolean(vr, nvr, value);
         return fmi2OK;
@@ -310,7 +310,7 @@ fmi2Status fmi2GetString(
         size_t nvr,
         fmi2String value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->get_string(vr, nvr, value);
         return fmi2OK;
@@ -329,7 +329,7 @@ fmi2Status fmi2SetInteger(
         size_t nvr,
         const fmi2Integer value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->set_integer(vr, nvr, value);
         return fmi2OK;
@@ -348,7 +348,7 @@ fmi2Status fmi2SetReal(
         size_t nvr,
         const fmi2Real value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->set_real(vr, nvr, value);
         return fmi2OK;
@@ -367,7 +367,7 @@ fmi2Status fmi2SetBoolean(
         size_t nvr,
         const fmi2Boolean value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->set_boolean(vr, nvr, value);
         return fmi2OK;
@@ -386,7 +386,7 @@ fmi2Status fmi2SetString(
         size_t nvr,
         const fmi2String value[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     try {
         component->slave->set_string(vr, nvr, value);
         return fmi2OK;
@@ -412,7 +412,7 @@ fmi2Status fmi2GetRealStatus(
         const fmi2StatusKind s,
         fmi2Real *value) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     if (s == fmi2LastSuccessfulTime) {
         *value = component->lastSuccessfulTime;
         return fmi2OK;
@@ -449,7 +449,7 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c,
                                size_t /*nCategories*/,
                                const fmi2String /*categories*/[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     component->logger->setDebugLogging(loggingOn);
     return fmi2OK;
 }
@@ -480,7 +480,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component,
 
 
 fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
 
     if (auto s = component->slave->getFMUState()) {
         state = &s;
@@ -491,7 +491,7 @@ fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
 }
 
 fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate state) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
 
     if (component->slave->setFmuState(state)) {
         return fmi2OK;
@@ -502,7 +502,7 @@ fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate state) {
 
 
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate *state) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
 
     if (component->slave->freeFmuState(state)) {
         return fmi2OK;
@@ -527,7 +527,7 @@ fmi2Status fmi2DeSerializeFMUstate(fmi2Component, const fmi2Byte[], size_t, fmi2
 }
 
 void fmi2FreeInstance(fmi2Component c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi2Component *>(c);
     delete component;
 }
 }

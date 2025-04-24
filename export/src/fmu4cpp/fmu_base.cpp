@@ -42,9 +42,6 @@ namespace {
 
 namespace fmu4cpp {
 
-    void fmu_base::setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance) {
-    }
-
     void fmu_base::enter_initialisation_mode() {
     }
 

@@ -36,7 +36,7 @@ public:
         SimplePendulum::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         angularVelocity_ += (-gravity_ / length_) * std::sin(angle_) * dt - damping_ * angularVelocity_ * dt;
         angle_ += angularVelocity_ * dt;
         return true;

@@ -64,9 +64,9 @@ namespace {
     };
 
     // A struct that holds all the data for one model instance.
-    struct Component {
+    struct Fmi3Component {
 
-        Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi3InstanceEnvironment env, fmi3LogMessageCallback logCallback)
+        Fmi3Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi3InstanceEnvironment env, fmi3LogMessageCallback logCallback)
             : slave(std::move(slave)),
               logger(std::make_unique<fmi3Logger>(env, logCallback, this->slave->instanceName())) {
 
@@ -165,7 +165,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
         return nullptr;
     }
 
-    auto c = std::make_unique<Component>(std::move(slave), instanceEnvironment, logMessage);
+    auto c = std::make_unique<Fmi3Component>(std::move(slave), instanceEnvironment, logMessage);
     c->logger->setDebugLogging(loggingOn);
 
     return c.release();
@@ -191,11 +191,10 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance c,
     if (stopTimeDefined) stop = stopTime;
     if (toleranceDefined) tol = tolerance;
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
     try {
-        component->slave->setup_experiment(startTime, stop, tol);
-        component->slave->enter_initialisation_mode();
+        component->slave->enter_initialisation_mode(startTime, stop, tol);
         return fmi3OK;
     } catch (const fmu4cpp::fatal_error &ex) {
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
@@ -207,7 +206,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance c,
 }
 
 fmi3Status fmi3ExitInitializationMode(fmi3Instance c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->exit_initialisation_mode();
         return fmi3OK;
@@ -221,7 +220,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance c) {
 }
 
 fmi3Status fmi3Terminate(fmi3Instance c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->terminate();
         return fmi3OK;
@@ -243,9 +242,9 @@ fmi3Status fmi3DoStep(fmi3Instance c,
                       fmi3Boolean *earlyReturn,
                       fmi3Float64 *lastSuccessfulTime) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
-        if (component->slave->do_step(currentCommunicationPoint, communicationStepSize)) {
+        if (component->slave->step(currentCommunicationPoint, communicationStepSize)) {
             *earlyReturn = false;
             *terminateSimulation = false;
             *eventHandlingNeeded = false;
@@ -258,7 +257,7 @@ fmi3Status fmi3DoStep(fmi3Instance c,
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -268,7 +267,7 @@ fmi3Status fmi3CancelStep(fmi3Instance) {
 }
 
 fmi3Status fmi3Reset(fmi3Instance c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     component->slave->reset();
     return fmi3OK;
 }
@@ -279,9 +278,9 @@ fmi3Status fmi3GetInt8(fmi3Instance c,
                        fmi3Int8 values[],
                        size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetInt8");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetInt8");
     return fmi3Error;
 }
 
@@ -291,9 +290,9 @@ fmi3Status fmi3GetUInt8(fmi3Instance c,
                         fmi3UInt8 values[],
                         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetUInt8");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt8");
     return fmi3Error;
 }
 
@@ -303,9 +302,9 @@ fmi3Status fmi3GetInt16(fmi3Instance c,
                         fmi3Int16 values[],
                         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetInt16");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetInt16");
     return fmi3Error;
 }
 
@@ -315,9 +314,9 @@ fmi3Status fmi3GetUInt16(fmi3Instance c,
                          fmi3UInt16 values[],
                          size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetUInt16");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt16");
     return fmi3Error;
 }
 
@@ -328,7 +327,7 @@ fmi3Status fmi3GetInt32(
         fmi3Int32 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->get_integer(vr, nvr, value);
         return fmi3OK;
@@ -336,7 +335,7 @@ fmi3Status fmi3GetInt32(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -347,9 +346,9 @@ fmi3Status fmi3GetUInt32(fmi3Instance c,
                          fmi3UInt32 values[],
                          size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetUInt32");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt32");
     return fmi3Error;
 }
 
@@ -359,9 +358,9 @@ fmi3Status fmi3GetInt64(fmi3Instance c,
                         fmi3Int64 values[],
                         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetInt64");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetInt64");
     return fmi3Error;
 }
 
@@ -371,9 +370,9 @@ fmi3Status fmi3GetUInt64(fmi3Instance c,
                          fmi3UInt64 values[],
                          size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetUInt64");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt64");
     return fmi3Error;
 }
 
@@ -383,9 +382,9 @@ fmi3Status fmi3GetFloat32(fmi3Instance c,
                           fmi3Float32 values[],
                           size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetFloat32");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetFloat32");
     return fmi3Error;
 }
 
@@ -396,7 +395,7 @@ fmi3Status fmi3GetFloat64(
         fmi3Float64 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->get_real(vr, nvr, value);
         return fmi3OK;
@@ -404,7 +403,7 @@ fmi3Status fmi3GetFloat64(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -416,7 +415,7 @@ fmi3Status fmi3GetBoolean(
         fmi3Boolean value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->get_boolean(vr, nvr, value);
         return fmi3OK;
@@ -424,7 +423,7 @@ fmi3Status fmi3GetBoolean(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -436,7 +435,7 @@ fmi3Status fmi3GetString(
         fmi3String value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->get_string(vr, nvr, value);
         return fmi3OK;
@@ -444,7 +443,7 @@ fmi3Status fmi3GetString(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -455,9 +454,9 @@ fmi3Status fmi3GetBinary(fmi3Instance c,
                          fmi3Binary values[],
                          size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3GetBinary");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetBinary");
     return fmi3Error;
 }
 
@@ -468,9 +467,9 @@ fmi3Status fmi3SetBinary(fmi3Instance c,
                          const fmi3Binary values[],
                          size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetBinary");
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetBinary");
     return fmi3Error;
 }
 
@@ -481,8 +480,8 @@ fmi3Status fmi3SetInt8(
         const fmi3Int8 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupporeted function fmi3SetInt8");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupporeted function fmi3SetInt8");
     return fmi3Error;
 }
 
@@ -493,8 +492,8 @@ fmi3Status fmi3SetUInt8(
         const fmi3UInt8 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetUInt8");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt8");
     return fmi3Error;
 }
 
@@ -505,8 +504,8 @@ fmi3Status fmi3SetInt16(
         const fmi3Int16 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetInt16");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetInt16");
     return fmi3Error;
 }
 
@@ -517,8 +516,8 @@ fmi3Status fmi3SetUInt16(
         const fmi3UInt16 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetUInt16");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt16");
     return fmi3Error;
 }
 
@@ -529,7 +528,7 @@ fmi3Status fmi3SetInt32(
         const fmi3Int32 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->set_integer(vr, nvr, value);
         return fmi3OK;
@@ -537,7 +536,7 @@ fmi3Status fmi3SetInt32(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -549,8 +548,8 @@ fmi3Status fmi3SetUInt32(
         const fmi3UInt32 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetUInt32");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt32");
     return fmi3Error;
 }
 
@@ -561,8 +560,8 @@ fmi3Status fmi3SetInt64(
         const fmi3Int64 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupporeted function fmi3SetInt64");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupporeted function fmi3SetInt64");
     return fmi3Error;
 }
 
@@ -573,8 +572,8 @@ fmi3Status fmi3SetUInt64(
         const fmi3UInt64 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetUInt64");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt64");
     return fmi3Error;
 }
 
@@ -585,8 +584,8 @@ fmi3Status fmi3SetFloat32(
         const fmi3Float32 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), "Unsupported function fmi3SetFloat32");
+    const auto component = static_cast<Fmi3Component *>(c);
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetFloat32");
     return fmi3Error;
 }
 
@@ -597,7 +596,7 @@ fmi3Status fmi3SetFloat64(
         const fmi3Float64 value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->set_real(vr, nvr, value);
         return fmi3OK;
@@ -605,7 +604,7 @@ fmi3Status fmi3SetFloat64(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -617,7 +616,7 @@ fmi3Status fmi3SetBoolean(
         const fmi3Boolean value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->set_boolean(vr, nvr, value);
         return fmi3OK;
@@ -625,7 +624,7 @@ fmi3Status fmi3SetBoolean(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -637,7 +636,7 @@ fmi3Status fmi3SetString(
         const fmi3String value[],
         size_t nValues) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     try {
         component->slave->set_string(vr, nvr, value);
         return fmi3OK;
@@ -645,7 +644,7 @@ fmi3Status fmi3SetString(
         component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
         return fmi3Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi3(fmi3Fatal), ex.what());
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
 }
@@ -655,7 +654,7 @@ fmi3Status fmi3SetDebugLogging(fmi3Instance c,
                                size_t /*nCategories*/,
                                const fmi3String /*categories*/[]) {
 
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     component->logger->setDebugLogging(loggingOn);
     return fmi3OK;
 }
@@ -684,7 +683,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
 
 
 fmi3Status fmi3GetFMUState(fmi3Instance c, fmi3FMUState *state) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
     if (auto s = component->slave->getFMUState()) {
         state = &s;
@@ -695,7 +694,7 @@ fmi3Status fmi3GetFMUState(fmi3Instance c, fmi3FMUState *state) {
 }
 
 fmi3Status fmi3SetFMUState(fmi3Instance c, fmi3FMUState state) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
     if (component->slave->setFmuState(state)) {
         return fmi3OK;
@@ -706,7 +705,7 @@ fmi3Status fmi3SetFMUState(fmi3Instance c, fmi3FMUState state) {
 
 
 fmi3Status fmi3FreeFMUState(fmi3Instance c, fmi3FMUState *state) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
 
     if (component->slave->freeFmuState(state)) {
         return fmi3OK;
@@ -940,7 +939,7 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
 }
 
 void fmi3FreeInstance(fmi3Instance c) {
-    const auto component = static_cast<Component *>(c);
+    const auto component = static_cast<Fmi3Component *>(c);
     delete component;
 }
 }

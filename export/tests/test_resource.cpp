@@ -20,7 +20,7 @@ public:
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
 
         return true;
     }
@@ -54,12 +54,11 @@ TEST_CASE("model with resource") {
 
     double t = 0;
     double dt = 0.1;
-    instance->setup_experiment(t, {}, {});
-    instance->enter_initialisation_mode();
+    instance->enter_initialisation_mode(t, {}, {});
     instance->exit_initialisation_mode();
 
     while (t < 10) {
-        instance->do_step(t, dt);
+        instance->step(t, dt);
 
         REQUIRE(strVar->get() == expected);
 

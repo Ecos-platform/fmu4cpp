@@ -26,7 +26,7 @@ public:
         Resource::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
 
         log(fmiOK, get_string_variable("content")->get());
         return true;

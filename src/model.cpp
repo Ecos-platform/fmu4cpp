@@ -60,8 +60,8 @@ public:
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
-        log(fmiOK, "hello@ " + std::to_string(currentTime));
+    bool do_step(double dt) override {
+        log(fmiOK, "hello@ " + std::to_string(currentTime()));
         return true;
     }
 

@@ -42,7 +42,7 @@ public:
         BouncingBall::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         // Update velocity with gravity
         velocity_ += gravity_ * dt;
         // Update height with current velocity

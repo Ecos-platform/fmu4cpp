@@ -1,6 +1,6 @@
 
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <fmu4cpp/fmu_base.hpp>
 
@@ -22,8 +22,8 @@ public:
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
-        real_ = currentTime;
+    bool do_step(double dt) override {
+        real_ = currentTime();
         ++integer_;
         boolean_ = !boolean_;
         str_ = std::to_string(integer_);
@@ -70,8 +70,7 @@ TEST_CASE("basic_test") {
     auto str = instance->get_string_variable("myString");
     REQUIRE(str);
 
-    instance->setup_experiment(t, {}, {});
-    instance->enter_initialisation_mode();
+    instance->enter_initialisation_mode(0, {}, {});
     instance->exit_initialisation_mode();
 
     unsigned int vr = boolean->value_reference();
@@ -80,7 +79,7 @@ TEST_CASE("basic_test") {
 
     int i = 0;
     while (t < 10) {
-        instance->do_step(t, dt);
+        instance->step(t, dt);
 
         REQUIRE(real->get() == Catch::Approx(t));
         REQUIRE(boolean->get() == (i % 2 == 0));

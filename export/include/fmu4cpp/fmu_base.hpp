@@ -68,19 +68,27 @@ namespace fmu4cpp {
             return std::nullopt;
         }
 
-        virtual void setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance);
-
-        virtual void enter_initialisation_mode();
+        void enter_initialisation_mode(double start, std::optional<double> stop, std::optional<double> tolerance) {
+            enter_initialisation_mode();
+        }
 
         virtual void exit_initialisation_mode();
 
         bool step(double currentTime, double dt) {
-            if (do_step(currentTime, dt)) {
-                time_ += dt;
-            }
-        }
 
-        virtual bool do_step(double currentTime, double dt) = 0;
+            constexpr double TIME_TOLERANCE = 1e-9;
+            if (std::abs(currentTime - time_) > TIME_TOLERANCE) {
+                throw std::runtime_error("Current time does not match the internal time (within tolerance)");
+            }
+
+            if (do_step(dt)) {
+                time_ += dt;
+
+                return true;
+            }
+
+            return false;
+        }
 
         virtual void terminate();
 
@@ -172,7 +180,7 @@ namespace fmu4cpp {
             logger_ = logger;
         }
 
-        void log(const fmiStatus s, const std::string &message) {
+        void log(const fmiStatus s, const std::string &message) const {
             if (logger_) {
                 logger_->log(s, message);
             }
@@ -193,10 +201,10 @@ namespace fmu4cpp {
             return false;
         }
 
-
         virtual ~fmu_base() = default;
 
     protected:
+
         IntVariable integer(const std::string &name, int *ptr);
         IntVariable integer(const std::string &name,
                             const std::function<int()> &getter,
@@ -222,6 +230,12 @@ namespace fmu4cpp {
         void register_variable(BoolVariable v);
         void register_variable(StringVariable v);
 
+        virtual void enter_initialisation_mode();
+        virtual bool do_step(double dt) = 0;
+
+        [[nodiscard]] double currentTime() const {
+            return time_;
+        }
 
     private:
         double time_{0};
