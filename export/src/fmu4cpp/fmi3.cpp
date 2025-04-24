@@ -185,8 +185,6 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance c,
                                        fmi3Boolean stopTimeDefined,
                                        fmi3Float64 stopTime) {
 
-    std::cout << "nils" << std::endl;
-
     std::optional<double> stop;
     std::optional<double> tol;
 

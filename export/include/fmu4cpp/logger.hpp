@@ -17,7 +17,7 @@ namespace fmu4cpp {
         }
 
         // Logs a message.
-        virtual void log(fmiStatus s, const std::string &message) {
+        void log(fmiStatus s, const std::string &message) {
             if (debugLogging_) {
                 debugLog(s, message);
             }
