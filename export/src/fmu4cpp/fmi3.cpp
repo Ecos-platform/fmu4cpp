@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <limits>
 #include <memory>
 #include <string>
 
@@ -12,6 +11,7 @@
 #include "fmu4cpp/logger.hpp"
 
 namespace {
+
 
     fmiStatus toCommonStatusFromFmi3(fmi3Status status) {
         switch (status) {
@@ -76,6 +76,32 @@ namespace {
         std::unique_ptr<fmu4cpp::fmu_base> slave;
         std::unique_ptr<fmu4cpp::logger> logger;
     };
+
+#define FMU_TYPE(type) fmi3##type
+
+#define NOT_IMPLEMENTED_GETTER(type)                                                                                    \
+    fmi3Status fmi3Get##type(                                                                                           \
+            fmi3Instance c,                                                                                             \
+            const fmi3ValueReference vr[],                                                                              \
+            size_t nValueReferences,                                                                                    \
+            FMU_TYPE(type) values[],                                                                                    \
+            size_t nValues) {                                                                                           \
+        const auto component = static_cast<Fmi3Component *>(c);                                                         \
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), std::string("Unsupported function fmi3Get") + #type); \
+        return fmi3Error;                                                                                               \
+    }
+
+#define NOT_IMPLEMENTED_SETTER(type)                                                                                    \
+    fmi3Status fmi3Set##type(                                                                                           \
+            fmi3Instance c,                                                                                             \
+            const fmi3ValueReference vr[],                                                                              \
+            size_t nValueReferences,                                                                                    \
+            const FMU_TYPE(type) values[],                                                                              \
+            size_t nValues) {                                                                                           \
+        const auto component = static_cast<Fmi3Component *>(c);                                                         \
+        component->logger->log(toCommonStatusFromFmi3(fmi3Error), std::string("Unsupported function fmi3Set") + #type); \
+        return fmi3Error;                                                                                               \
+    }
 
 }// namespace
 
@@ -272,54 +298,6 @@ fmi3Status fmi3Reset(fmi3Instance c) {
     return fmi3OK;
 }
 
-fmi3Status fmi3GetInt8(fmi3Instance c,
-                       const fmi3ValueReference valueReferences[],
-                       size_t nValueReferences,
-                       fmi3Int8 values[],
-                       size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetInt8");
-    return fmi3Error;
-}
-
-fmi3Status fmi3GetUInt8(fmi3Instance c,
-                        const fmi3ValueReference valueReferences[],
-                        size_t nValueReferences,
-                        fmi3UInt8 values[],
-                        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt8");
-    return fmi3Error;
-}
-
-fmi3Status fmi3GetInt16(fmi3Instance c,
-                        const fmi3ValueReference valueReferences[],
-                        size_t nValueReferences,
-                        fmi3Int16 values[],
-                        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetInt16");
-    return fmi3Error;
-}
-
-fmi3Status fmi3GetUInt16(fmi3Instance c,
-                         const fmi3ValueReference valueReferences[],
-                         size_t nValueReferences,
-                         fmi3UInt16 values[],
-                         size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt16");
-    return fmi3Error;
-}
-
 fmi3Status fmi3GetInt32(
         fmi3Instance c,
         const fmi3ValueReference vr[],
@@ -338,42 +316,6 @@ fmi3Status fmi3GetInt32(
         component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
-}
-
-fmi3Status fmi3GetUInt32(fmi3Instance c,
-                         const fmi3ValueReference valueReferences[],
-                         size_t nValueReferences,
-                         fmi3UInt32 values[],
-                         size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt32");
-    return fmi3Error;
-}
-
-fmi3Status fmi3GetInt64(fmi3Instance c,
-                        const fmi3ValueReference valueReferences[],
-                        size_t nValueReferences,
-                        fmi3Int64 values[],
-                        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetInt64");
-    return fmi3Error;
-}
-
-fmi3Status fmi3GetUInt64(fmi3Instance c,
-                         const fmi3ValueReference valueReferences[],
-                         size_t nValueReferences,
-                         fmi3UInt64 values[],
-                         size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetUInt64");
-    return fmi3Error;
 }
 
 fmi3Status fmi3GetFloat32(fmi3Instance c,
@@ -447,79 +389,6 @@ fmi3Status fmi3GetString(
         return fmi3Error;
     }
 }
-fmi3Status fmi3GetBinary(fmi3Instance c,
-                         const fmi3ValueReference valueReferences[],
-                         size_t nValueReferences,
-                         size_t valueSizes[],
-                         fmi3Binary values[],
-                         size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetBinary");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetBinary(fmi3Instance c,
-                         const fmi3ValueReference valueReferences[],
-                         size_t nValueReferences,
-                         const size_t valueSizes[],
-                         const fmi3Binary values[],
-                         size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetBinary");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetInt8(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3Int8 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupporeted function fmi3SetInt8");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetUInt8(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3UInt8 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt8");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetInt16(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3Int16 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetInt16");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetUInt16(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3UInt16 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt16");
-    return fmi3Error;
-}
 
 fmi3Status fmi3SetInt32(
         fmi3Instance c,
@@ -539,42 +408,6 @@ fmi3Status fmi3SetInt32(
         component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
-}
-
-fmi3Status fmi3SetUInt32(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3UInt32 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt32");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetInt64(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3Int64 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupporeted function fmi3SetInt64");
-    return fmi3Error;
-}
-
-fmi3Status fmi3SetUInt64(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3UInt64 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetUInt64");
-    return fmi3Error;
 }
 
 fmi3Status fmi3SetFloat32(
@@ -648,6 +481,46 @@ fmi3Status fmi3SetString(
         return fmi3Error;
     }
 }
+
+fmi3Status fmi3GetBinary(fmi3Instance c,
+                         const fmi3ValueReference valueReferences[],
+                         size_t nValueReferences,
+                         size_t valueSizes[],
+                         fmi3Binary values[],
+                         size_t nValues) {
+
+    const auto component = static_cast<Fmi3Component *>(c);
+
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetBinary");
+    return fmi3Error;
+}
+
+fmi3Status fmi3SetBinary(fmi3Instance c,
+                         const fmi3ValueReference valueReferences[],
+                         size_t nValueReferences,
+                         const size_t valueSizes[],
+                         const fmi3Binary values[],
+                         size_t nValues) {
+
+    const auto component = static_cast<Fmi3Component *>(c);
+
+    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetBinary");
+    return fmi3Error;
+}
+
+NOT_IMPLEMENTED_SETTER(UInt8);
+NOT_IMPLEMENTED_SETTER(UInt16);
+NOT_IMPLEMENTED_SETTER(UInt32);
+NOT_IMPLEMENTED_SETTER(UInt64);
+
+NOT_IMPLEMENTED_GETTER(UInt8);
+NOT_IMPLEMENTED_GETTER(UInt16);
+NOT_IMPLEMENTED_GETTER(UInt32);
+NOT_IMPLEMENTED_GETTER(UInt64);
+
+NOT_IMPLEMENTED_SETTER(Int8);
+NOT_IMPLEMENTED_SETTER(Int16);
+NOT_IMPLEMENTED_SETTER(Int64);
 
 fmi3Status fmi3SetDebugLogging(fmi3Instance c,
                                fmi3Boolean loggingOn,
@@ -889,27 +762,30 @@ fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
     return fmi3Error;
 }
 
-/* tag::SetContinuousStates[] */
 fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
                                    const fmi3Float64 continuousStates[],
                                    size_t nContinuousStates) {
     return fmi3Error;
 }
+
 fmi3Status fmi3GetContinuousStateDerivatives(fmi3Instance instance,
                                              fmi3Float64 derivatives[],
                                              size_t nContinuousStates) {
     return fmi3Error;
 }
+
 fmi3Status fmi3GetEventIndicators(fmi3Instance instance,
                                   fmi3Float64 eventIndicators[],
                                   size_t nEventIndicators) {
     return fmi3Error;
 }
+
 fmi3Status fmi3GetContinuousStates(fmi3Instance instance,
                                    fmi3Float64 continuousStates[],
                                    size_t nContinuousStates) {
     return fmi3Error;
 }
+
 fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance,
                                              fmi3Float64 nominals[],
                                              size_t nContinuousStates) {
@@ -919,6 +795,7 @@ fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance,
                                           size_t *nEventIndicators) {
     return fmi3Error;
 }
+
 fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
                                            size_t *nContinuousStates) {
     return fmi3Error;
