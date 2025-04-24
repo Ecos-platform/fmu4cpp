@@ -1,8 +1,8 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 using namespace fmu4cpp;
 
@@ -38,8 +38,18 @@ public:
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::FIXED));
 
+        register_variable(
+                real(
+                        "initial_height", &initialHeight_)
+                        .setCausality(causality_t::PARAMETER)
+                        .setVariability(variability_t::FIXED));
+
 
         BouncingBall::reset();
+    }
+
+    void enter_initialisation_mode() override {
+        height_ = initialHeight_;
     }
 
     bool do_step(double dt) override {
@@ -65,17 +75,19 @@ public:
     }
 
     void reset() override {
-        height_ = 10;
+        initialHeight_ = 10;
+        height_ = 0;
         velocity_ = 0;
         gravity_ = -9.81f;
         bounceFactor_ = 0.6f;
     }
 
 private:
-    double height_;      // Current height of the ball
-    double velocity_;    // Current velocity of the ball
-    double gravity_;     // Acceleration due to gravity
-    double bounceFactor_;// Factor to reduce velocity on bounce
+    double initialHeight_;// Initial height of ball
+    double height_;       // Current height of the ball
+    double velocity_;     // Current velocity of the ball
+    double gravity_;      // Acceleration due to gravity
+    double bounceFactor_; // Factor to reduce velocity on bounce
 };
 
 model_info fmu4cpp::get_model_info() {
