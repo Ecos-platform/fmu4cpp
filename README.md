@@ -93,9 +93,7 @@ model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::string &fmuResourceLocation) {
-    return std::make_unique<BouncingBall>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(BouncingBall);
 
 ```
 

@@ -88,7 +88,4 @@ model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName,
-                                                  const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model); // Entry point for FMI instantiate function.
