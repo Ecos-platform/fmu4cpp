@@ -39,9 +39,8 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return m;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
+
 
 TEST_CASE("model with resource") {
 

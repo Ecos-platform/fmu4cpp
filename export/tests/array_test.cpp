@@ -1,10 +1,10 @@
 
-#include "catch2/matchers/catch_matchers_vector.hpp"
 #include "fmi2/fmi2Functions.h"
-
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_vector.hpp>
+
 #include <cstdarg>
 #include <iostream>
 
@@ -44,10 +44,8 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName,
-                                                           const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
+
 
 void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String /*category*/, fmi2String message, ...) {
     va_list args;
@@ -63,6 +61,8 @@ TEST_CASE("test_array") {
     Model model("", "");
     const auto guid = model.guid();
 
+    std::cout << model.make_description_v2() << std::endl;
+
     fmi2CallbackFunctions callbackFunctions;
     callbackFunctions.logger = &fmilogger;
 
@@ -74,9 +74,9 @@ TEST_CASE("test_array") {
     REQUIRE(fmi2SetupExperiment(c, false, 0, 0, false, 0) == fmi2OK);
 
     std::vector<double> values(4);
-    for (int i = 1; i <= 4; i++) { // account for time
+    for (int i = 1; i <= 4; i++) {// account for time
         fmi2ValueReference ref = i;
-        fmi2GetReal(c, &ref, 1, &values[i-1]);
+        fmi2GetReal(c, &ref, 1, &values[i - 1]);
     }
     REQUIRE(values == std::vector<double>{1, 2, 3, 4});
 
@@ -88,7 +88,7 @@ TEST_CASE("test_array") {
 
     for (int i = 1; i <= 4; i++) {
         fmi2ValueReference ref = i;
-        fmi2GetReal(c, &ref, 1, &values[i-1]);
+        fmi2GetReal(c, &ref, 1, &values[i - 1]);
     }
     REQUIRE(values == std::vector<double>{9, 9, 9, 9});
 

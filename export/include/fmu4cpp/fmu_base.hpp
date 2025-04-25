@@ -16,10 +16,10 @@
 
 #include <filesystem>
 
-#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                                   \
-    std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName,                    \
-                                                      const std::filesystem::path &fmuResourceLocation) { \
-        return std::make_unique<MODELCLASS>(instanceName, fmuResourceLocation);                           \
+#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                                            \
+    std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName,                    \
+                                                               const std::filesystem::path &fmuResourceLocation) { \
+        return std::make_unique<MODELCLASS>(instanceName, fmuResourceLocation);                                    \
     }
 
 namespace fmu4cpp {
@@ -111,14 +111,16 @@ namespace fmu4cpp {
         void get_integer(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = integers_[ref].get();
+                const auto idx = vrToIntegerIndices_.at(ref);
+                value[i] = integers_[idx].get();
             }
         }
 
         void get_real(const unsigned int vr[], size_t nvr, double value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = reals_[ref].get();
+                const auto idx = vrToRealIndices_.at(ref);
+                value[i] = reals_[idx].get();
             }
         }
 
@@ -126,7 +128,8 @@ namespace fmu4cpp {
         void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = static_cast<int>(booleans_[ref].get());
+                const auto idx = vrToBooleanIndices_.at(ref);
+                value[i] = static_cast<int>(booleans_[idx].get());
             }
         }
 
@@ -134,7 +137,8 @@ namespace fmu4cpp {
         void get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = booleans_[ref].get();
+                const auto idx = vrToBooleanIndices_.at(ref);
+                value[i] = booleans_[idx].get();
             }
         }
 
@@ -142,7 +146,8 @@ namespace fmu4cpp {
             stringBuffer_.clear();
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                stringBuffer_.push_back(strings_[ref].get());
+                const auto idx = vrToStringIndices_.at(ref);
+                stringBuffer_.push_back(strings_[idx].get());
                 value[i] = stringBuffer_.back().c_str();
             }
         }
@@ -150,14 +155,16 @@ namespace fmu4cpp {
         void set_integer(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                integers_[ref].set(value[i]);
+                const auto idx = vrToIntegerIndices_.at(ref);
+                integers_[idx].set(value[i]);
             }
         }
 
         void set_real(const unsigned int vr[], size_t nvr, const double value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                reals_[ref].set(value[i]);
+                const auto idx = vrToRealIndices_.at(ref);
+                reals_[idx].set(value[i]);
             }
         }
 
@@ -165,7 +172,8 @@ namespace fmu4cpp {
         void set_boolean(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                booleans_[ref].set(static_cast<bool>(value[i]));
+                const auto idx = vrToBooleanIndices_.at(ref);
+                booleans_[idx].set(static_cast<bool>(value[i]));
             }
         }
 
@@ -173,14 +181,16 @@ namespace fmu4cpp {
         void set_boolean(const unsigned int vr[], size_t nvr, const bool value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                booleans_[ref].set(value[i]);
+                const auto idx = vrToBooleanIndices_.at(ref);
+                booleans_[idx].set(value[i]);
             }
         }
 
         void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                strings_[ref].set(value[i]);
+                const auto idx = vrToStringIndices_.at(ref);
+                strings_[idx].set(value[i]);
             }
         }
 
@@ -260,17 +270,23 @@ namespace fmu4cpp {
         std::optional<double> tolerance_;
 
         logger *logger_ = nullptr;
-        size_t numVariables_{1};
+        size_t numVariables_{0};
 
         std::string instanceName_;
         std::filesystem::path resourceLocation_;
 
         std::vector<IntVariable> integers_;
-        std::vector<RealVariable> reals_;
-        std::vector<BoolVariable> booleans_;
-        std::vector<StringVariable> strings_;
+        std::unordered_map<unsigned int, size_t> vrToIntegerIndices_;
 
+        std::vector<RealVariable> reals_;
+        std::unordered_map<unsigned int, size_t> vrToRealIndices_;
+
+        std::vector<BoolVariable> booleans_;
+        std::unordered_map<unsigned int, size_t> vrToBooleanIndices_;
+
+        std::vector<StringVariable> strings_;
         std::vector<std::string> stringBuffer_;
+        std::unordered_map<unsigned int, size_t> vrToStringIndices_;
     };
 
     model_info get_model_info();
