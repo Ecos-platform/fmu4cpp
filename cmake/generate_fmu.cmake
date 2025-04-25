@@ -29,6 +29,7 @@ function(generateFMU modelIdentifier fmiVersion)
             set(TARGET_PLATFORM linux${BITNESS})
         endif ()
 
+        target_compile_definitions("${modelIdentifier}" PRIVATE FMI2)
         target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
     elseif (fmiVersion STREQUAL "fmi3")
 
@@ -45,6 +46,7 @@ function(generateFMU modelIdentifier fmiVersion)
             set(TARGET_PLATFORM ${TARGET_PLATFORM}-linux)
         endif ()
 
+        target_compile_definitions("${modelIdentifier}" PRIVATE FMI3)
         target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
 
     else ()
