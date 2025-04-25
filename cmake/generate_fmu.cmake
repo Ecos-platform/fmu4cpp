@@ -1,5 +1,14 @@
 
-function(generateFMU modelIdentifier fmiVersion resourceFolder)
+function(generateFMU modelIdentifier fmiVersion)
+
+    set(options)
+    set(oneValueArgs RESOURCE_FOLDER)
+    set(multiValueArgs)
+    cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if (NOT FMU_RESOURCE_FOLDER)
+        set(FMU_RESOURCE_FOLDER "")
+    endif()
 
     target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_base>")
 
@@ -66,7 +75,7 @@ function(generateFMU modelIdentifier fmiVersion resourceFolder)
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
             COMMAND descriptionGenerator ${modelIdentifier} "${outputDir}/$<TARGET_FILE_NAME:${modelIdentifier}>")
 
-    if (resourceFolder STREQUAL "")
+    if (FMU_RESOURCE_FOLDER STREQUAL "")
         add_custom_command(TARGET ${modelIdentifier} POST_BUILD
                 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
                 COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
@@ -74,9 +83,9 @@ function(generateFMU modelIdentifier fmiVersion resourceFolder)
                 "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
 
     else ()
-        message("[generateFMU] Using resourceFolder=${resourceFolder} for model with identifier='${modelIdentifier}'")
+        message("[generateFMU] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model with identifier='${modelIdentifier}'")
 
-        file(COPY "${resourceFolder}/" DESTINATION "${CMAKE_BINARY_DIR}/${modelIdentifier}/resources")
+        file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${CMAKE_BINARY_DIR}/${modelIdentifier}/resources")
 
         add_custom_command(TARGET ${modelIdentifier} POST_BUILD
                 WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
