@@ -16,7 +16,7 @@
 
 #include <filesystem>
 
-#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                                           \
+#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                                   \
     std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName,                    \
                                                       const std::filesystem::path &fmuResourceLocation) { \
         return std::make_unique<MODELCLASS>(instanceName, fmuResourceLocation);                           \
