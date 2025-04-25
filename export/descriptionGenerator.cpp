@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     if (!handle) {
         const auto err = "Unable to load dynamic library '" + libName + "'! " + getLastError();
         std::cerr << err << std::endl;
-        return -1;
+        return 1;
     }
 
     const auto f = load_function<modelDescriptionTYPE*>(handle, "write_description");
