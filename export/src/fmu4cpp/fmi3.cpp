@@ -318,18 +318,6 @@ fmi3Status fmi3GetInt32(
     }
 }
 
-fmi3Status fmi3GetFloat32(fmi3Instance c,
-                          const fmi3ValueReference valueReferences[],
-                          size_t nValueReferences,
-                          fmi3Float32 values[],
-                          size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3GetFloat32");
-    return fmi3Error;
-}
-
 fmi3Status fmi3GetFloat64(
         fmi3Instance c,
         const fmi3ValueReference vr[],
@@ -408,18 +396,6 @@ fmi3Status fmi3SetInt32(
         component->logger->log(toCommonStatusFromFmi3(fmi3Error), ex.what());
         return fmi3Error;
     }
-}
-
-fmi3Status fmi3SetFloat32(
-        fmi3Instance c,
-        const fmi3ValueReference vr[],
-        size_t nvr,
-        const fmi3Float32 value[],
-        size_t nValues) {
-
-    const auto component = static_cast<Fmi3Component *>(c);
-    component->logger->log(toCommonStatusFromFmi3(fmi3Error), "Unsupported function fmi3SetFloat32");
-    return fmi3Error;
 }
 
 fmi3Status fmi3SetFloat64(
@@ -525,6 +501,10 @@ NOT_IMPLEMENTED_SETTER(Int64);
 NOT_IMPLEMENTED_GETTER(Int8);
 NOT_IMPLEMENTED_GETTER(Int16);
 NOT_IMPLEMENTED_GETTER(Int64);
+
+NOT_IMPLEMENTED_SETTER(Float32);
+NOT_IMPLEMENTED_GETTER(Float32);
+
 
 fmi3Status fmi3SetDebugLogging(fmi3Instance c,
                                fmi3Boolean loggingOn,
