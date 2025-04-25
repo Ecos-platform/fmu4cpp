@@ -522,6 +522,10 @@ NOT_IMPLEMENTED_SETTER(Int8);
 NOT_IMPLEMENTED_SETTER(Int16);
 NOT_IMPLEMENTED_SETTER(Int64);
 
+NOT_IMPLEMENTED_GETTER(Int8);
+NOT_IMPLEMENTED_GETTER(Int16);
+NOT_IMPLEMENTED_GETTER(Int64);
+
 fmi3Status fmi3SetDebugLogging(fmi3Instance c,
                                fmi3Boolean loggingOn,
                                size_t /*nCategories*/,
