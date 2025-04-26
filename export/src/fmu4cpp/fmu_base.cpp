@@ -349,13 +349,13 @@ namespace fmu4cpp {
         }();
 
         auto type = [](const VariableBase *v) {
-            if (auto i = dynamic_cast<const IntVariable *>(v)) {
+            if (dynamic_cast<const IntVariable *>(v)) {
                 return "Int32";
-            } else if (auto r = dynamic_cast<const RealVariable *>(v)) {
+            } else if (dynamic_cast<const RealVariable *>(v)) {
                 return "Float64";
-            } else if (auto s = dynamic_cast<const StringVariable *>(v)) {
+            } else if (dynamic_cast<const StringVariable *>(v)) {
                 return "String";
-            } else if (auto b = dynamic_cast<const BoolVariable *>(v)) {
+            } else if (dynamic_cast<const BoolVariable *>(v)) {
                 return "Boolean";
             }
             throw std::runtime_error("Unknown variable type");
@@ -376,12 +376,13 @@ namespace fmu4cpp {
             if (initial) {
                 ss << " initial=\"" << to_string(*initial) << "\"";
             }
+            bool with_start = requires_start(*v);
             if (auto i = dynamic_cast<const IntVariable *>(v)) {
-                if (requires_start(*v)) {
+                if (with_start) {
                     ss << " start=\"" << i->get() << "\"";
                 }
             } else if (auto r = dynamic_cast<const RealVariable *>(v)) {
-                if (requires_start(*v)) {
+                if (with_start) {
                     ss << " start=\"" << r->get() << "\"";
                 }
                 const auto min = r->getMin();
@@ -390,15 +391,22 @@ namespace fmu4cpp {
                     ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
                 }
             } else if (auto s = dynamic_cast<const StringVariable *>(v)) {
-                if (requires_start(*v)) {
-                    ss << " start=\"" << s->get() << "\"";
+                if (with_start) {
+                    ss << ">\n";
+                    ss << "\t\t\t<Dimension start=\"1\"/>\n";
+                    ss << "\t\t\t<Start value=\"" << s->get() << "\"/>\n";
                 }
             } else if (auto b = dynamic_cast<const BoolVariable *>(v)) {
-                if (requires_start(*v)) {
+                if (with_start) {
                     ss << " start=\"" << b->get() << "\"";
                 }
             }
-            ss << "/>\n";
+            if (with_start && dynamic_cast<const StringVariable *>(v)) {
+                ss << "\t\t</String>\n";
+            } else {
+                ss << "/>\n";
+            }
+
             if (!annotations.empty()) {
                 ss << "\t\t\t<Annotations>\n";
                 for (const auto &annotation: annotations) {
@@ -420,31 +428,29 @@ namespace fmu4cpp {
         if (!unknowns.empty()) {
             for (const auto &v: unknowns) {
                 ss << "\t\t\t<Output valueReference=\"" << v->value_reference() << "\"";
-                const auto deps = v->getDependencies();
+                const auto deps = v->getDependencies(); // indices
                 if (!deps.empty()) {
                     ss << " dependencies=\"";
                     for (unsigned i = 0; i < deps.size(); i++) {
-                        ss << deps[i];
+                        ss << deps[i]-1; // valueRef is index -1
                         if (i != deps.size() - 1) {
                             ss << " ";
                         }
                     }
                     ss << "\"";
                 }
+                ss << "/>\n";
             }
-            ss << "/>\n";
         }
 
         const auto initialUnknowns = collect(integers_, reals_, booleans_, strings_, [](auto &v) {
             return (v.causality() == causality_t::OUTPUT && v.initial() == initial_t::APPROX || v.initial() == initial_t::CALCULATED) || v.causality() == causality_t::CALCULATED_PARAMETER;
         });
         if (!initialUnknowns.empty()) {
-            ss << "\t\t<InitialUnknowns>\n";
             for (const auto &v: initialUnknowns) {
-                ss << "\t\t\t<Unknown index=\"" << v->index() << "\"";
+                ss << "\t\t\t<InitialUnknown valueReference=\"" << v->index()-1 << "\"";
                 ss << "/>\n";
             }
-            ss << "\t\t</InitialUnknowns>\n";
         }
 
         ss << "\t</ModelStructure>\n";
