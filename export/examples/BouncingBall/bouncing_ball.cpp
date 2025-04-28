@@ -38,18 +38,7 @@ public:
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::FIXED));
 
-        register_variable(
-                real(
-                        "initial_height", &initialHeight_)
-                        .setCausality(causality_t::PARAMETER)
-                        .setVariability(variability_t::FIXED));
-
-
         BouncingBall::reset();
-    }
-
-    void enter_initialisation_mode() override {
-        height_ = initialHeight_;
     }
 
     bool do_step(double dt) override {
@@ -75,15 +64,13 @@ public:
     }
 
     void reset() override {
-        initialHeight_ = 10;
-        height_ = 0;
+        height_ = 10;
         velocity_ = 0;
         gravity_ = -9.81f;
         bounceFactor_ = 0.6f;
     }
 
 private:
-    double initialHeight_;// Initial height of ball
     double height_;       // Current height of the ball
     double velocity_;     // Current velocity of the ball
     double gravity_;      // Acceleration due to gravity

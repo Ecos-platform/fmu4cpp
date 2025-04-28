@@ -120,7 +120,7 @@ namespace fmu4cpp {
         }
 
         void set(T value) {
-            if (causality_ == causality_t::LOCAL || causality_ == causality_t::OUTPUT || causality_ == causality_t::INDEPENDENT) {
+            if (causality_ == causality_t::LOCAL || (causality_ == causality_t::OUTPUT && initial_ != initial_t::EXACT) || causality_ == causality_t::INDEPENDENT) {
                 throw std::logic_error("Cannot set value for variable with causality: " + to_string(causality_));
             }
 
