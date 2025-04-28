@@ -24,7 +24,7 @@
 namespace fmu4cpp {
 
     struct fmu_data {
-        logger *logger;
+        logger *fmiLogger;
         std::string instance_name;
         std::filesystem::path resourceLocation;
     };
@@ -149,8 +149,8 @@ namespace fmu4cpp {
         [[nodiscard]] std::string make_description() const;
 
         void log(const fmi2Status s, const std::string &message) {
-            if (data_.logger) {
-                data_.logger->log(s, message);
+            if (data_.fmiLogger) {
+                data_.fmiLogger->log(s, message);
             }
         }
 
