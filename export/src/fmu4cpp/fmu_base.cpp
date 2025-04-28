@@ -335,14 +335,14 @@ namespace fmu4cpp {
            << "\t</CoSimulation>"
            << "\n";
 
-        if (!m.vendorAnnotations.empty()) {
-            ss << "\t<VendorAnnotations>\n";
-            for (const auto &annotation: m.vendorAnnotations) {
-                std::string indentedAnnotation = indent_multiline_string(annotation, 3);
-                ss << indentedAnnotation << "\n";
-            }
-            ss << "\t</VendorAnnotations>\n";
-        }
+        // if (!m.vendorAnnotations.empty()) {
+        //     ss << "\t<Annotations>\n";
+        //     for (const auto &annotation: m.vendorAnnotations) {
+        //         std::string indentedAnnotation = indent_multiline_string(annotation, 3);
+        //         ss << indentedAnnotation << "\n";
+        //     }
+        //     ss << "\t</Annotations>\n";
+        // }
 
         ss << "\t<ModelVariables>\n";
 
@@ -413,14 +413,14 @@ namespace fmu4cpp {
                 ss << "/>\n";
             }
 
-            if (!annotations.empty()) {
-                ss << "\t\t\t<Annotations>\n";
-                for (const auto &annotation: annotations) {
-                    std::string indentedAnnotation = indent_multiline_string(annotation, 4);
-                    ss << indentedAnnotation << "\n";
-                }
-                ss << "\t\t\t</Annotations>\n";
-            }
+            // if (!annotations.empty()) {
+            //     ss << "\t\t\t<Annotations>\n";
+            //     for (const auto &annotation: annotations) {
+            //         std::string indentedAnnotation = indent_multiline_string(annotation, 4);
+            //         ss << indentedAnnotation << "\n";
+            //     }
+            //     ss << "\t\t\t</Annotations>\n";
+            // }
         }
 
         ss << "\t</ModelVariables>\n";
