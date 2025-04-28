@@ -37,25 +37,25 @@ public:
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_int_variable("integerIn")->index()}));
+                                  .setDependencies({"integerIn"}));
 
         register_variable(real("realOut", &real_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_real_variable("realIn")->index()}));
+                                  .setDependencies({"realIn"}));
 
         register_variable(boolean("booleanOut", &boolean_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_bool_variable("booleanIn")->index()}));
+                                  .setDependencies({"booleanIn"}));
 
         register_variable(string("stringOut", &string_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_string_variable("stringIn")->index()}));
+                                  .setDependencies({"stringIn"}));
 
         Model::reset();
     }

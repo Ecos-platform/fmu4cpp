@@ -265,11 +265,17 @@ namespace fmu4cpp {
             ss << "\t\t<Outputs>\n";
             for (const auto &v: unknowns) {
                 ss << "\t\t\t<Unknown index=\"" << v->index() << "\"";
-                const auto deps = v->getDependencies();
-                if (!deps.empty()) {
+                if (const auto deps = v->getDependencies(); !deps.empty()) {
                     ss << " dependencies=\"";
                     for (unsigned i = 0; i < deps.size(); i++) {
-                        ss << deps[i];
+                        const auto &depName = deps[i];
+                        const auto dep = std::find_if(allVars.begin(), allVars.end(), [depName](const auto &v) {
+                            return v->name() == depName;
+                        });
+                        if (dep == allVars.end()) {
+                            throw std::runtime_error("Unknown dependency: " + depName);
+                        }
+                        ss << (*dep)->index();
                         if (i != deps.size() - 1) {
                             ss << " ";
                         }
@@ -428,11 +434,17 @@ namespace fmu4cpp {
         if (!unknowns.empty()) {
             for (const auto &v: unknowns) {
                 ss << "\t\t\t<Output valueReference=\"" << v->value_reference() << "\"";
-                const auto deps = v->getDependencies(); // indices
-                if (!deps.empty()) {
+                if (const auto deps = v->getDependencies(); !deps.empty()) {
                     ss << " dependencies=\"";
                     for (unsigned i = 0; i < deps.size(); i++) {
-                        ss << deps[i]-1; // valueRef is index -1
+                        const auto &depName = deps[i];
+                        const auto dep = std::find_if(allVars.begin(), allVars.end(), [depName](const auto &v) {
+                            return v->name() == depName;
+                        });
+                        if (dep == allVars.end()) {
+                            throw std::runtime_error("Unknown dependency: " + depName);
+                        }
+                        ss << (*dep)->index() - 1;// valueRef is index -1
                         if (i != deps.size() - 1) {
                             ss << " ";
                         }
@@ -448,7 +460,7 @@ namespace fmu4cpp {
         });
         if (!initialUnknowns.empty()) {
             for (const auto &v: initialUnknowns) {
-                ss << "\t\t\t<InitialUnknown valueReference=\"" << v->index()-1 << "\"";
+                ss << "\t\t\t<InitialUnknown valueReference=\"" << v->index() - 1 << "\"";
                 ss << "/>\n";
             }
         }
