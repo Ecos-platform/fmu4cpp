@@ -13,8 +13,8 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources), reals_(4) {
+    explicit Model(const fmu4cpp::fmu_data &data)
+        : fmu_base(data), reals_(4) {
 
         for (int i = 0; i < reals_.size(); i++) {
             register_variable(
@@ -44,10 +44,7 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName,
-                                                           const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
 
 void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String category, fmi2String message, ...) {
     va_list args;
@@ -60,7 +57,7 @@ void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2St
 
 TEST_CASE("test_array") {
 
-    Model model("", "");
+    Model model({});
     const auto guid = model.guid();
 
     fmi2CallbackFunctions callbackFunctions;

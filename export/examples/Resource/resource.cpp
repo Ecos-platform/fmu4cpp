@@ -3,6 +3,7 @@
 #include <fmu4cpp/fmu_base.hpp>
 
 #include <fstream>
+#include <utility>
 
 using namespace fmu4cpp;
 
@@ -10,10 +11,10 @@ using namespace fmu4cpp;
 class Resource : public fmu_base {
 
 public:
-    Resource(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Resource(fmu_data data)
+        : fmu_base(std::move(data)) {
 
-        std::ifstream ifs(resources / "file.txt");
+        std::ifstream ifs(resourceLocation() / "file.txt");
 
         std::getline(ifs, content_);
 
@@ -38,7 +39,6 @@ public:
 
 private:
     std::string content_;
-
 };
 
 model_info fmu4cpp::get_model_info() {

@@ -7,8 +7,8 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit BouncingBall(const fmu_data &data)
+        : fmu_base(data) {
 
         register_variable(
                 real(

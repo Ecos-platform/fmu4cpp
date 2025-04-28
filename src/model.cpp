@@ -11,8 +11,8 @@ using namespace fmu4cpp;
 class Model : public fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu_data &data)
+        : fmu_base(data) {
 
         register_variable(integer(
                                   "integerIn", &integer_)
@@ -88,4 +88,4 @@ model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-FMU4CPP_INSTANTIATE(Model); // Entry point for FMI instantiate function.
+FMU4CPP_INSTANTIATE(Model);// Entry point for FMI instantiate function.

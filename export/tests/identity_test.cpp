@@ -12,8 +12,8 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu4cpp::fmu_data &data)
+        : fmu_base(data) {
 
         register_variable(integer("integerIn", &integer_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
@@ -85,10 +85,7 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName,
-                                                           const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
 
 int readInt(fmi2Component c) {
     fmi2ValueReference ref = 1;
@@ -169,7 +166,7 @@ void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2St
 
 TEST_CASE("test_identity") {
 
-    Model model("", "");
+    Model model({});
     const auto guid = model.guid();
 
     fmi2CallbackFunctions callbackFunctions;

@@ -1,14 +1,15 @@
 
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <fmu4cpp/fmu_base.hpp>
+#include <utility>
 
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(fmu4cpp::fmu_data data)
+        : fmu_base(std::move(data)) {
 
         register_variable(real("myReal", &real_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
@@ -50,13 +51,11 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return m;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
 
 TEST_CASE("basic_test") {
 
-    const auto instance = fmu4cpp::createInstance("", "");
+    const auto instance = fmu4cpp::createInstance({});
 
     double t = 0;
     const double dt = 0.1;

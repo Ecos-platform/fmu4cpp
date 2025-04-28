@@ -9,8 +9,8 @@ constexpr double pi = 3.14159265358979323846;
 
 class SimplePendulum : public fmu_base {
 public:
-    SimplePendulum(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit SimplePendulum(const fmu_data &data)
+        : fmu_base(data) {
 
         register_variable(real("angle", &angle_)
                                   .setCausality(causality_t::OUTPUT)

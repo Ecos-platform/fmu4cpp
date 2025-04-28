@@ -16,29 +16,34 @@
 
 #include <filesystem>
 
-#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                                   \
-    std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName,                    \
-                                                      const std::filesystem::path &fmuResourceLocation) { \
-        return std::make_unique<MODELCLASS>(instanceName, fmuResourceLocation);                           \
+#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                         \
+    std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const fmu4cpp::fmu_data &data) { \
+        return std::make_unique<MODELCLASS>(data);                                              \
     }
 
 namespace fmu4cpp {
 
+    struct fmu_data {
+        logger *logger;
+        std::string instance_name;
+        std::filesystem::path resourceLocation;
+    };
+
     class fmu_base {
 
     public:
-        fmu_base(std::string instance_name, std::filesystem::path resourceLocation)
-            : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
+        explicit fmu_base(fmu_data data)
+            : data_(std::move(data)) {}
 
         fmu_base(const fmu_base &) = delete;
         fmu_base(const fmu_base &&) = delete;
 
         [[nodiscard]] std::string instanceName() const {
-            return instanceName_;
+            return data_.instance_name;
         }
 
         [[nodiscard]] const std::filesystem::path &resourceLocation() const {
-            return resourceLocation_;
+            return data_.resourceLocation;
         }
 
         [[nodiscard]] std::optional<IntVariable> get_int_variable(const std::string &name) const {
@@ -143,13 +148,9 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::string make_description() const;
 
-        void __set_logger(logger *logger) {
-            logger_ = logger;
-        }
-
         void log(const fmi2Status s, const std::string &message) {
-            if (logger_) {
-                logger_->log(s, message);
+            if (data_.logger) {
+                data_.logger->log(s, message);
             }
         }
 
@@ -199,11 +200,8 @@ namespace fmu4cpp {
 
 
     private:
-        logger *logger_ = nullptr;
+        fmu_data data_;
         size_t numVariables_{1};
-
-        std::string instanceName_;
-        std::filesystem::path resourceLocation_;
 
         std::vector<IntVariable> integers_;
         std::vector<RealVariable> reals_;
@@ -215,7 +213,7 @@ namespace fmu4cpp {
 
     model_info get_model_info();
 
-    std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation);
+    std::unique_ptr<fmu_base> createInstance(const fmu_data &data);
 
 }// namespace fmu4cpp
 
