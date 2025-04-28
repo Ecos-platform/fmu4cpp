@@ -66,32 +66,32 @@ namespace fmu4cpp {
         return indentedString;
     }
 
-    IntVariable fmu_base::integer(const std::string &name, int *ptr) {
-        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr};
+    IntVariable fmu_base::integer(const std::string &name, int *ptr, const std::function<void(int)>& onChange) {
+        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
     IntVariable fmu_base::integer(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, getter, setter};
     }
 
-    RealVariable fmu_base::real(const std::string &name, double *ptr) {
-        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr};
+    RealVariable fmu_base::real(const std::string &name, double *ptr, const std::function<void(double)>& onChange) {
+        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
     RealVariable fmu_base::real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, getter, setter};
     }
 
-    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr) {
-        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr};
+    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr, const std::function<void(bool)>& onChange) {
+        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
     BoolVariable fmu_base::boolean(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, getter, setter};
     }
 
-    StringVariable fmu_base::string(const std::string &name, std::string *ptr) {
-        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr};
+    StringVariable fmu_base::string(const std::string &name, std::string *ptr, const std::function<void(std::string)>& onChange) {
+        return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
     StringVariable fmu_base::string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
