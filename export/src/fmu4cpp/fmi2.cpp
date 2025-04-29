@@ -13,25 +13,6 @@
 
 namespace {
 
-    fmiStatus toCommonStatusFromFmi2(fmi2Status status) {
-        switch (status) {
-            case fmi2OK:
-                return fmiOK;
-            case fmi2Warning:
-                return fmiWarning;
-            case fmi2Discard:
-                return fmiDiscard;
-            case fmi2Error:
-                return fmiError;
-            case fmi2Fatal:
-                return fmiFatal;
-            case fmi2Pending:
-                return fmiPending;
-            default:
-                return fmiStatusUnknown;
-        }
-    }
-
     fmi2Status toFmi2StatusFromCommon(fmiStatus status) {
         switch (status) {
             case fmiOK:
@@ -178,10 +159,10 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
         component->slave->enter_initialisation_mode(component->start, component->stop, component->tolerance);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -192,10 +173,10 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         component->slave->exit_initialisation_mode();
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -206,10 +187,10 @@ fmi2Status fmi2Terminate(fmi2Component c) {
         component->slave->terminate();
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -229,10 +210,10 @@ fmi2Status fmi2DoStep(
 
         return fmi2Discard;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -258,10 +239,10 @@ fmi2Status fmi2GetInteger(
         component->slave->get_integer(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -277,10 +258,10 @@ fmi2Status fmi2GetReal(
         component->slave->get_real(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -296,10 +277,10 @@ fmi2Status fmi2GetBoolean(
         component->slave->get_boolean(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -315,10 +296,10 @@ fmi2Status fmi2GetString(
         component->slave->get_string(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -334,10 +315,10 @@ fmi2Status fmi2SetInteger(
         component->slave->set_integer(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -353,10 +334,10 @@ fmi2Status fmi2SetReal(
         component->slave->set_real(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -372,10 +353,10 @@ fmi2Status fmi2SetBoolean(
         component->slave->set_boolean(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
@@ -391,10 +372,10 @@ fmi2Status fmi2SetString(
         component->slave->set_string(vr, nvr, value);
         return fmi2OK;
     } catch (const fmu4cpp::fatal_error &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Fatal), ex.what());
+        component->logger->log(fmiFatal, ex.what());
         return fmi2Fatal;
     } catch (const std::exception &ex) {
-        component->logger->log(toCommonStatusFromFmi2(fmi2Error), ex.what());
+        component->logger->log(fmiError, ex.what());
         return fmi2Error;
     }
 }
