@@ -13,8 +13,8 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources), reals_(4) {
+    explicit Model(const fmu4cpp::fmu_data &data)
+        : fmu_base(data), reals_(4) {
 
         for (int i = 0; i < reals_.size(); i++) {
             register_variable(
@@ -58,7 +58,7 @@ void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2St
 
 TEST_CASE("test_array") {
 
-    Model model("", "");
+    Model model({});
     const auto guid = model.guid();
 
     std::cout << model.make_description_v2() << std::endl;

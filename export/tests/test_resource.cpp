@@ -7,10 +7,9 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
 
-        std::ifstream file(resources.string() + "/data.txt");
+        std::ifstream file(resourceLocation().string() + "/data.txt");
 
         std::getline(file, data_);
 
@@ -46,7 +45,7 @@ TEST_CASE("model with resource") {
 
     std::string expected{"Hello resource!"};
 
-    const auto instance = fmu4cpp::createInstance("myInstance", TEST_CASE_RESOURCE_LOCATION);
+    const auto instance = fmu4cpp::createInstance({nullptr, "myInstance", TEST_CASE_RESOURCE_LOCATION});
 
     auto strVar = instance->get_string_variable("data");
     REQUIRE(strVar);

@@ -51,16 +51,15 @@ namespace {
     // A struct that holds all the data for one model instance.
     struct Fmi2Component {
 
-        Fmi2Component(std::unique_ptr<fmu4cpp::fmu_base> slave, const fmi2CallbackFunctions *callbackFunctions)
+        Fmi2Component(std::unique_ptr<fmu4cpp::fmu_base> slave, std::unique_ptr<fmi2Logger> logger)
             : lastSuccessfulTime{std::numeric_limits<double>::quiet_NaN()},
               slave(std::move(slave)),
-              logger(std::make_unique<fmi2Logger>(this->slave->instanceName(), callbackFunctions)) {
-            this->slave->__set_logger(logger.get());
-        }
+              logger(std::move(logger)) {}
 
         double lastSuccessfulTime{0};
+
         std::unique_ptr<fmu4cpp::fmu_base> slave;
-        std::unique_ptr<fmu4cpp::logger> logger;
+        std::unique_ptr<fmi2Logger> logger;
 
         double start{0};
         std::optional<double> stop;
@@ -80,7 +79,7 @@ const char *fmi2GetVersion(void) {
 }
 
 FMI2_Export void write_description(const char *location) {
-    const auto instance = fmu4cpp::createInstance("", "");
+    const auto instance = fmu4cpp::createInstance({});
     const auto xml = instance->make_description_v2();
     std::ofstream of(location);
     of << xml;
@@ -117,18 +116,27 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
         resources.replace(0, 6 - magic, "");
     }
 
-    auto slave = fmu4cpp::createInstance(instanceName, resources);
+    auto logger = std::make_unique<fmi2Logger>(instanceName, functions);
+
+    auto slave = fmu4cpp::createInstance({logger.get(), instanceName, resources});
     const auto guid = slave->guid();
     if (guid != fmuGUID) {
         std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
-        fmi2Logger l(instanceName, functions);
-        l.log(fmiFatal, "Error. Wrong guid!");
+        logger->log(fmiFatal, "Error. Wrong guid!");
         return nullptr;
     }
 
-    auto c = std::make_unique<Fmi2Component>(std::move(slave), functions);
-    c->logger->setDebugLogging(loggingOn);
-    return c.release();
+    try {
+        auto c = std::make_unique<Fmi2Component>(std::move(slave), std::move(logger));
+        c->logger->setDebugLogging(loggingOn);
+
+        return c.release();
+    } catch (const std::exception &e) {
+
+        logger->log(fmiFatal, "Unable to instantiate model! " + std::string(e.what()));
+
+        return nullptr;
+    }
 }
 
 fmi2Status fmi2SetupExperiment(fmi2Component c,

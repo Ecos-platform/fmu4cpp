@@ -12,8 +12,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
 
         register_variable(integer("integerIn", &integer_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
@@ -159,7 +158,7 @@ void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2St
 
 TEST_CASE("test_identity") {
 
-    Model model("", "");
+    Model model({});
     const auto guid = model.guid();
 
     const auto realIn = model.get_real_variable("realIn");

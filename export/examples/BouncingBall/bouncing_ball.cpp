@@ -10,8 +10,7 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit BouncingBall(const fmu_data &data) : fmu_base(data) {
 
         register_variable(
                 real(
@@ -71,10 +70,10 @@ public:
     }
 
 private:
-    double height_;       // Current height of the ball
-    double velocity_;     // Current velocity of the ball
-    double gravity_;      // Acceleration due to gravity
-    double bounceFactor_; // Factor to reduce velocity on bounce
+    double height_{};      // Current height of the ball
+    double velocity_{};    // Current velocity of the ball
+    double gravity_{};     // Acceleration due to gravity
+    double bounceFactor_{};// Factor to reduce velocity on bounce
 };
 
 model_info fmu4cpp::get_model_info() {

@@ -57,17 +57,14 @@ namespace {
             Invalid = 1 << 4
         };
 
-        Fmi3Component(std::unique_ptr<fmu4cpp::fmu_base> slave, fmi3InstanceEnvironment env, fmi3LogMessageCallback logCallback)
+        Fmi3Component(std::unique_ptr<fmu4cpp::fmu_base> slave, std::unique_ptr<fmi3Logger> logger)
             : state(State::Instantiated),
               slave(std::move(slave)),
-              logger(std::make_unique<fmi3Logger>(env, logCallback, this->slave->instanceName())) {
-
-            this->slave->__set_logger(logger.get());
-        }
+              logger(std::move(logger)) { }
 
         State state;
         std::unique_ptr<fmu4cpp::fmu_base> slave;
-        std::unique_ptr<fmu4cpp::logger> logger;
+        std::unique_ptr<fmi3Logger> logger;
     };
 
 #define FMU_TYPE(type) fmi3##type
@@ -105,7 +102,7 @@ const char *fmi3GetVersion(void) {
 }
 
 FMI3_Export void write_description(const char *location) {
-    const auto instance = fmu4cpp::createInstance("", "");
+    const auto instance = fmu4cpp::createInstance({});
     const auto xml = instance->make_description_v3();
     std::ofstream of(location);
     of << xml;
@@ -175,24 +172,24 @@ fmi3Instance fmi3InstantiateCoSimulation(
         resources.replace(0, 6 - magic, "");
     }
 
-    auto slave = fmu4cpp::createInstance(instanceName, resources);
+    auto logger = std::make_unique<fmi3Logger>(instanceEnvironment, logMessage, instanceName);
+
+    auto slave = fmu4cpp::createInstance({logger.get(), instanceName, resources});
     const auto guid = slave->guid();
     if (guid != instantiationToken) {
         std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
-        fmi3Logger l(instanceEnvironment, logMessage, instanceName);
-        l.log(fmiFatal, "Error. Wrong guid!");
+        logger->log(fmiFatal, "Error. Wrong guid!");
         return nullptr;
     }
 
     try {
-        auto c = std::make_unique<Fmi3Component>(std::move(slave), instanceEnvironment, logMessage);
+        auto c = std::make_unique<Fmi3Component>(std::move(slave), std::move(logger));
         c->logger->setDebugLogging(loggingOn);
 
         return c.release();
     } catch (const std::exception &e) {
 
-        fmi3Logger l(instanceEnvironment, logMessage, instanceName);
-        l.log(fmiFatal, "Unable to instantiate model! " + std::string(e.what()));
+        logger->log(fmiFatal, "Unable to instantiate model! " + std::string(e.what()));
 
         return nullptr;
     }

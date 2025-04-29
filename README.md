@@ -26,14 +26,15 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const std::string &instanceName, const std::string &resources)
-        : fmu_base(instanceName, resources) {
+    BouncingBall(const fmu_data& data)
+        : fmu_base(data) {
 
         register_variable(
                 real(
                         "height", &height)
                         .setCausality(causality_t::OUTPUT)
-                        .setVariability(variability_t::CONTINUOUS));
+                        .setVariability(variability_t::CONTINUOUS))
+                        .setInitial(initial_t::EXACT));
 
         register_variable(
                 real(
@@ -80,10 +81,10 @@ public:
     }
 
 private:
-    double height;      // Current height of the ball
-    double velocity;    // Current velocity of the ball
-    double gravity;     // Acceleration due to gravity
-    double bounceFactor;// Factor to reduce velocity on bounce
+    double height{};      // Current height of the ball
+    double velocity{};    // Current velocity of the ball
+    double gravity{};     // Acceleration due to gravity
+    double bounceFactor{};// Factor to reduce velocity on bounce
 };
 
 model_info fmu4cpp::get_model_info() {

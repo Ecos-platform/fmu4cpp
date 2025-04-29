@@ -7,8 +7,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
 
         register_variable(real("myReal", &real_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
@@ -55,7 +54,7 @@ FMU4CPP_INSTANTIATE(Model);
 
 TEST_CASE("basic_test") {
 
-    const auto instance = fmu4cpp::createInstance("", "");
+    const auto instance = fmu4cpp::createInstance({});
 
     double t = 0;
     const double dt = 0.1;
