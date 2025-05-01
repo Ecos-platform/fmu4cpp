@@ -24,8 +24,6 @@ namespace {
                 return fmi2Error;
             case fmiFatal:
                 return fmi2Fatal;
-            case fmiPending:
-                return fmi2Pending;
             default:
                 return fmi2Error;
         }

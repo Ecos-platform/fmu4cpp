@@ -8,7 +8,6 @@ typedef enum {
     fmiDiscard,
     fmiError,
     fmiFatal,
-    fmiPending, // Only used in FMI 2
     fmiStatusUnknown // Optional: for error handling or undefined states
 } fmiStatus;
 
