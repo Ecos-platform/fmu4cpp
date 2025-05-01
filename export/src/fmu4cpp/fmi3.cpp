@@ -117,9 +117,8 @@ fmi3Instance fmi3InstantiateModelExchange(fmi3String instanceName,
                                           fmi3InstanceEnvironment instanceEnvironment,
                                           fmi3LogMessageCallback logMessage) {
 
-    std::cerr << "[fmu4cpp] Unsupported mode: Model Exchange" << std::endl;
     fmi3Logger l(instanceEnvironment, logMessage, instanceName);
-    l.log(fmiFatal, "Unsupported mode: Model Exchange");
+    l.log(fmiFatal, "[fmu4cpp] Unsupported mode: Model Exchange");
     return nullptr;
 }
 
@@ -135,9 +134,8 @@ fmi3Instance fmi3InstantiateScheduledExecution(
         fmi3LockPreemptionCallback lockPreemption,
         fmi3UnlockPreemptionCallback unlockPreemption) {
 
-    std::cerr << "[fmu4cpp] Unsupported mode: Scheduled Execution" << std::endl;
     fmi3Logger l(instanceEnvironment, logMessage, instanceName);
-    l.log(fmiFatal, "Unsupported mode: Scheduled Execution");
+    l.log(fmiFatal, "[fmu4cpp] Unsupported mode: Scheduled Execution");
     return nullptr;
 }
 
@@ -173,23 +171,22 @@ fmi3Instance fmi3InstantiateCoSimulation(
     }
 
     auto logger = std::make_unique<fmi3Logger>(instanceEnvironment, logMessage, instanceName);
+    logger->setDebugLogging(loggingOn);
 
     auto slave = fmu4cpp::createInstance({logger.get(), instanceName, resources});
     const auto guid = slave->guid();
     if (guid != instantiationToken) {
-        std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
-        logger->log(fmiFatal, "Error. Wrong guid!");
+        logger->log(fmiFatal, "[fmu4cpp] Error. Wrong guid!");
         return nullptr;
     }
 
     try {
         auto c = std::make_unique<Fmi3Component>(std::move(slave), std::move(logger));
-        c->logger->setDebugLogging(loggingOn);
 
         return c.release();
     } catch (const std::exception &e) {
 
-        logger->log(fmiFatal, "Unable to instantiate model! " + std::string(e.what()));
+        logger->log(fmiFatal, "[fmu4cpp] Unable to instantiate model! " + std::string(e.what()));
 
         return nullptr;
     }

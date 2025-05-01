@@ -2,7 +2,6 @@
 #include "fmi2/fmi2Functions.h"
 
 #include <fstream>
-#include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
@@ -94,8 +93,11 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
                               fmi2Boolean /*visible*/,
                               fmi2Boolean loggingOn) {
 
+    auto logger = std::make_unique<fmi2Logger>(instanceName, functions);
+    logger->setDebugLogging(loggingOn);
+
     if (fmuType != fmi2CoSimulation) {
-        std::cerr << "[fmu4cpp] Error. Unsupported fmuType!" << std::endl;
+        logger->log(fmiFatal, "[fmu4cpp] Error. Unsupported fmuType!");
         return nullptr;
     }
 
@@ -116,24 +118,20 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
         resources.replace(0, 6 - magic, "");
     }
 
-    auto logger = std::make_unique<fmi2Logger>(instanceName, functions);
-
     auto slave = fmu4cpp::createInstance({logger.get(), instanceName, resources});
     const auto guid = slave->guid();
     if (guid != fmuGUID) {
-        std::cerr << "[fmu4cpp] Error. Wrong guid!" << std::endl;
-        logger->log(fmiFatal, "Error. Wrong guid!");
+        logger->log(fmiFatal, "[fmu4cpp] Error. Wrong guid!");
         return nullptr;
     }
 
     try {
         auto c = std::make_unique<Fmi2Component>(std::move(slave), std::move(logger));
-        c->logger->setDebugLogging(loggingOn);
 
         return c.release();
     } catch (const std::exception &e) {
 
-        logger->log(fmiFatal, "Unable to instantiate model! " + std::string(e.what()));
+        logger->log(fmiFatal, "[fmu4cpp] Unable to instantiate model! " + std::string(e.what()));
 
         return nullptr;
     }
