@@ -1,6 +1,6 @@
 
 function(make_test modelIdentifier sources)
-    add_executable(${modelIdentifier} ${sources} "$<TARGET_OBJECTS:fmu4cpp>")
+    add_executable(${modelIdentifier} ${sources} "$<TARGET_OBJECTS:fmu4cpp_base>" "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
     add_test(NAME ${modelIdentifier} COMMAND ${modelIdentifier})
     target_link_libraries(${modelIdentifier} PUBLIC Catch2::Catch2WithMain)
     target_compile_definitions(${modelIdentifier}

@@ -12,8 +12,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
 
         register_variable(integer("integerIn", &integer_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)
@@ -36,30 +35,30 @@ public:
                                   .setCausality(fmu4cpp::causality_t::OUTPUT)
                                   .setVariability(fmu4cpp::variability_t::DISCRETE)
                                   .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({get_int_variable("integerIn")->index()}));
+                                  .setDependencies({"integerIn"}));
 
         register_variable(real("realOut", &real_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT)
                                   .setVariability(fmu4cpp::variability_t::DISCRETE)
                                   .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({get_real_variable("realIn")->index()}));
+                                  .setDependencies({"realIn"}));
 
         register_variable(boolean("booleanOut", &boolean_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT)
                                   .setVariability(fmu4cpp::variability_t::DISCRETE)
                                   .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({get_bool_variable("booleanIn")->index()}));
+                                  .setDependencies({"booleanIn"}));
 
         register_variable(string("stringOut", [this] { return string_; })
                                   .setCausality(fmu4cpp::causality_t::OUTPUT)
                                   .setVariability(fmu4cpp::variability_t::DISCRETE)
                                   .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({get_string_variable("stringIn")->index()}));
+                                  .setDependencies({"stringIn"}));
 
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         return true;
     }
 
@@ -85,68 +84,58 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName,
-                                                           const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
 
-int readInt(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+
+int readInt(fmi2Component c, fmi2ValueReference ref) {
     fmi2Integer value;
     REQUIRE(fmi2GetInteger(c, &ref, 1, &value) == fmi2OK);
 
     return value;
 }
 
-void setInt(fmi2Component c, int value) {
-    fmi2ValueReference ref = 0;
+void setInt(fmi2Component c, fmi2ValueReference ref, int value) {
     REQUIRE(fmi2SetInteger(c, &ref, 1, &value) == fmi2OK);
 }
 
-double readReal(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+double readReal(fmi2Component c, fmi2ValueReference ref) {
     fmi2Real value;
     REQUIRE(fmi2GetReal(c, &ref, 1, &value) == fmi2OK);
 
     return value;
 }
 
-void setReal(fmi2Component c, double value) {
-    fmi2ValueReference ref = 0;
+void setReal(fmi2Component c, fmi2ValueReference ref, double value) {
     REQUIRE(fmi2SetReal(c, &ref, 1, &value) == fmi2OK);
 }
 
-bool readBool(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+bool readBool(fmi2Component c, fmi2ValueReference ref) {
     fmi2Boolean value;
     REQUIRE(fmi2GetBoolean(c, &ref, 1, &value) == fmi2OK);
 
     return value;
 }
 
-void setBool(fmi2Component c, bool value) {
-    fmi2ValueReference ref = 0;
+void setBool(fmi2Component c, fmi2ValueReference ref, bool value) {
     fmi2Boolean value_ = value;
     REQUIRE(fmi2SetBoolean(c, &ref, 1, &value_) == fmi2OK);
 }
 
 
-std::string readString(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+std::string readString(fmi2Component c, fmi2ValueReference ref) {
     fmi2String value;
     REQUIRE(fmi2GetString(c, &ref, 1, &value) == fmi2OK);
 
     return value;
 }
 
-void setString(fmi2Component c, const std::string &value) {
-    fmi2ValueReference ref = 0;
+void setString(fmi2Component c, fmi2ValueReference ref, const std::string &value) {
     fmi2String value_ = value.c_str();
     REQUIRE(fmi2SetString(c, &ref, 1, &value_) == fmi2OK);
 }
 
-void setOutput(fmi2Component c) {
-    fmi2ValueReference ref = 1;
+void setOutputFail(fmi2Component c) {
+    fmi2ValueReference ref = 999;// out of bounds
     fmi2Integer i = 0;
     fmi2String s = "";
     fmi2Real r = 0;
@@ -158,7 +147,7 @@ void setOutput(fmi2Component c) {
     REQUIRE(fmi2SetBoolean(c, &ref, 1, &b) == fmi2Error);
 }
 
-void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String category, fmi2String message, ...) {
+void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String /*category*/, fmi2String message, ...) {
     va_list args;
     va_start(args, message);
     char msgstr[1024];
@@ -169,24 +158,33 @@ void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2St
 
 TEST_CASE("test_identity") {
 
-    Model model("", "");
+    Model model({});
     const auto guid = model.guid();
+
+    const auto realIn = model.get_real_variable("realIn");
+    const auto stringIn = model.get_string_variable("stringIn");
+    const auto integerIn = model.get_int_variable("integerIn");
+    const auto booleanIn = model.get_bool_variable("booleanIn");
+
+    const auto realOut = model.get_real_variable("realOut");
+    const auto stringOut = model.get_string_variable("stringOut");
+    const auto integerOut = model.get_int_variable("integerOut");
+    const auto booleanOut = model.get_bool_variable("booleanOut");
 
     fmi2CallbackFunctions callbackFunctions;
     callbackFunctions.logger = &fmilogger;
 
-    auto c = fmi2Instantiate("identity", fmi2CoSimulation, guid.c_str(), "", &callbackFunctions, false, true);
+    const auto c = fmi2Instantiate("identity", fmi2CoSimulation, guid.c_str(), "", &callbackFunctions, false, true);
     REQUIRE(c);
 
     REQUIRE(fmi2EnterInitializationMode(c) == fmi2OK);
     REQUIRE(fmi2ExitInitializationMode(c) == fmi2OK);
     REQUIRE(fmi2SetupExperiment(c, false, 0, 0, false, 0) == fmi2OK);
 
-    REQUIRE(readReal(c) == Catch::Approx(0));
-    REQUIRE(readString(c) == "empty");
-    REQUIRE(readInt(c) == 0);
-    REQUIRE(readBool(c) == false);
-
+    REQUIRE(readReal(c, realOut->value_reference()) == Catch::Approx(0));
+    REQUIRE(readString(c, stringOut->value_reference()) == "empty");
+    REQUIRE(readInt(c, integerOut->value_reference()) == 0);
+    REQUIRE(readBool(c, booleanOut->value_reference()) == false);
 
     double t{0};
     const double dt{0.1};
@@ -195,22 +193,24 @@ TEST_CASE("test_identity") {
     int counter{0};
     while (t < 1) {
 
-        setInt(c, counter);
-        setReal(c, t);
-        setString(c, std::to_string(t));
-        setBool(c, b);
+        setInt(c, integerIn->value_reference(), counter);
+        setReal(c, realIn->value_reference(), t);
+        setString(c, stringIn->value_reference(), std::to_string(t));
+        setBool(c, booleanIn->value_reference(), b);
+
         REQUIRE(fmi2DoStep(c, t, dt, true) == fmi2OK);
-        REQUIRE(readReal(c) == Catch::Approx(t));
-        REQUIRE(readString(c) == std::to_string(t));
-        REQUIRE(readInt(c) == counter);
-        REQUIRE(readBool(c) == b);
+
+        REQUIRE(readReal(c, realOut->value_reference()) == Catch::Approx(t));
+        REQUIRE(readString(c, stringOut->value_reference()) == std::to_string(t));
+        REQUIRE(readInt(c, integerOut->value_reference()) == counter);
+        REQUIRE(readBool(c, booleanOut->value_reference()) == b);
 
         t += dt;
         counter++;
         b = !b;
     }
 
-    setOutput(c);
+    setOutputFail(c);
 
     REQUIRE(fmi2Terminate(c) == fmi2OK);
 

@@ -3,7 +3,6 @@
 //
 
 #include <fmu4cpp/fmu_base.hpp>
-#include <utility>
 
 
 using namespace fmu4cpp;
@@ -11,8 +10,7 @@ using namespace fmu4cpp;
 class Model : public fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu_data &data) : fmu_base(data) {
 
         register_variable(integer(
                                   "integerIn", &integer_)
@@ -38,31 +36,31 @@ public:
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_int_variable("integerIn")->index()}));
+                                  .setDependencies({"integerIn"}));
 
         register_variable(real("realOut", &real_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_real_variable("realIn")->index()}));
+                                  .setDependencies({"realIn"}));
 
         register_variable(boolean("booleanOut", &boolean_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_bool_variable("booleanIn")->index()}));
+                                  .setDependencies({"booleanIn"}));
 
         register_variable(string("stringOut", &string_)
                                   .setCausality(causality_t::OUTPUT)
                                   .setVariability(variability_t::DISCRETE)
                                   .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({get_string_variable("stringIn")->index()}));
+                                  .setDependencies({"stringIn"}));
 
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
-        log(fmi2OK, "hello@ " + std::to_string(currentTime));
+    bool do_step(double dt) override {
+        log(fmiOK, "hello@ " + std::to_string(currentTime()));
         return true;
     }
 
@@ -74,9 +72,9 @@ public:
     }
 
 private:
-    int integer_;
-    double real_;
-    bool boolean_;
+    int integer_{};
+    double real_{};
+    bool boolean_{};
     std::string string_;
 };
 
@@ -88,4 +86,4 @@ model_info fmu4cpp::get_model_info() {
     return info;
 }
 
-FMU4CPP_INSTANTIATE(Model); // Entry point for FMI instantiate function.
+FMU4CPP_INSTANTIATE(Model);// Entry point for FMI instantiate function.

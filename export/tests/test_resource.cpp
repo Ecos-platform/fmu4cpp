@@ -7,10 +7,9 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    Model(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
 
-        std::ifstream file(resources.string() + "/data.txt");
+        std::ifstream file(resourceLocation().string() + "/data.txt");
 
         std::getline(file, data_);
 
@@ -20,7 +19,7 @@ public:
         Model::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
 
         return true;
     }
@@ -39,27 +38,25 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     return m;
 }
 
-std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation) {
-    return std::make_unique<Model>(instanceName, fmuResourceLocation);
-}
+FMU4CPP_INSTANTIATE(Model);
+
 
 TEST_CASE("model with resource") {
 
     std::string expected{"Hello resource!"};
 
-    const auto instance = fmu4cpp::createInstance("myInstance", TEST_CASE_RESOURCE_LOCATION);
+    const auto instance = fmu4cpp::createInstance({nullptr, "myInstance", TEST_CASE_RESOURCE_LOCATION});
 
     auto strVar = instance->get_string_variable("data");
     REQUIRE(strVar);
 
     double t = 0;
     double dt = 0.1;
-    instance->setup_experiment(t, {}, {});
-    instance->enter_initialisation_mode();
+    instance->enter_initialisation_mode(t, {}, {});
     instance->exit_initialisation_mode();
 
     while (t < 10) {
-        instance->do_step(t, dt);
+        instance->step(t, dt);
 
         REQUIRE(strVar->get() == expected);
 

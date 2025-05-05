@@ -5,7 +5,7 @@ add_library(${modelIdentifier} SHARED
 )
 
 # Generate FMU
-generateFMU("${modelIdentifier}" "${PROJECT_SOURCE_DIR}/resources")
+generateFMU("${modelIdentifier}" ${fmi_version} RESOURCE_FOLDER "${PROJECT_SOURCE_DIR}/resources")
 
 # write the identifier to file so that the CI process knows what to package
 set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/model.txt")

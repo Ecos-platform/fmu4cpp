@@ -20,7 +20,8 @@ namespace fmu4cpp {
     class PtrAccess final : public VariableAccess<T> {
 
     public:
-        explicit PtrAccess(T *ptr) : ptr_(ptr) {}
+        explicit PtrAccess(T *ptr, const std::function<void(T)>& onChange)
+        : ptr_(ptr), onChange_(onChange) {}
 
         T get() override {
             return *ptr_;
@@ -28,10 +29,12 @@ namespace fmu4cpp {
 
         void set(T value) override {
             *ptr_ = value;
+            if (onChange_) onChange_(value);
         }
 
     private:
         T *ptr_;
+        std::function<void(T)> onChange_;
     };
 
     template<typename T>

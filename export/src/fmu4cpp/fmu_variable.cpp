@@ -17,6 +17,8 @@ namespace fmu4cpp {
                 return "local";
             case causality_t::OUTPUT:
                 return "output";
+            case causality_t::INDEPENDENT:
+                return "independent";
         }
         throw std::logic_error("Invalid causality encountered");
     }

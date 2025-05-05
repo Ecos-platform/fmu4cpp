@@ -1,7 +1,7 @@
 # FMU4cpp
 
 FMU4cpp is a GitHub template repository that allows you to easily create cross-platform FMUs 
-compatible with [FMI 2.0](https://fmi-standard.org/downloads/) for Co-simulation using CMake and C++.
+compatible with [FMI 2.0](https://fmi-standard.org/downloads/) & [FMI 3.0](https://fmi-standard.org/docs/3.0/) for Co-simulation using CMake and C++.
 
 The framework generates the required `modelDescription.xml` and further packages 
 the necessary content into a ready-to-use FMU archive.
@@ -9,8 +9,9 @@ the necessary content into a ready-to-use FMU archive.
 ### How do I get started?
 
 1. Change the value of the `modelIdentifier` variable in `CMakeLists.txt` to something more appropriate.
-2. Edit the content of [model.cpp](src/model.cpp).
-3. Build.
+2. Select between FMI 2 or FMI 3 export.
+3. Edit the content of [model.cpp](src/model.cpp).
+4. Build.
 
 An FMU named `<modelIdentifier>.fmu` is now located in a folder `\<modelIdentifier>` within your build folder.
 
@@ -25,14 +26,15 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const std::string &instanceName, const std::string &resources)
-        : fmu_base(instanceName, resources) {
+    BouncingBall(const fmu_data& data)
+        : fmu_base(data) {
 
         register_variable(
                 real(
                         "height", &height)
                         .setCausality(causality_t::OUTPUT)
-                        .setVariability(variability_t::CONTINUOUS));
+                        .setVariability(variability_t::CONTINUOUS))
+                        .setInitial(initial_t::EXACT));
 
         register_variable(
                 real(
@@ -56,7 +58,7 @@ public:
         BouncingBall::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         // Update velocity with gravity
         velocity += gravity * dt;
         // Update height with current velocity
@@ -79,10 +81,10 @@ public:
     }
 
 private:
-    double height;      // Current height of the ball
-    double velocity;    // Current velocity of the ball
-    double gravity;     // Acceleration due to gravity
-    double bounceFactor;// Factor to reduce velocity on bounce
+    double height{};      // Current height of the ball
+    double velocity{};    // Current velocity of the ball
+    double gravity{};     // Acceleration due to gravity
+    double bounceFactor{};// Factor to reduce velocity on bounce
 };
 
 model_info fmu4cpp::get_model_info() {

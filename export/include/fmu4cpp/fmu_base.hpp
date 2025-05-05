@@ -16,29 +16,39 @@
 
 #include <filesystem>
 
-#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                                   \
-    std::unique_ptr<fmu_base> fmu4cpp::createInstance(const std::string &instanceName,                    \
-                                                      const std::filesystem::path &fmuResourceLocation) { \
-        return std::make_unique<MODELCLASS>(instanceName, fmuResourceLocation);                           \
+#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                         \
+    std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const fmu4cpp::fmu_data &data) { \
+        return std::make_unique<MODELCLASS>(data);                                              \
     }
 
 namespace fmu4cpp {
 
+    struct fmu_data {
+        logger *fmiLogger{nullptr};
+        std::string instanceName{};
+        std::filesystem::path resourceLocation{};
+    };
+
     class fmu_base {
 
     public:
-        fmu_base(std::string instance_name, std::filesystem::path resourceLocation)
-            : instanceName_(std::move(instance_name)), resourceLocation_(std::move(resourceLocation)) {}
+        explicit fmu_base(fmu_data data)
+            : data_(std::move(data)) {
+
+            register_variable(real("time", &time_)
+                                      .setCausality(causality_t::INDEPENDENT)
+                                      .setVariability(variability_t::CONTINUOUS));
+        }
 
         fmu_base(const fmu_base &) = delete;
         fmu_base(const fmu_base &&) = delete;
 
         [[nodiscard]] std::string instanceName() const {
-            return instanceName_;
+            return data_.instanceName;
         }
 
         [[nodiscard]] const std::filesystem::path &resourceLocation() const {
-            return resourceLocation_;
+            return data_.resourceLocation;
         }
 
         [[nodiscard]] std::optional<IntVariable> get_int_variable(const std::string &name) const {
@@ -69,13 +79,35 @@ namespace fmu4cpp {
             return std::nullopt;
         }
 
-        virtual void setup_experiment(double start, std::optional<double> stop, std::optional<double> tolerance);
-
-        virtual void enter_initialisation_mode();
+        void enter_initialisation_mode(double start, std::optional<double> stop, std::optional<double> tolerance) {
+            time_ = start;
+            stop_ = stop;
+            tolerance_ = tolerance;
+            enter_initialisation_mode();
+        }
 
         virtual void exit_initialisation_mode();
 
-        virtual bool do_step(double currentTime, double dt) = 0;
+        bool step(double currentTime, double dt) {
+
+            if (stop_ && currentTime >= *stop_) {
+                log(fmiWarning, "Stop time reached");
+                return false;
+            }
+
+            constexpr double TIME_TOLERANCE = 1e-9;
+            if (std::abs(currentTime - time_) > TIME_TOLERANCE) {
+                throw std::runtime_error("Current time does not match the internal time (within tolerance)");
+            }
+
+            if (do_step(dt)) {
+                time_ += dt;
+
+                return true;
+            }
+
+            return false;
+        }
 
         virtual void terminate();
 
@@ -84,21 +116,34 @@ namespace fmu4cpp {
         void get_integer(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = integers_[ref].get();
+                const auto idx = vrToIntegerIndices_.at(ref);
+                value[i] = integers_[idx].get();
             }
         }
 
         void get_real(const unsigned int vr[], size_t nvr, double value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = reals_[ref].get();
+                const auto idx = vrToRealIndices_.at(ref);
+                value[i] = reals_[idx].get();
             }
         }
 
+        //fmi2
         void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                value[i] = static_cast<int>(booleans_[ref].get());
+                const auto idx = vrToBooleanIndices_.at(ref);
+                value[i] = static_cast<int>(booleans_[idx].get());
+            }
+        }
+
+        //fmi3
+        void get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const {
+            for (unsigned i = 0; i < nvr; i++) {
+                const auto ref = vr[i];
+                const auto idx = vrToBooleanIndices_.at(ref);
+                value[i] = booleans_[idx].get();
             }
         }
 
@@ -106,7 +151,8 @@ namespace fmu4cpp {
             stringBuffer_.clear();
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                stringBuffer_.push_back(strings_[ref].get());
+                const auto idx = vrToStringIndices_.at(ref);
+                stringBuffer_.push_back(strings_[idx].get());
                 value[i] = stringBuffer_.back().c_str();
             }
         }
@@ -114,42 +160,54 @@ namespace fmu4cpp {
         void set_integer(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                integers_[ref].set(value[i]);
+                const auto idx = vrToIntegerIndices_.at(ref);
+                integers_[idx].set(value[i]);
             }
         }
 
         void set_real(const unsigned int vr[], size_t nvr, const double value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                reals_[ref].set(value[i]);
+                const auto idx = vrToRealIndices_.at(ref);
+                reals_[idx].set(value[i]);
             }
         }
 
+        //fmi2
         void set_boolean(const unsigned int vr[], size_t nvr, const int value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                booleans_[ref].set(static_cast<bool>(value[i]));
+                const auto idx = vrToBooleanIndices_.at(ref);
+                booleans_[idx].set(static_cast<bool>(value[i]));
+            }
+        }
+
+        //fmi3
+        void set_boolean(const unsigned int vr[], size_t nvr, const bool value[]) {
+            for (unsigned i = 0; i < nvr; i++) {
+                const auto ref = vr[i];
+                const auto idx = vrToBooleanIndices_.at(ref);
+                booleans_[idx].set(value[i]);
             }
         }
 
         void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
             for (unsigned i = 0; i < nvr; i++) {
                 const auto ref = vr[i];
-                strings_[ref].set(value[i]);
+                const auto idx = vrToStringIndices_.at(ref);
+                strings_[idx].set(value[i]);
             }
         }
 
         [[nodiscard]] std::string guid() const;
 
-        [[nodiscard]] std::string make_description() const;
+        [[nodiscard]] std::string make_description_v2() const;
 
-        void __set_logger(logger *logger) {
-            logger_ = logger;
-        }
+        [[nodiscard]] std::string make_description_v3() const;
 
-        void log(const fmi2Status s, const std::string &message) {
-            if (logger_) {
-                logger_->log(s, message);
+        void log(const fmiStatus s, const std::string &message) const {
+            if (data_.fmiLogger) {
+                data_.fmiLogger->log(s, message);
             }
         }
 
@@ -168,26 +226,25 @@ namespace fmu4cpp {
             return false;
         }
 
-
         virtual ~fmu_base() = default;
 
     protected:
-        IntVariable integer(const std::string &name, int *ptr);
+        IntVariable integer(const std::string &name, int *ptr, const std::function<void(int)> &onChange = {});
         IntVariable integer(const std::string &name,
                             const std::function<int()> &getter,
                             const std::optional<std::function<void(int)>> &setter = std::nullopt);
 
-        RealVariable real(const std::string &name, double *ptr);
+        RealVariable real(const std::string &name, double *ptr, const std::function<void(double)> &onChange = {});
         RealVariable real(const std::string &name,
                           const std::function<double()> &getter,
                           const std::optional<std::function<void(double)>> &setter = std::nullopt);
 
-        BoolVariable boolean(const std::string &name, bool *ptr);
+        BoolVariable boolean(const std::string &name, bool *ptr, const std::function<void(bool)> &onChange = {});
         BoolVariable boolean(const std::string &name,
                              const std::function<bool()> &getter,
                              const std::optional<std::function<void(bool)>> &setter);
 
-        StringVariable string(const std::string &name, std::string *ptr);
+        StringVariable string(const std::string &name, std::string *ptr, const std::function<void(std::string)> &onChange = {});
         StringVariable string(const std::string &name,
                               const std::function<std::string()> &getter,
                               const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
@@ -197,25 +254,43 @@ namespace fmu4cpp {
         void register_variable(BoolVariable v);
         void register_variable(StringVariable v);
 
+        virtual void enter_initialisation_mode();
+        virtual bool do_step(double dt) = 0;
+
+        [[nodiscard]] double currentTime() const {
+            return time_;
+        }
+
+        [[nodiscard]] std::optional<double> tolerance() const {
+            return tolerance_;
+        }
 
     private:
-        logger *logger_ = nullptr;
-        size_t numVariables_{1};
+        fmu_data data_;
 
-        std::string instanceName_;
-        std::filesystem::path resourceLocation_;
+        double time_{0};
+        size_t numVariables_{0};
+
+        std::optional<double> stop_;
+        std::optional<double> tolerance_;
 
         std::vector<IntVariable> integers_;
-        std::vector<RealVariable> reals_;
-        std::vector<BoolVariable> booleans_;
-        std::vector<StringVariable> strings_;
+        std::unordered_map<unsigned int, size_t> vrToIntegerIndices_;
 
+        std::vector<RealVariable> reals_;
+        std::unordered_map<unsigned int, size_t> vrToRealIndices_;
+
+        std::vector<BoolVariable> booleans_;
+        std::unordered_map<unsigned int, size_t> vrToBooleanIndices_;
+
+        std::vector<StringVariable> strings_;
         std::vector<std::string> stringBuffer_;
+        std::unordered_map<unsigned int, size_t> vrToStringIndices_;
     };
 
     model_info get_model_info();
 
-    std::unique_ptr<fmu_base> createInstance(const std::string &instanceName, const std::filesystem::path &fmuResourceLocation);
+    std::unique_ptr<fmu_base> createInstance(const fmu_data &data);
 
 }// namespace fmu4cpp
 

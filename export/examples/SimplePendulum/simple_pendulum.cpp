@@ -8,9 +8,9 @@ using namespace fmu4cpp;
 constexpr double pi = 3.14159265358979323846;
 
 class SimplePendulum : public fmu_base {
+
 public:
-    SimplePendulum(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit SimplePendulum(const fmu_data &data) : fmu_base(data) {
 
         register_variable(real("angle", &angle_)
                                   .setCausality(causality_t::OUTPUT)
@@ -36,7 +36,7 @@ public:
         SimplePendulum::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         angularVelocity_ += (-gravity_ / length_) * std::sin(angle_) * dt - damping_ * angularVelocity_ * dt;
         angle_ += angularVelocity_ * dt;
         return true;
@@ -51,11 +51,11 @@ public:
     }
 
 private:
-    double angle_;          // Current angle of the pendulum
-    double angularVelocity_;// Current angular velocity
-    double gravity_;        // Acceleration due to gravity
-    double length_;         // Length of the pendulum
-    double damping_;        // Damping factor
+    double angle_{};          // Current angle of the pendulum
+    double angularVelocity_{};// Current angular velocity
+    double gravity_{};        // Acceleration due to gravity
+    double length_{};         // Length of the pendulum
+    double damping_{};        // Damping factor
 };
 
 

@@ -1,14 +1,16 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
+#include <iomanip>
+#include <sstream>
+
 using namespace fmu4cpp;
 
 
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const std::string &instanceName, const std::filesystem::path &resources)
-        : fmu_base(instanceName, resources) {
+    explicit BouncingBall(const fmu_data &data) : fmu_base(data) {
 
         register_variable(
                 real(
@@ -35,11 +37,10 @@ public:
                         .setCausality(causality_t::PARAMETER)
                         .setVariability(variability_t::FIXED));
 
-
         BouncingBall::reset();
     }
 
-    bool do_step(double currentTime, double dt) override {
+    bool do_step(double dt) override {
         // Update velocity with gravity
         velocity_ += gravity_ * dt;
         // Update height with current velocity
@@ -50,6 +51,13 @@ public:
             height_ = 0.0f;                        // Reset height to ground level
             velocity_ = -velocity_ * bounceFactor_;// Reverse velocity and apply bounce factor
         }
+
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2)
+            << "Current height: " << height_
+            << ", Current velocity: " << velocity_;
+
+        log(fmiOK, oss.str());
 
         return true;
     }
@@ -62,10 +70,10 @@ public:
     }
 
 private:
-    double height_;      // Current height of the ball
-    double velocity_;    // Current velocity of the ball
-    double gravity_;     // Acceleration due to gravity
-    double bounceFactor_;// Factor to reduce velocity on bounce
+    double height_{};      // Current height of the ball
+    double velocity_{};    // Current velocity of the ball
+    double gravity_{};     // Acceleration due to gravity
+    double bounceFactor_{};// Factor to reduce velocity on bounce
 };
 
 model_info fmu4cpp::get_model_info() {
