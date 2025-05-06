@@ -69,9 +69,9 @@ TEST_CASE("test_array") {
     auto c = fmi2Instantiate("array", fmi2CoSimulation, guid.c_str(), "", &callbackFunctions, false, true);
     REQUIRE(c);
 
+    REQUIRE(fmi2SetupExperiment(c, false, 0, 0, false, 0) == fmi2OK);
     REQUIRE(fmi2EnterInitializationMode(c) == fmi2OK);
     REQUIRE(fmi2ExitInitializationMode(c) == fmi2OK);
-    REQUIRE(fmi2SetupExperiment(c, false, 0, 0, false, 0) == fmi2OK);
 
     std::vector<double> values(4);
     for (int i = 1; i <= 4; i++) {// account for time
