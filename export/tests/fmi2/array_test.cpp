@@ -7,6 +7,7 @@
 
 #include <cstdarg>
 #include <iostream>
+#include <unordered_set>
 
 #include <fmu4cpp/fmu_base.hpp>
 
@@ -60,6 +61,13 @@ TEST_CASE("test_array") {
 
     Model model({});
     const auto guid = model.guid();
+
+    auto vrs = model.get_value_refs();
+    REQUIRE(vrs.size() == 4 + 1);// 4 variables + 1 for time
+    std::unordered_set<unsigned int> unique_vrs(vrs.begin(), vrs.end());
+
+    // Check that all are unique
+    REQUIRE(unique_vrs.size() == vrs.size());
 
     std::cout << model.make_description_v2() << std::endl;
 

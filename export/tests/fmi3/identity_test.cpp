@@ -7,6 +7,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdarg>
 #include <iostream>
+#include <unordered_set>
 
 #include <fmu4cpp/fmu_base.hpp>
 
@@ -157,6 +158,13 @@ TEST_CASE("test_identity") {
 
     Model model({});
     const auto guid = model.guid();
+
+    auto vrs = model.get_value_refs();
+    REQUIRE(vrs.size() == 8 + 1);// 8 variables + 1 for time
+    std::unordered_set<unsigned int> unique_vrs(vrs.begin(), vrs.end());
+
+    // Check that all are unique
+    REQUIRE(unique_vrs.size() == vrs.size());
 
     const auto realIn = model.get_real_variable("realIn");
     const auto stringIn = model.get_string_variable("stringIn");

@@ -1,6 +1,5 @@
 
 #include "fmi3/fmi3Functions.h"
-#include "fmi3/fmi3Functions.h"
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -8,6 +7,7 @@
 
 #include <cstdarg>
 #include <iostream>
+#include <unordered_set>
 
 #include <fmu4cpp/fmu_base.hpp>
 
@@ -57,13 +57,20 @@ TEST_CASE("test_array") {
 
     Model model({});
     const auto guid = model.guid();
-    
+
+    auto vrs = model.get_value_refs();
+    REQUIRE(vrs.size() == 4 + 1);// 4 variables + 1 for time
+    std::unordered_set<unsigned int> unique_vrs(vrs.begin(), vrs.end());
+
+    // Check that all are unique
+    REQUIRE(unique_vrs.size() == vrs.size());
+
     auto c = fmi3InstantiateCoSimulation("array", guid.c_str(), "", false, true, false, false, nullptr, 0, nullptr, fmilogger, nullptr);
     REQUIRE(c);
-    
-    REQUIRE(fmi3EnterInitializationMode(c,false, 0, 0, false, 0) == fmi3OK);
+
+    REQUIRE(fmi3EnterInitializationMode(c, false, 0, 0, false, 0) == fmi3OK);
     REQUIRE(fmi3ExitInitializationMode(c) == fmi3OK);
-    
+
 
     std::vector<double> values(4);
     for (int i = 1; i <= 4; i++) {// account for time

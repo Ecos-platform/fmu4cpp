@@ -226,6 +226,8 @@ namespace fmu4cpp {
             return false;
         }
 
+        [[nodiscard]] std::vector<unsigned int> get_value_refs() const;
+
         virtual ~fmu_base() = default;
 
     protected:

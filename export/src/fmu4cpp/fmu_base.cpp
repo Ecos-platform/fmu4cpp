@@ -66,7 +66,7 @@ namespace fmu4cpp {
         return indentedString;
     }
 
-    IntVariable fmu_base::integer(const std::string &name, int *ptr, const std::function<void(int)>& onChange) {
+    IntVariable fmu_base::integer(const std::string &name, int *ptr, const std::function<void(int)> &onChange) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
@@ -74,7 +74,7 @@ namespace fmu4cpp {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, getter, setter};
     }
 
-    RealVariable fmu_base::real(const std::string &name, double *ptr, const std::function<void(double)>& onChange) {
+    RealVariable fmu_base::real(const std::string &name, double *ptr, const std::function<void(double)> &onChange) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
@@ -82,7 +82,7 @@ namespace fmu4cpp {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, getter, setter};
     }
 
-    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr, const std::function<void(bool)>& onChange) {
+    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr, const std::function<void(bool)> &onChange) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
@@ -90,7 +90,7 @@ namespace fmu4cpp {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, getter, setter};
     }
 
-    StringVariable fmu_base::string(const std::string &name, std::string *ptr, const std::function<void(std::string)>& onChange) {
+    StringVariable fmu_base::string(const std::string &name, std::string *ptr, const std::function<void(std::string)> &onChange) {
         return {name, static_cast<unsigned int>(numVariables_), ++numVariables_, ptr, onChange};
     }
 
@@ -149,6 +149,16 @@ namespace fmu4cpp {
         return std::to_string(fnv1a(ss.str()));
     }
 
+    std::vector<unsigned> fmu_base::get_value_refs() const {
+        std::vector<unsigned int> indices;
+        auto allVars = collect(integers_, reals_, booleans_, strings_);
+        indices.reserve(allVars.size());
+        for (auto v: allVars) {
+            indices.emplace_back(v->value_reference());
+        }
+
+        return indices;
+    }
 
     std::string fmu_base::make_description_v2() const {
 
