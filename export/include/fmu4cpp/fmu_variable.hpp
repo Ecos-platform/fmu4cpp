@@ -103,7 +103,7 @@ namespace fmu4cpp {
     public:
         Variable(
                 const std::string &name,
-                unsigned int vr, size_t index, T *ptr, const std::function<void(T)>& onChange)
+                unsigned int vr, size_t index, T *ptr, const std::function<void(T)> &onChange)
             : VariableBase(name, vr, index), access_(std::make_unique<PtrAccess<T>>(ptr, onChange)) {}
 
         Variable(
@@ -170,7 +170,7 @@ namespace fmu4cpp {
     public:
         IntVariable(
                 const std::string &name,
-                unsigned int vr, size_t index, int *ptr, std::function<void(int)> onChange)
+                unsigned int vr, size_t index, int *ptr, const std::function<void(int)> &onChange)
             : Variable(name, vr, index, ptr, onChange) {}
 
         IntVariable(
@@ -208,7 +208,7 @@ namespace fmu4cpp {
     public:
         RealVariable(
                 const std::string &name,
-                unsigned int vr, size_t index, double *ptr, const std::function<void(double)>& onChange)
+                unsigned int vr, size_t index, double *ptr, const std::function<void(double)> &onChange)
             : Variable(name, vr, index, ptr, onChange) {
 
             variability_ = variability_t::CONTINUOUS;
@@ -252,7 +252,7 @@ namespace fmu4cpp {
     public:
         BoolVariable(
                 const std::string &name,
-                unsigned int vr, size_t index, bool *ptr, const std::function<void(bool)>& onChange)
+                unsigned int vr, size_t index, bool *ptr, const std::function<void(bool)> &onChange)
             : Variable(name, vr, index, ptr, onChange) {}
 
         BoolVariable(
@@ -268,7 +268,7 @@ namespace fmu4cpp {
     public:
         StringVariable(
                 const std::string &name,
-                unsigned int vr, size_t index, std::string *ptr, const std::function<void(std::string)>& onChange)
+                unsigned int vr, size_t index, std::string *ptr, const std::function<void(std::string)> &onChange)
             : Variable(name, vr, index, ptr, onChange) {}
 
         StringVariable(
