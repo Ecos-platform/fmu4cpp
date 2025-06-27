@@ -54,6 +54,7 @@ namespace {
               logger(std::move(logger)) {}
 
         double lastSuccessfulTime{0};
+        bool wantsToTerminate{false};
 
         std::unique_ptr<fmu4cpp::fmu_base> slave;
         std::unique_ptr<fmi2Logger> logger;
@@ -211,7 +212,7 @@ fmi2Status fmi2DoStep(
             component->lastSuccessfulTime = currentCommunicationPoint + communicationStepSize;
             return fmi2OK;
         }
-
+        component->wantsToTerminate = true;
         return fmi2Discard;
     } catch (const fmu4cpp::fatal_error &ex) {
         component->logger->log(fmiFatal, ex.what());
@@ -403,21 +404,28 @@ fmi2Status fmi2GetRealStatus(
         return fmi2OK;
     }
 
-    return fmi2Error;
+    return fmi2Discard;
 }
 
 fmi2Status fmi2GetIntegerStatus(
         fmi2Component,
         const fmi2StatusKind,
         fmi2Integer *) {
-    return fmi2Error;
+    return fmi2Discard;
 }
 
 fmi2Status fmi2GetBooleanStatus(
-        fmi2Component,
-        const fmi2StatusKind,
-        fmi2Boolean *) {
-    return fmi2Error;
+        fmi2Component c,
+        const fmi2StatusKind s,
+        fmi2Boolean *value) {
+
+    const auto component = static_cast<Fmi2Component *>(c);
+    if (s == fmi2Terminated) {
+        *value = component->wantsToTerminate;
+        return fmi2OK;
+    }
+
+    return fmi2Discard;
 }
 
 fmi2Status fmi2GetStringStatus(
@@ -425,7 +433,7 @@ fmi2Status fmi2GetStringStatus(
         const fmi2StatusKind,
         fmi2String *) {
 
-    return fmi2Error;
+    return fmi2Discard;
 }
 
 
