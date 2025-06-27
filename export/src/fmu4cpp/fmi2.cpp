@@ -468,7 +468,7 @@ fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
     const auto component = static_cast<Fmi2Component *>(c);
 
     if (auto s = component->slave->getFMUState()) {
-        state = &s;
+        *state = s;
         return fmi2OK;
     }
 
