@@ -593,7 +593,7 @@ fmi3Status fmi3GetFMUState(fmi3Instance c, fmi3FMUState *state) {
     const auto component = static_cast<Fmi3Component *>(c);
 
     if (auto s = component->slave->getFMUState()) {
-        state = &s;
+        *state = s;
         return fmi3OK;
     }
 
