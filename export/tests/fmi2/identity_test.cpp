@@ -6,6 +6,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdarg>
+#include <iostream>
 #include <unordered_set>
 
 #include <fmu4cpp/fmu_base.hpp>
@@ -149,12 +150,31 @@ void setOutputFail(fmi2Component c) {
 }
 
 void fmilogger(fmi2Component, fmi2String instanceName, fmi2Status status, fmi2String /*category*/, fmi2String message, ...) {
+
+    auto status_str = [](fmi2Status s) {
+        switch (s) {
+            case fmi2OK:
+                return "OK";
+            case fmi2Warning:
+                return "Warning";
+            case fmi2Discard:
+                return "Discard";
+            case fmi2Error:
+                return "Error";
+            case fmi2Fatal:
+                return "Fatal";
+            default:
+                return "Unknown";
+        }
+    };
+
     va_list args;
     va_start(args, message);
     char msgstr[1024];
-    sprintf(msgstr, "%i: [%s] %s\n", status, instanceName, message);
-    printf(msgstr, args);
+    std::vsnprintf(msgstr, sizeof(msgstr), message, args);
     va_end(args);
+
+    std::cerr << status_str(status) << ": [" << (instanceName ? instanceName : "") << "] " << msgstr << std::endl;
 }
 
 TEST_CASE("test_identity") {

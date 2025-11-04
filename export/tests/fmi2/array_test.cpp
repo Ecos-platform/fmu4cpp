@@ -68,7 +68,7 @@ TEST_CASE("test_array") {
     // Check that all are unique
     REQUIRE(unique_vrs.size() == vrs.size());
 
-    std::cout << model.make_description_v2() << std::endl;
+    std::cout << model.make_description() << std::endl;
 
     fmi2CallbackFunctions callbackFunctions;
     callbackFunctions.logger = &fmilogger;

@@ -151,7 +151,24 @@ void setOutputFail(fmi3Instance c) {
 
 void fmilogger(fmi3InstanceEnvironment, fmi3Status status, fmi3String /*category*/, fmi3String message) {
 
-    std::cout << status << ": " << message << std::endl;
+    auto status_str = [](fmi3Status s) {
+        switch (s) {
+            case fmi3OK:
+                return "OK";
+            case fmi3Warning:
+                return "Warning";
+            case fmi3Discard:
+                return "Discard";
+            case fmi3Error:
+                return "Error";
+            case fmi3Fatal:
+                return "Fatal";
+            default:
+                return "Unknown";
+        }
+    };
+
+    std::cerr << status_str(status) << ": " << message << std::endl;
 }
 
 TEST_CASE("test_identity") {

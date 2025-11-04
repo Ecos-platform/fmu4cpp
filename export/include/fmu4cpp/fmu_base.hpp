@@ -13,6 +13,7 @@
 #include "fmu_variable.hpp"
 #include "logger.hpp"
 #include "model_info.hpp"
+#include "status.hpp"
 
 #include <filesystem>
 
@@ -197,9 +198,7 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::string guid() const;
 
-        [[nodiscard]] std::string make_description_v2() const;
-
-        [[nodiscard]] std::string make_description_v3() const;
+        [[nodiscard]] std::string make_description() const;
 
         void log(const fmiStatus s, const std::string &message) const {
             if (data_.fmiLogger) {

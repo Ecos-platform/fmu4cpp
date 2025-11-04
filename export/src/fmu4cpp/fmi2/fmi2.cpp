@@ -78,7 +78,7 @@ const char *fmi2GetVersion(void) {
 
 FMI2_Export void write_description(const char *location) {
     const auto instance = fmu4cpp::createInstance({});
-    const auto xml = instance->make_description_v2();
+    const auto xml = instance->make_description();
     std::ofstream of(location);
     of << xml;
     of.close();
