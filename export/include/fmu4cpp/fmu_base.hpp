@@ -16,10 +16,6 @@
 
 #include <filesystem>
 
-#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                         \
-    std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const fmu4cpp::fmu_data &data) { \
-        return std::make_unique<MODELCLASS>(data);                                              \
-    }
 
 namespace fmu4cpp {
 
@@ -289,6 +285,15 @@ namespace fmu4cpp {
         std::vector<std::string> stringBuffer_;
         std::unordered_map<unsigned int, size_t> vrToStringIndices_;
     };
+
+
+#define FMU4CPP_INSTANTIATE(MODELCLASS)                                                         \
+    std::unique_ptr<fmu4cpp::fmu_base> fmu4cpp::createInstance(const fmu4cpp::fmu_data &data) { \
+        return std::make_unique<MODELCLASS>(data);                                              \
+    }
+
+#define FMU4CPP_CTOR(MODELCLASS) \
+    explicit MODELCLASS(fmu4cpp::fmu_data data) : fmu_base(std::move(data))
 
     model_info get_model_info();
 

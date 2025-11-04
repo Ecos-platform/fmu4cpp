@@ -10,7 +10,7 @@ constexpr double pi = 3.14159265358979323846;
 class SimplePendulum : public fmu_base {
 
 public:
-    explicit SimplePendulum(const fmu_data &data) : fmu_base(data) {
+    FMU4CPP_CTOR(SimplePendulum) {
 
         register_variable(real("angle", &angle_)
                                   .setCausality(causality_t::OUTPUT)

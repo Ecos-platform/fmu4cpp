@@ -13,7 +13,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
+    FMU4CPP_CTOR(Model) {
 
         register_variable(integer("integerIn", &integer_)
                                   .setCausality(fmu4cpp::causality_t::INPUT)

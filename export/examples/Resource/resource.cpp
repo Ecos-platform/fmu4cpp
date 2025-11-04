@@ -10,7 +10,7 @@ using namespace fmu4cpp;
 class Resource : public fmu_base {
 
 public:
-    explicit Resource(const fmu_data &data) : fmu_base(data) {
+    FMU4CPP_CTOR(Resource) {
 
         std::ifstream ifs(resourceLocation() / "file.txt");
 

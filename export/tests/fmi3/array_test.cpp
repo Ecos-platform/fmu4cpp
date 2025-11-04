@@ -14,8 +14,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    explicit Model(const fmu4cpp::fmu_data &data)
-        : fmu_base(data), reals_(4) {
+    FMU4CPP_CTOR(Model), reals_(4) {
 
         for (int i = 0; i < reals_.size(); i++) {
             register_variable(

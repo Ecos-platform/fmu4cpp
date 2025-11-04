@@ -10,7 +10,7 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    explicit BouncingBall(const fmu_data &data) : fmu_base(data) {
+    FMU4CPP_CTOR(BouncingBall) {
 
         register_variable(
                 real(
