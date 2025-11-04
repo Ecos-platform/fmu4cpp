@@ -9,6 +9,7 @@
 #include "fmu4cpp/fmu_base.hpp"
 #include "fmu4cpp/fmu_except.hpp"
 #include "fmu4cpp/logger.hpp"
+#include "fmu4cpp/status.hpp"
 
 namespace {
 
@@ -60,7 +61,7 @@ namespace {
         Fmi3Component(std::unique_ptr<fmu4cpp::fmu_base> slave, std::unique_ptr<fmi3Logger> logger)
             : state(State::Instantiated),
               slave(std::move(slave)),
-              logger(std::move(logger)) { }
+              logger(std::move(logger)) {}
 
         State state;
         std::unique_ptr<fmu4cpp::fmu_base> slave;
@@ -69,28 +70,28 @@ namespace {
 
 #define FMU_TYPE(type) fmi3##type
 
-#define NOT_IMPLEMENTED_GETTER(type)                                                                                    \
-    fmi3Status fmi3Get##type(                                                                                           \
-            fmi3Instance c,                                                                                             \
-            const fmi3ValueReference vr[],                                                                              \
-            size_t nValueReferences,                                                                                    \
-            FMU_TYPE(type) values[],                                                                                    \
-            size_t nValues) {                                                                                           \
-        const auto component = static_cast<Fmi3Component *>(c);                                                         \
+#define NOT_IMPLEMENTED_GETTER(type)                                                           \
+    fmi3Status fmi3Get##type(                                                                  \
+            fmi3Instance c,                                                                    \
+            const fmi3ValueReference vr[],                                                     \
+            size_t nValueReferences,                                                           \
+            FMU_TYPE(type) values[],                                                           \
+            size_t nValues) {                                                                  \
+        const auto component = static_cast<Fmi3Component *>(c);                                \
         component->logger->log(fmiError, std::string("Unsupported function fmi3Get") + #type); \
-        return fmi3Error;                                                                                               \
+        return fmi3Error;                                                                      \
     }
 
-#define NOT_IMPLEMENTED_SETTER(type)                                                                                    \
-    fmi3Status fmi3Set##type(                                                                                           \
-            fmi3Instance c,                                                                                             \
-            const fmi3ValueReference vr[],                                                                              \
-            size_t nValueReferences,                                                                                    \
-            const FMU_TYPE(type) values[],                                                                              \
-            size_t nValues) {                                                                                           \
-        const auto component = static_cast<Fmi3Component *>(c);                                                         \
+#define NOT_IMPLEMENTED_SETTER(type)                                                           \
+    fmi3Status fmi3Set##type(                                                                  \
+            fmi3Instance c,                                                                    \
+            const fmi3ValueReference vr[],                                                     \
+            size_t nValueReferences,                                                           \
+            const FMU_TYPE(type) values[],                                                     \
+            size_t nValues) {                                                                  \
+        const auto component = static_cast<Fmi3Component *>(c);                                \
         component->logger->log(fmiError, std::string("Unsupported function fmi3Set") + #type); \
-        return fmi3Error;                                                                                               \
+        return fmi3Error;                                                                      \
     }
 
 }// namespace
@@ -103,7 +104,7 @@ const char *fmi3GetVersion(void) {
 
 FMI3_Export void write_description(const char *location) {
     const auto instance = fmu4cpp::createInstance({});
-    const auto xml = instance->make_description_v3();
+    const auto xml = instance->make_description();
     std::ofstream of(location);
     of << xml;
     of.close();

@@ -26,44 +26,45 @@ set(publicHeaders
         "fmu4cpp/fmu_base.hpp"
         "fmu4cpp/fmu_except.hpp"
         "fmu4cpp/fmu_variable.hpp"
-        )
+)
 
 set(privateHeaders
         "fmu4cpp/hash.hpp"
         "fmu4cpp/time.hpp"
-        )
+        "fmu4cpp/util.hpp"
+)
 
 set(sources
         "fmu4cpp/fmu_base.cpp"
         "fmu4cpp/fmu_variable.cpp"
-        )
+)
 
 set(fmi2HeadersFull)
-foreach(h IN LISTS fmi2Headers)
+foreach (h IN LISTS fmi2Headers)
     list(APPEND fmi2HeadersFull "${CMAKE_CURRENT_SOURCE_DIR}/../include/${h}")
-endforeach()
+endforeach ()
 
 set(fmi3HeadersFull)
-foreach(h IN LISTS fmi3Headers)
+foreach (h IN LISTS fmi3Headers)
     list(APPEND fmi3HeadersFull "${CMAKE_CURRENT_SOURCE_DIR}/../include/${h}")
-endforeach()
+endforeach ()
 
 set(publicHeadersFull)
-foreach(h IN LISTS publicHeaders)
+foreach (h IN LISTS publicHeaders)
     list(APPEND publicHeadersFull "${CMAKE_CURRENT_SOURCE_DIR}/../include/${h}")
-endforeach()
+endforeach ()
 
 set(privateHeadersFull)
-foreach(h IN LISTS privateHeaders)
+foreach (h IN LISTS privateHeaders)
     list(APPEND privateHeadersFull "${CMAKE_CURRENT_SOURCE_DIR}/${h}")
-endforeach()
+endforeach ()
 
 add_library(fmu4cpp_base OBJECT
         "${lib_info}"
         "${publicHeadersFull}"
         "${privateHeadersFull}"
         "${sources}"
-        )
+)
 target_compile_features(fmu4cpp_base PRIVATE "cxx_std_17")
 set_target_properties(fmu4cpp_base PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(fmu4cpp_base
@@ -75,7 +76,8 @@ target_include_directories(fmu4cpp_base
 
 add_library(fmu4cpp_fmi2 OBJECT
         "${fmi2HeadersFull}"
-        "fmu4cpp/fmi2.cpp"
+        "fmu4cpp/fmi2/fmi2.cpp"
+        "fmu4cpp/fmi2/fmi2_description.cpp"
 )
 target_compile_features(fmu4cpp_fmi2 PRIVATE "cxx_std_17")
 set_target_properties(fmu4cpp_fmi2 PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -88,7 +90,8 @@ target_include_directories(fmu4cpp_fmi2
 
 add_library(fmu4cpp_fmi3 OBJECT
         "${fmi3HeadersFull}"
-        "fmu4cpp/fmi3.cpp"
+        "fmu4cpp/fmi3/fmi3.cpp"
+        "fmu4cpp/fmi3/fmi3_description.cpp"
 )
 target_compile_features(fmu4cpp_fmi3 PRIVATE "cxx_std_17")
 set_target_properties(fmu4cpp_fmi3 PROPERTIES POSITION_INDEPENDENT_CODE ON)
