@@ -13,8 +13,8 @@ public:
         register_variable(real("x1", &x1_).setCausality(causality_t::OUTPUT).setInitial(initial_t::EXACT));
         register_variable(real("mu", &mu_).setCausality(causality_t::PARAMETER).setVariability(variability_t::FIXED).setInitial(initial_t::EXACT));
 
-        register_variable(real("x0Der", &x0Der_).setCausality(causality_t::LOCAL).setInitial(initial_t::CALCULATED).setDerivative("x0", {"x0"}));
-        register_variable(real("x1Der", &x1Der_).setCausality(causality_t::LOCAL).setInitial(initial_t::CALCULATED).setDerivative("x1", {"x0", "x1"}));
+        register_variable(real("x0Der", &x0Der_).setCausality(causality_t::LOCAL).setInitial(initial_t::CALCULATED));//.setDerivative("x0", {"x0"}));
+        register_variable(real("x1Der", &x1Der_).setCausality(causality_t::LOCAL).setInitial(initial_t::CALCULATED));//.setDerivative("x1", {"x0", "x1"}));
 
         VanDerPol::reset();
     }
