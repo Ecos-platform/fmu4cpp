@@ -152,7 +152,7 @@ std::string fmu_base::make_description() const {
                     if (dep == allVars.end()) {
                         throw std::runtime_error("Unknown dependency: " + depName);
                     }
-                    ss << (*dep)->index() - 1;// valueRef is index -1
+                    ss << (*dep)->value_reference();
                     if (i != deps.size() - 1) {
                         ss << " ";
                     }
