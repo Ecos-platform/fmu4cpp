@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     const auto handle = load_library(libName);
 
     if (!handle) {
-        const auto err = "Unable to load dynamic library '" + libName + "'! " + getLastError();
+        const auto err = "[fmu4cpp modelDescription generator] Unable to load dynamic library '" + libName + "'! " + getLastError();
         std::cerr << err << std::endl;
         return 1;
     }

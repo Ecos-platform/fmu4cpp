@@ -1,0 +1,7 @@
+
+
+#include "fmu4cpp/model_info.hpp"
+
+std::string fmu4cpp::model_identifier() {
+    return "@FMU4CPP_MODEL_IDENTIFIER@";
+}

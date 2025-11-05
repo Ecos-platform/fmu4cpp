@@ -18,9 +18,23 @@ function(generateFMU modelIdentifier)
     # Expect the user to provide modelIdentifier as an OBJECT library.
     # We will build per-version shared libraries from those object files.
     set(COMMON_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_base>")
+    target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
 
 
     foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
+
+        # versioned shared library target built from object libraries
+        set(versionTarget "${modelIdentifier}_${fmiVersion}")
+
+        set(FMU4CPP_MODEL_IDENTIFIER "${versionTarget}")
+        set(model_identifier_src "${generatedSourcesDir}/fmu4cpp/model_identifier_${versionTarget}.cpp")
+        configure_file(
+                "${PROJECT_SOURCE_DIR}/export/src/fmu4cpp/model_identifier.cpp.in"
+                "${model_identifier_src}"
+                @ONLY
+        )
+
+        set(VERSION_OBJECTS "${model_identifier_src}")
 
         set(TARGET_PLATFORM)
         if (fmiVersion STREQUAL "fmi2")
@@ -39,7 +53,7 @@ function(generateFMU modelIdentifier)
                 set(TARGET_PLATFORM linux${BITNESS})
             endif ()
 
-            set(VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
+            list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
             set(VERSION_DEFS FMI2)
 
         elseif (fmiVersion STREQUAL "fmi3")
@@ -57,7 +71,7 @@ function(generateFMU modelIdentifier)
                 set(TARGET_PLATFORM ${TARGET_PLATFORM}-linux)
             endif ()
 
-            set(VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
+            list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
             set(VERSION_DEFS FMI3)
 
         else ()
@@ -70,18 +84,13 @@ function(generateFMU modelIdentifier)
         set(binaryOutputDir "${modelOutputDir}/binaries/${TARGET_PLATFORM}")
 
 
-        # versioned shared library target built from object libraries
-        set(versionTarget "${modelIdentifier}_${fmiVersion}")
         add_library(${versionTarget} SHARED
                 ${COMMON_OBJECTS}
                 "$<TARGET_OBJECTS:${modelIdentifier}>"
                 ${VERSION_OBJECTS}
         )
-
-
+        target_include_directories(${versionTarget} PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
         target_compile_definitions(${versionTarget} PRIVATE ${VERSION_DEFS})
-        target_compile_definitions(${modelIdentifier} PUBLIC FMU4CPP_MODEL_IDENTIFIER=\"${versionTarget}\")
-        target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
 
 
         if (WIN32)
@@ -100,27 +109,24 @@ function(generateFMU modelIdentifier)
         # Generate modelDescription.xml
         add_custom_command(TARGET ${versionTarget} POST_BUILD
                 WORKING_DIRECTORY "${fmuOutputDir}"
-                COMMAND ${CMAKE_COMMAND} -E echo "Generating modelDescription.xml for ${versionTarget}"
-                COMMAND descriptionGenerator ${modelIdentifier} "${binaryOutputDir}/$<TARGET_FILE_NAME:${versionTarget}>"
-                VERBATIM
-        )
+                COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Generating modelDescription.xml for model '${modelIdentifier}'"
+                COMMAND descriptionGenerator ${modelIdentifier} "${binaryOutputDir}/$<TARGET_FILE_NAME:${versionTarget}>")
 
         if (FMU_RESOURCE_FOLDER STREQUAL "")
             add_custom_command(TARGET ${versionTarget} POST_BUILD
                     WORKING_DIRECTORY "${modelOutputDir}"
                     COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
                     "${modelOutputDir}/binaries"
-                    "${modelOutputDir}/modelDescription.xml"
-                    VERBATIM)
+                    "${modelOutputDir}/modelDescription.xml")
 
         else ()
-            message("[generateFMU-${fmiVersion}] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model with identifier='${modelIdentifier}'")
+            message("[generateFMU-${fmiVersion}] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model '${modelIdentifier}'")
 
             file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${modelOutputDir}/resources")
 
             add_custom_command(TARGET ${versionTarget} POST_BUILD
                     WORKING_DIRECTORY "${modelOutputDir}"
-                    COMMAND ${CMAKE_COMMAND} -E echo "Packaging ${modelIdentifier}.fmu in ${modelOutputDir}"
+                    COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Packaging ${modelIdentifier}.fmu in ${modelOutputDir}"
                     COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
                     "resources"
                     "${modelOutputDir}/binaries"

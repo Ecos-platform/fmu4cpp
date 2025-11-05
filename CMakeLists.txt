@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD 17)
 ############modelIdentifier and export version###########
 
 set(modelIdentifier identity) # <-- CHANGE ME
-set(fmi_version "fmi2") # fmi2 and fmi3 is supported
+set(fmi_version "fmi2" "fmi3") # fmi2 and fmi3 is supported
 
 ########################################################
 

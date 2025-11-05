@@ -43,7 +43,6 @@ model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "Resource";
     info.description = "A model with resources";
-    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     return info;
 }
 

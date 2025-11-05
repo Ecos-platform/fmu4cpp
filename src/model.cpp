@@ -82,7 +82,6 @@ model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "Identity";
     info.description = "A simple feed-trough model";
-    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     info.defaultExperiment = {0.0, 10};
 
     return info;

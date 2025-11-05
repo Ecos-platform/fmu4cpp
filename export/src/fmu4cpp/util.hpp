@@ -2,11 +2,16 @@
 #ifndef FMU4CPP_UTIL_HPP
 #define FMU4CPP_UTIL_HPP
 
+#include "hash.hpp"
+
+
 #include <functional>
 #include <string>
 #include <vector>
 
 #include "fmu4cpp/fmu_base.hpp"
+
+#include <sstream>
 
 namespace fmu4cpp {
 

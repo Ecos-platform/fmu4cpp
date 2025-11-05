@@ -33,10 +33,13 @@ private:
 };
 
 fmu4cpp::model_info fmu4cpp::get_model_info() {
-    model_info m;
-    m.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
-    return m;
+    return {};
 }
+
+std::string fmu4cpp::model_identifier() {
+    return "resource";
+}
+
 
 FMU4CPP_INSTANTIATE(Model);
 
