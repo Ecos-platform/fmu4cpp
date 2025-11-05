@@ -10,7 +10,7 @@ using namespace fmu4cpp;
 class Model : public fmu_base {
 
 public:
-    explicit Model(const fmu_data &data) : fmu_base(data) {
+    FMU4CPP_CTOR(Model) {
 
         register_variable(integer(
                                   "integerIn", &integer_)
