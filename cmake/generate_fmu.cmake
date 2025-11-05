@@ -1,101 +1,133 @@
 
-function(generateFMU modelIdentifier fmiVersion)
+function(generateFMU modelIdentifier)
 
     set(options)
     set(oneValueArgs RESOURCE_FOLDER)
-    set(multiValueArgs)
+    set(multiValueArgs FMI_VERSIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if (NOT FMU_RESOURCE_FOLDER)
         set(FMU_RESOURCE_FOLDER "")
-    endif()
+    endif ()
 
-    target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_base>")
+    # Require at least one fmi version; default to fmi2 if none provided
+    if (NOT FMU_FMI_VERSIONS)
+        message(FATAL_ERROR "generateFMU requires at least one FMI version to be specified")
+    endif ()
 
-    set(TARGET_PLATFORM)
-    if (fmiVersion STREQUAL "fmi2")
+    # Expect the user to provide modelIdentifier as an OBJECT library.
+    # We will build per-version shared libraries from those object files.
+    set(COMMON_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_base>")
 
-        if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-            set(BITNESS 64)
+
+    foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
+
+        set(TARGET_PLATFORM)
+        if (fmiVersion STREQUAL "fmi2")
+
+            if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+                set(BITNESS 64)
+            else ()
+                set(BITNESS 32)
+            endif ()
+
+            if (WIN32)
+                set(TARGET_PLATFORM win${BITNESS})
+            elseif (APPLE)
+                set(TARGET_PLATFORM darwin${BITNESS})
+            else ()
+                set(TARGET_PLATFORM linux${BITNESS})
+            endif ()
+
+            set(VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
+            set(VERSION_DEFS FMI2)
+
+        elseif (fmiVersion STREQUAL "fmi3")
+
+            set(TARGET_PLATFORM "x86")
+            if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+                set(TARGET_PLATFORM "${TARGET_PLATFORM}_64")
+            endif ()
+
+            if (WIN32)
+                set(TARGET_PLATFORM ${TARGET_PLATFORM}-windows)
+            elseif (APPLE)
+                set(TARGET_PLATFORM ${TARGET_PLATFORM}-darwin)
+            else ()
+                set(TARGET_PLATFORM ${TARGET_PLATFORM}-linux)
+            endif ()
+
+            set(VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
+            set(VERSION_DEFS FMI3)
+
         else ()
-            set(BITNESS 32)
+            message(FATAL_ERROR "Unknown FMI version: ${fmiVersion}. Supported versions are 'fmi2' and 'fmi3'.")
         endif ()
+
+
+        set(fmuOutputDir "${CMAKE_BINARY_DIR}/${fmiVersion}")
+        set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
+        set(binaryOutputDir "${modelOutputDir}/binaries/${TARGET_PLATFORM}")
+
+
+        # versioned shared library target built from object libraries
+        set(versionTarget "${modelIdentifier}_${fmiVersion}")
+        add_library(${versionTarget} SHARED
+                ${COMMON_OBJECTS}
+                "$<TARGET_OBJECTS:${modelIdentifier}>"
+                ${VERSION_OBJECTS}
+        )
+
+
+        target_compile_definitions(${versionTarget} PRIVATE ${VERSION_DEFS})
+        target_compile_definitions(${modelIdentifier} PUBLIC FMU4CPP_MODEL_IDENTIFIER=\"${versionTarget}\")
+        target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
+
 
         if (WIN32)
-            set(TARGET_PLATFORM win${BITNESS})
-        elseif (APPLE)
-            set(TARGET_PLATFORM darwin${BITNESS})
+            set_target_properties(${versionTarget}
+                    PROPERTIES
+                    RUNTIME_OUTPUT_DIRECTORY "${binaryOutputDir}"
+            )
         else ()
-            set(TARGET_PLATFORM linux${BITNESS})
+            set_target_properties(${versionTarget}
+                    PROPERTIES
+                    PREFIX ""
+                    LIBRARY_OUTPUT_DIRECTORY "${binaryOutputDir}"
+            )
         endif ()
 
-        target_compile_definitions("${modelIdentifier}" PRIVATE FMI2)
-        target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
-    elseif (fmiVersion STREQUAL "fmi3")
+        # Generate modelDescription.xml
+        add_custom_command(TARGET ${versionTarget} POST_BUILD
+                WORKING_DIRECTORY "${fmuOutputDir}"
+                COMMAND ${CMAKE_COMMAND} -E echo "Generating modelDescription.xml for ${versionTarget}"
+                COMMAND descriptionGenerator ${modelIdentifier} "${binaryOutputDir}/$<TARGET_FILE_NAME:${versionTarget}>"
+                VERBATIM
+        )
 
-        set(TARGET_PLATFORM "x86")
-        if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-            set(TARGET_PLATFORM "${TARGET_PLATFORM}_64")
-        endif ()
+        if (FMU_RESOURCE_FOLDER STREQUAL "")
+            add_custom_command(TARGET ${versionTarget} POST_BUILD
+                    WORKING_DIRECTORY "${modelOutputDir}"
+                    COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
+                    "${modelOutputDir}/binaries"
+                    "${modelOutputDir}/modelDescription.xml"
+                    VERBATIM)
 
-        if (WIN32)
-            set(TARGET_PLATFORM ${TARGET_PLATFORM}-windows)
-        elseif (APPLE)
-            set(TARGET_PLATFORM ${TARGET_PLATFORM}-darwin)
         else ()
-            set(TARGET_PLATFORM ${TARGET_PLATFORM}-linux)
+            message("[generateFMU-${fmiVersion}] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model with identifier='${modelIdentifier}'")
+
+            file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${modelOutputDir}/resources")
+
+            add_custom_command(TARGET ${versionTarget} POST_BUILD
+                    WORKING_DIRECTORY "${modelOutputDir}"
+                    COMMAND ${CMAKE_COMMAND} -E echo "Packaging ${modelIdentifier}.fmu in ${modelOutputDir}"
+                    COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
+                    "resources"
+                    "${modelOutputDir}/binaries"
+                    "${modelOutputDir}/modelDescription.xml"
+                    VERBATIM)
         endif ()
 
-        target_compile_definitions("${modelIdentifier}" PRIVATE FMI3)
-        target_sources(${modelIdentifier} PRIVATE "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
-
-    else ()
-        message(FATAL_ERROR "Unknown FMI version: ${fmiVersion}. Supported versions are 'fmi2' and 'fmi3'.")
-    endif ()
-
-    target_include_directories("${modelIdentifier}" PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
-    target_compile_definitions("${modelIdentifier}" PRIVATE FMU4CPP_MODEL_IDENTIFIER="${modelIdentifier}")
-
-
-    set(outputDir "$<1:${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries/${TARGET_PLATFORM}>")
-
-    if (WIN32)
-        set_target_properties(${modelIdentifier}
-                PROPERTIES
-                RUNTIME_OUTPUT_DIRECTORY "${outputDir}"
-        )
-    else ()
-        set_target_properties(${modelIdentifier}
-                PROPERTIES
-                PREFIX ""
-                LIBRARY_OUTPUT_DIRECTORY "${outputDir}"
-        )
-    endif ()
-
-    # Generate modelDescription.xml
-    add_custom_command(TARGET ${modelIdentifier} POST_BUILD
-            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            COMMAND descriptionGenerator ${modelIdentifier} "${outputDir}/$<TARGET_FILE_NAME:${modelIdentifier}>")
-
-    if (FMU_RESOURCE_FOLDER STREQUAL "")
-        add_custom_command(TARGET ${modelIdentifier} POST_BUILD
-                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
-                COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
-                "${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries"
-                "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
-
-    else ()
-        message("[generateFMU] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model with identifier='${modelIdentifier}'")
-
-        file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${CMAKE_BINARY_DIR}/${modelIdentifier}/resources")
-
-        add_custom_command(TARGET ${modelIdentifier} POST_BUILD
-                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${modelIdentifier}"
-                COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
-                "resources"
-                "${CMAKE_BINARY_DIR}/${modelIdentifier}/binaries"
-                "${CMAKE_BINARY_DIR}/${modelIdentifier}/modelDescription.xml")
-    endif ()
-
+    endforeach ()
 
 endfunction()

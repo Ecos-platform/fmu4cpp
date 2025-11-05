@@ -1,6 +1,6 @@
 
-add_library(bouncing_ball SHARED
+add_library(bouncing_ball OBJECT
         "bouncing_ball.cpp"
 )
 
-generateFMU("bouncing_ball" "fmi3")
+generateFMU("bouncing_ball" FMI_VERSIONS "fmi2" "fmi3")

@@ -1,6 +1,6 @@
 
-add_library(simple_pendulum SHARED
+add_library(simple_pendulum OBJECT
         "simple_pendulum.cpp"
 )
 
-generateFMU(simple_pendulum "fmi2")
+generateFMU(simple_pendulum FMI_VERSIONS "fmi3")
