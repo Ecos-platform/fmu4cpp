@@ -9,6 +9,7 @@ if (POLICY CMP0091)
     endif ()
 endif ()
 
+option(FMU4CPP_BUILD_EXAMPLES "Build example FMUs" OFF)
 option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 
 set(CMAKE_CXX_STANDARD 17)

@@ -1,11 +1,14 @@
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if (FMU4CPP_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif ()
 
 # internal executable invoked by CMake to generate the modelDescription.xml from a shared library
 add_executable(descriptionGenerator "descriptionGenerator.cpp")
 if (UNIX)
     target_link_libraries(descriptionGenerator PRIVATE dl)
-endif()
+endif ()
 
 if (FMU4CPP_BUILD_TESTS)
     Include(FetchContent)
