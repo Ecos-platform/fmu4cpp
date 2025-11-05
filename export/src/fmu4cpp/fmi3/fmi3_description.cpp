@@ -24,37 +24,37 @@ namespace {
         throw std::runtime_error("Unknown variable type");
     }
 
-}
+}// namespace
 
 
 std::string fmu_base::make_description() const {
 
     const model_info m = get_model_info();
     std::stringstream ss;
-    ss << R"(<?xml version="1.0" encoding="UTF-8"?>)"
-       << "\n"
-       << R"(<fmiModelDescription fmiVersion="3.0")"
-       << " modelName=\"" << m.modelName << "\""
-       << " instantiationToken=\"" << guid() << "\""
-       << " generationTool=\"fmu4cpp"
-       << " v" << to_string(library_version()) << "\""
-       << " generationDateAndTime=\"" << now() << "\""
-       << " description=\"" << m.description << "\""
-       << " author=\"" << m.author << "\""
-       << " variableNamingConvention=\"" << m.variableNamingConvention << "\""
-       << ">\n";
+    ss << R"(<?xml version="1.0" encoding="UTF-8"?>)" << "\n"
+       << "<fmiModelDescription fmiVersion=\"3.0\"\n"
+       << "\tmodelName=\"" << m.modelName << "\"\n"
+       << "\tinstantiationToken=\"" << guid() << "\"\n"
+       << "\tgenerationTool=\"fmu4cpp v" << to_string(library_version()) << "\"\n"
+       << "\tgenerationDateAndTime=\"" << now() << "\"\n"
+       << "\tdescription=\"" << m.description << "\"\n"
+       << "\tauthor=\"" << m.author << "\"\n"
+       << "\tvariableNamingConvention=\"" << m.variableNamingConvention << "\""
+       << ">\n\n";
 
-    ss << "\t" << std::boolalpha
-       << "<CoSimulation needsExecutionTool=\"" << m.needsExecutionTool << "\""
-       << " modelIdentifier=\"" << m.modelIdentifier << "\""
-       << " canHandleVariableCommunicationStepSize=\"" << m.canHandleVariableCommunicationStepSize << "\""
-       << " canBeInstantiatedOnlyOncePerProcess=\"" << m.canBeInstantiatedOnlyOncePerProcess << "\""
-       << " canGetAndSetFMUstate=\"" << m.canGetAndSetFMUstate << "\""
-       << " canSerializeFMUstate=\"" << m.canSerializeFMUstate << "\""
-       << R"( canNotUseMemoryManagementFunctions="true")"
-       << ">\n"
-       << "\t</CoSimulation>"
-       << "\n";
+    ss << std::boolalpha
+       << "\t<CoSimulation\n"
+       << "\t\tneedsExecutionTool=\"" << m.needsExecutionTool << "\"\n"
+       << "\t\tmodelIdentifier=\"" << m.modelIdentifier << "\"\n"
+       << "\t\tcanHandleVariableCommunicationStepSize=\"" << m.canHandleVariableCommunicationStepSize << "\"\n"
+       << "\t\tcanBeInstantiatedOnlyOncePerProcess=\"" << m.canBeInstantiatedOnlyOncePerProcess << "\"\n"
+       << "\t\tcanGetAndSetFMUstate=\"" << m.canGetAndSetFMUstate << "\"\n"
+       << "\t\tcanSerializeFMUstate=\"" << m.canSerializeFMUstate << "\"\n"
+       << "\t\tprovidesDirectionalDerivatives=\"false\"" << "\n"
+       << "\t\tprovidesAdjointDerivatives=\"false\"" << "\n"
+       << "\t\tprovidesPerElementDependencies=\"false\"" << "\n"
+       << "\t\tprovidesEvaluateDiscreteStates=\"false\""
+       << "/>\n\n";
 
     // if (!m.vendorAnnotations.empty()) {
     //     ss << "\t<Annotations>\n";
@@ -64,6 +64,17 @@ std::string fmu_base::make_description() const {
     //     }
     //     ss << "\t</Annotations>\n";
     // }
+
+    if (m.defaultExperiment) {
+        ss << "\t<DefaultExperiment ";
+
+        ss << "startTime=\"" << m.defaultExperiment->startTime << "\"";
+        if (m.defaultExperiment->stopTime) ss << " stopTime=\"" << *m.defaultExperiment->stopTime << "\"";
+        if (m.defaultExperiment->stepSize) ss << " stepSize=\"" << *m.defaultExperiment->stepSize << "\"";
+        if (m.defaultExperiment->tolerance) ss << " tolerance=\"" << *m.defaultExperiment->tolerance << "\"";
+
+        ss << "/>\n\n";
+    }
 
     ss << "\t<ModelVariables>\n";
 
@@ -131,7 +142,7 @@ std::string fmu_base::make_description() const {
         // }
     }
 
-    ss << "\t</ModelVariables>\n";
+    ss << "\t</ModelVariables>\n\n";
 
     ss << "\t<ModelStructure>\n";
 
@@ -173,7 +184,7 @@ std::string fmu_base::make_description() const {
         }
     }
 
-    ss << "\t</ModelStructure>\n";
+    ss << "\t</ModelStructure>\n\n";
 
     ss << "</fmiModelDescription>\n";
 
