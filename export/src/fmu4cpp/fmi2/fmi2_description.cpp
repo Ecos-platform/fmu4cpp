@@ -39,7 +39,7 @@ std::string fmu_base::make_description() const {
     if (!m.vendorAnnotations.empty()) {
         ss << "\t<VendorAnnotations>\n";
         for (const auto &annotation: m.vendorAnnotations) {
-            std::string indentedAnnotation = indent_multiline_string(annotation, 3);
+            std::string indentedAnnotation = indent_multiline_string(annotation, 2);
             ss << indentedAnnotation << "\n";
         }
         ss << "\t</VendorAnnotations>\n\n";

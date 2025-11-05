@@ -56,14 +56,6 @@ std::string fmu_base::make_description() const {
        << "\t\tprovidesEvaluateDiscreteStates=\"false\""
        << "/>\n\n";
 
-    // if (!m.vendorAnnotations.empty()) {
-    //     ss << "\t<Annotations>\n";
-    //     for (const auto &annotation: m.vendorAnnotations) {
-    //         std::string indentedAnnotation = indent_multiline_string(annotation, 3);
-    //         ss << indentedAnnotation << "\n";
-    //     }
-    //     ss << "\t</Annotations>\n";
-    // }
 
     if (m.defaultExperiment) {
         ss << "\t<DefaultExperiment ";
@@ -152,7 +144,7 @@ std::string fmu_base::make_description() const {
 
     if (!unknowns.empty()) {
         for (const auto &v: unknowns) {
-            ss << "\t\t\t<Output valueReference=\"" << v->value_reference() << "\"";
+            ss << "\t\t<Output valueReference=\"" << v->value_reference() << "\"";
             if (const auto deps = v->getDependencies(); !deps.empty()) {
                 ss << " dependencies=\"";
                 for (unsigned i = 0; i < deps.size(); i++) {
@@ -179,12 +171,21 @@ std::string fmu_base::make_description() const {
     });
     if (!initialUnknowns.empty()) {
         for (const auto &v: initialUnknowns) {
-            ss << "\t\t\t<InitialUnknown valueReference=\"" << v->index() - 1 << "\"";
+            ss << "\t\t<InitialUnknown valueReference=\"" << v->index() - 1 << "\"";
             ss << "/>\n";
         }
     }
 
     ss << "\t</ModelStructure>\n\n";
+
+    // if (!m.vendorAnnotations.empty()) {
+    //     ss << "\t<Annotations>\n";
+    //     for (const auto &annotation: m.vendorAnnotations) {
+    //         std::string indentedAnnotation = indent_multiline_string(annotation, 2);
+    //         ss << indentedAnnotation << "\n";
+    //     }
+    //     ss << "\t</Annotations>\n\n";
+    // }
 
     ss << "</fmiModelDescription>\n";
 
