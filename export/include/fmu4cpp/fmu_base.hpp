@@ -207,17 +207,17 @@ namespace fmu4cpp {
         }
 
         virtual void *getFMUState() {
-
+            log(fmiError, "getFMUState not implemented");
             return nullptr;
         }
 
         virtual bool setFmuState(void *state) {
-
+            log(fmiError, "getFMUState not implemented");
             return false;
         }
 
         virtual bool freeFmuState(void **state) {
-
+            log(fmiError, "getFMUState not implemented");
             return false;
         }
 
