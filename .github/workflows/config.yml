@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure and build
+      - name: "Configure and build"
         run: |
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON
           cmake --build build
@@ -26,11 +26,18 @@ jobs:
           printf 'MODEL_PATH=%s\n' "$mp" >> $GITHUB_ENV
           printf 'MODEL_BASENAME=%s\n' "$mb" >> $GITHUB_ENV
 
-      - name: Download and run FMUchecker
+      - name: "Download and run fmusim"
         run: |
-          wget https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip
-          7z x FMUChecker-2.0.4-linux64.zip && cd FMUChecker-2.0.4-linux64
-          ./fmuCheck.linux64 ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
+          folder=Reference-FMUs-0.0.39
+          zip="$folder.zip"
+          url="https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/$zip"
+          
+          wget -q "$url" -O "$zip"
+          mkdir -p "$folder"
+          unzip -q "$zip" -d "$folder"
+          
+          cd Reference-FMUs-0.0.39/fmusim-x86_64-linux
+          ./fmusim --logging-on ${{ github.workspace }}/build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
 
       - name: Test
         run: |
@@ -59,12 +66,17 @@ jobs:
           $mb = Split-Path $mp -Leaf
           "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
-      - name: "Download and run FMUChecker"
+      - name: "Download and run fmusim"
         run: |
-          Invoke-WebRequest -Uri "https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip" -OutFile "FMUChecker-2.0.4-win64.zip"
-          Expand-Archive -Path "FMUChecker-2.0.4-win64.zip" -DestinationPath "." -Force
-          cd "FMUChecker-2.0.4-win64"
-          ./fmuCheck.win64.exe "../build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
+          $folder = "Reference-FMUs-0.0.39"
+          $zip = "$folder.zip"
+          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/$zip"
+          
+          Invoke-WebRequest -Uri $url -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath $folder -Force
+          
+          cd "$folder/fmusim-x86_64-windows"
+          ./fmusim.exe --logging-on "$env:GITHUB_WORKSPACE/build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
 
       - name: Test
         run: |
