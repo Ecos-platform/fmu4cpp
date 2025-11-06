@@ -20,6 +20,7 @@ function(generateFMU modelIdentifier)
     set(COMMON_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_base>")
     target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
 
+    set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
 
     foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
 
@@ -130,8 +131,7 @@ function(generateFMU modelIdentifier)
                     COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
                     "resources"
                     "${modelOutputDir}/binaries"
-                    "${modelOutputDir}/modelDescription.xml"
-                    VERBATIM)
+                    "${modelOutputDir}/modelDescription.xml")
         endif ()
 
     endforeach ()
