@@ -50,7 +50,7 @@ jobs:
             fi
             mb=$(basename "$mp")
             echo "Checking model: $mp ($mb)"
-            ./fmuCheck.linux64 "../build/$mp/$mb.fmu"
+            ./fmuCheck.linux64 "${{ github.workspace }}/build/$mp/$mb.fmu"
           done
 
 
@@ -94,7 +94,7 @@ jobs:
             if ([string]::IsNullOrWhiteSpace($mp)) { continue }
             $mb = Split-Path $mp -Leaf
             Write-Host "Checking model: $mp ($mb)"
-            & $checker "..\build\$mp\$mb.fmu"
+            & $checker "$env:GITHUB_WORKSPACE\build\$mp\$mb.fmu"
             if ($LASTEXITCODE -ne 0) {
               Write-Error "FMUChecker failed for $mp with exit code $LASTEXITCODE"
               exit $LASTEXITCODE
