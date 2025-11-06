@@ -35,10 +35,10 @@ jobs:
           printf 'MODEL_PATHS=%s\n' "$MODEL_PATHS" >> $GITHUB_ENV
           
 
-      - name: "Download and fmusim"
+      - name: "Download fmusim"
         run: |
           version=0.0.39
-          zip=Reference-FMUs-$version.zip"
+          zip=Reference-FMUs-$version.zip
           url="https://github.com/modelica/Reference-FMUs/releases/download/v$version/$zip"
           
           wget -q "$url" -O "$zip"
