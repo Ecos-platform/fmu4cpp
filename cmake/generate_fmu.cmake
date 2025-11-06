@@ -152,7 +152,7 @@ function(generateFMU modelIdentifier)
         add_custom_command(TARGET ${versionTarget} POST_BUILD
                 WORKING_DIRECTORY "${binaryOutputDir}"
                 COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Generating modelDescription.xml for model '${modelIdentifier}'"
-                COMMAND descriptionGenerator "${versionTarget}")
+                COMMAND descriptionGenerator "$<TARGET_FILE_NAME:${versionTarget}>")
 
         # Package FMU
         set(TAR_INPUTS "${modelOutputDir}/binaries" "${modelOutputDir}/modelDescription.xml")
