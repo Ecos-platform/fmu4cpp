@@ -18,28 +18,49 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON
           cmake --build build
 
-      - name: "Read model path/name"
+      - name: "Read model paths"
         run: |
-          mp=$(cat build/model.txt)
-          mp=$(echo "$mp" | tr -d '\r' | xargs)
-          mb=$(basename "$mp")
-          printf 'MODEL_PATH=%s\n' "$mp" >> $GITHUB_ENV
-          printf 'MODEL_BASENAME=%s\n' "$mb" >> $GITHUB_ENV
-
-      - name: "Download and run fmusim"
-        run: |
-          folder=Reference-FMUs-0.0.39
-          zip="$folder.zip"
-          url="https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/$zip"
+          MODEL_PATHS=""
+          while IFS= read -r line || [ -n "$line" ]; do
+            line=$(echo "$line" | tr -d '\r' | xargs)
+            if [ -z "$line" ]; then
+              continue
+            fi
+            if [ -z "$MODEL_PATHS" ]; then
+              MODEL_PATHS="$line"
+            else
+              MODEL_PATHS="$MODEL_PATHS;$line"
+            fi
+          done < build/model.txt
+          printf 'MODEL_PATHS=%s\n' "$MODEL_PATHS" >> $GITHUB_ENV
           
-          wget -q "$url" -O "$zip"
+
+      - name: "Download and fmusim"
+        run: |
+          version=0.0.39
+          folder=Reference-FMUs-$version
+          url="https://github.com/modelica/Reference-FMUs/releases/download/v$version/$folder.zip"
+          
+          wget -q "$url" -O "$folder.zip"
           mkdir -p "$folder"
-          unzip -q "$zip" -d "$folder"
+          unzip -q "$folder.zip" -d "$folder"
           
-          cd Reference-FMUs-0.0.39/fmusim-x86_64-linux
-          ./fmusim --logging-on ${{ github.workspace }}/build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
+          cd $folder/fmusim-x86_64-linux
 
-      - name: Test
+      - name: "Run fmusim"
+        run: |
+          IFS=';' read -r -a paths <<< "${{ env.MODEL_PATHS }}"
+          for mp in "${paths[@]}"; do
+            if [ -z "$mp" ]; then
+              continue
+            fi
+            mb=$(basename "$mp")
+          
+            echo "Checking model: $mp ($mb)"
+            ./fmusim --logging-on ${{ github.workspace }}/build/$mp/$mb.fmu"
+          done
+
+      - name: "Test"
         run: |
           ctest --no-tests=error --test-dir build/export/tests --output-on-failure
 
@@ -60,24 +81,40 @@ jobs:
           cmake --build build --config Release
 
       - name: "Read model path/name"
+        shell: pwsh
         run: |
           $mp = (Get-Content -Raw build/model.txt).Trim()
           "MODEL_PATH=$mp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
           $mb = Split-Path $mp -Leaf
           "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
-      - name: "Download and run fmusim"
+      - name: "Download fmusim"
+        shell: pwsh
         run: |
-          $folder = "Reference-FMUs-0.0.39"
-          $zip = "$folder.zip"
-          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/$zip"
+          $version = "0.0.39"
+          $folder = "Reference-FMUs-$version"
+          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v$version/folder.zip"
           
-          Invoke-WebRequest -Uri $url -OutFile $zip
-          Expand-Archive -Path $zip -DestinationPath $folder -Force
+          Invoke-WebRequest -Uri $url -OutFile $folder.zip
+          Expand-Archive -Path $folder.zip -DestinationPath $folder -Force
           
           cd "$folder/fmusim-x86_64-windows"
-          ./fmusim.exe --logging-on "$env:GITHUB_WORKSPACE/build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
 
-      - name: Test
+      - name: "Run fmusim"
+        shell: pwsh
+        run: |
+          $paths = $env:MODEL_PATHS -split ';'
+          foreach ($mp in $paths) {
+            if ([string]::IsNullOrWhiteSpace($mp)) { continue }
+            $mb = Split-Path $mp -Leaf
+            Write-Host "Checking model: $mp ($mb)"
+            & ./fmusim.exe "$env:GITHUB_WORKSPACE\build\$mp\$mb.fmu"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "FMUChecker failed for $mp with exit code $LASTEXITCODE"
+              exit $LASTEXITCODE
+            }
+          }
+
+      - name: "Test"
         run: |
           ctest -C Release --no-tests=error --test-dir build/export/tests --output-on-failure
