@@ -37,7 +37,7 @@ jobs:
           unzip -q "$zip" -d "$folder"
           
           cd Reference-FMUs-0.0.39/fmusim-x86_64-linux
-          ./fmusim ${{ github.workspace }}/build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
+          ./fmusim --logging-on ${{ github.workspace }}/build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
 
       - name: Test
         run: |
@@ -76,7 +76,7 @@ jobs:
           Expand-Archive -Path $zip -DestinationPath $folder -Force
           
           cd "$folder/fmusim-x86_64-windows"
-          ./fmusim.exe "$env:GITHUB_WORKSPACE/build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
+          ./fmusim.exe --logging-on "$env:GITHUB_WORKSPACE/build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
 
       - name: Test
         run: |
