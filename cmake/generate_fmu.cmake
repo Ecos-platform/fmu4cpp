@@ -114,26 +114,19 @@ function(generateFMU modelIdentifier)
                 COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Generating modelDescription.xml for model '${modelIdentifier}'"
                 COMMAND descriptionGenerator ${modelIdentifier} "${binaryOutputDir}/$<TARGET_FILE_NAME:${versionTarget}>")
 
-        if (FMU_RESOURCE_FOLDER STREQUAL "")
-            add_custom_command(TARGET ${versionTarget} POST_BUILD
-                    WORKING_DIRECTORY "${modelOutputDir}"
-                    COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
-                    "${modelOutputDir}/binaries"
-                    "${modelOutputDir}/modelDescription.xml")
-
-        else ()
+        # Package FMU
+        set(TAR_INPUTS "${modelOutputDir}/binaries" "${modelOutputDir}/modelDescription.xml")
+        if (NOT FMU_RESOURCE_FOLDER STREQUAL "")
             message("[generateFMU-${fmiVersion}] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model '${modelIdentifier}'")
-
             file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${modelOutputDir}/resources")
-
-            add_custom_command(TARGET ${versionTarget} POST_BUILD
-                    WORKING_DIRECTORY "${modelOutputDir}"
-                    COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Packaging ${modelIdentifier}.fmu in ${modelOutputDir}"
-                    COMMAND ${CMAKE_COMMAND} -E tar "c" "${modelIdentifier}.fmu" --format=zip
-                    "resources"
-                    "${modelOutputDir}/binaries"
-                    "${modelOutputDir}/modelDescription.xml")
+            list(PREPEND TAR_INPUTS "resources")
         endif ()
+
+        add_custom_command(TARGET ${versionTarget} POST_BUILD
+                WORKING_DIRECTORY "${modelOutputDir}"
+                COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Packaging ${modelIdentifier}.fmu in ${modelOutputDir}"
+                COMMAND ${CMAKE_COMMAND} -E tar c "${modelIdentifier}.fmu" --format=zip ${TAR_INPUTS}
+        )
 
     endforeach ()
 
