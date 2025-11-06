@@ -28,9 +28,9 @@ jobs:
 
       - name: Download and run FMUchecker
         run: |
-          wget https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip
-          7z x FMUChecker-2.0.4-linux64.zip && cd FMUChecker-2.0.4-linux64
-          ./fmuCheck.linux64 ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
+          wget https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/Reference-FMUs-0.0.39.zip
+          7z x Reference-FMUs-0.0.39.zip && cd Reference-FMUs-0.0.39/fmusim-x86_64-linux
+          ./fmusim ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
 
       - name: Test
         run: |
@@ -59,12 +59,12 @@ jobs:
           $mb = Split-Path $mp -Leaf
           "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
-      - name: "Download and run FMUChecker"
+      - name: "Download and run fmusim"
         run: |
-          Invoke-WebRequest -Uri "https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip" -OutFile "FMUChecker-2.0.4-win64.zip"
-          Expand-Archive -Path "FMUChecker-2.0.4-win64.zip" -DestinationPath "." -Force
-          cd "FMUChecker-2.0.4-win64"
-          ./fmuCheck.win64.exe "../build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
+          Invoke-WebRequest -Uri "https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/Reference-FMUs-0.0.39.zip" -OutFile "Reference-FMUs-0.0.39.zip"
+          Expand-Archive -Path "Reference-FMUs-0.0.39.zip" -DestinationPath "." -Force
+          cd "Reference-FMUs-0.0.39/fmusim-x86_64-windows"
+          ./fmusim.exe "../build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
 
       - name: Test
         run: |
