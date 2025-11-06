@@ -38,16 +38,15 @@ jobs:
       - name: "Download and fmusim"
         run: |
           version=0.0.39
-          folder=Reference-FMUs-$version
-          url="https://github.com/modelica/Reference-FMUs/releases/download/v$version/$folder.zip"
+          zip=Reference-FMUs-$version.zip"
+          url="https://github.com/modelica/Reference-FMUs/releases/download/v$version/$zip"
           
-          wget -q "$url" -O "$folder.zip"
-          mkdir -p "$folder"
-          unzip -q "$folder.zip" -d "$folder"
-          
-          cd $folder/fmusim-x86_64-linux
+          wget -q "$url" -O "$zip"
+          mkdir -p "Reference-FMUs"
+          unzip -q "$zip" -d "Reference-FMUs"
 
       - name: "Run fmusim"
+        working-directory: "Reference-FMUs/fmusim-x86_64-linux"
         run: |
           IFS=';' read -r -a paths <<< "${{ env.MODEL_PATHS }}"
           for mp in "${paths[@]}"; do
@@ -91,16 +90,15 @@ jobs:
         shell: pwsh
         run: |
           $version = "0.0.39"
-          $folder = "Reference-FMUs-$version"
-          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v$version/folder.zip"
+          $zip = "Reference-FMUs-$version.zip"
+          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v$version/$zip"
           
-          Invoke-WebRequest -Uri $url -OutFile $folder.zip
-          Expand-Archive -Path $folder.zip -DestinationPath $folder -Force
-          
-          cd "$folder/fmusim-x86_64-windows"
+          Invoke-WebRequest -Uri $url -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath Reference-FMUs -Force
 
       - name: "Run fmusim"
         shell: pwsh
+        working-directory: "Reference-FMUs/fmusim-x86_64-windows"
         run: |
           $paths = $env:MODEL_PATHS -split ';'
           foreach ($mp in $paths) {
