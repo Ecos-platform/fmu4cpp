@@ -19,6 +19,7 @@ function(generateFMU modelIdentifier)
     # We will build per-version shared libraries from those object files.
     set(COMMON_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_base>")
     target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
+    set_target_properties(${modelIdentifier} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
 
@@ -82,7 +83,7 @@ function(generateFMU modelIdentifier)
 
         set(fmuOutputDir "${CMAKE_BINARY_DIR}/${fmiVersion}")
         set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
-        set(binaryOutputDir "${modelOutputDir}/binaries/${TARGET_PLATFORM}")
+        set(binaryOutputDir "$<1:${modelOutputDir}/binaries/${TARGET_PLATFORM}>")
 
 
         add_library(${versionTarget} SHARED
