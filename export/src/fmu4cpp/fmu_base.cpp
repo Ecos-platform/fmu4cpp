@@ -93,9 +93,9 @@ namespace fmu4cpp {
         const std::vector content{
                 info.author,
                 info.version,
-                info.modelIdentifier,
                 info.description,
-                info.modelName};
+                info.modelName,
+                model_identifier()};
 
         std::stringstream ss;
         for (const auto &str: content) {

@@ -1,4 +1,3 @@
-set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
 
 set(lib_info "${generatedSourcesDir}/fmu4cpp/lib_info.cpp")
 configure_file(

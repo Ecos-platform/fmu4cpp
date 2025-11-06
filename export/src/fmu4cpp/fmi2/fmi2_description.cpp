@@ -8,6 +8,7 @@
 
 using namespace fmu4cpp;
 
+
 std::string fmu_base::make_description() const {
 
     const model_info m = get_model_info();
@@ -27,7 +28,7 @@ std::string fmu_base::make_description() const {
     ss << std::boolalpha
        << "\t<CoSimulation\n"
        << "\t\tneedsExecutionTool=\"" << m.needsExecutionTool << "\"\n"
-       << "\t\tmodelIdentifier=\"" << m.modelIdentifier << "\"\n"
+       << "\t\tmodelIdentifier=\"" << model_identifier() << "\"\n"
        << "\t\tcanHandleVariableCommunicationStepSize=\"" << m.canHandleVariableCommunicationStepSize << "\"\n"
        << "\t\tcanBeInstantiatedOnlyOncePerProcess=\"" << m.canBeInstantiatedOnlyOncePerProcess << "\"\n"
        << "\t\tcanGetAndSetFMUstate=\"" << m.canGetAndSetFMUstate << "\"\n"

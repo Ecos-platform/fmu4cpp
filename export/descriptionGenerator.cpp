@@ -17,6 +17,7 @@
 typedef void *function_ptr;
 #endif
 
+#include <filesystem>
 #include <iostream>
 
 namespace {
@@ -61,19 +62,20 @@ typedef void modelDescriptionTYPE(const char *);
 
 int main(int argc, char **argv) {
 
-    if (argc != 3) return 1;
+    if (argc != 2) return 1;
 
-    const std::string saveLocation = std::string(argv[1]) + "/modelDescription.xml";
-    const std::string libName = argv[2];
-    const auto handle = load_library(libName);
+    const std::string saveLocation = "../../modelDescription.xml";
+    const std::string libName = argv[1];
+
+    const auto handle = load_library((std::filesystem::current_path() / libName).string());
 
     if (!handle) {
-        const auto err = "Unable to load dynamic library '" + libName + "'! " + getLastError();
+        const auto err = "[fmu4cpp modelDescription generator] Unable to load dynamic library '" + libName + "'! " + getLastError();
         std::cerr << err << std::endl;
         return 1;
     }
 
-    const auto f = load_function<modelDescriptionTYPE*>(handle, "write_description");
+    const auto f = load_function<modelDescriptionTYPE *>(handle, "write_description");
     f(saveLocation.c_str());
 
     free_library(handle);

@@ -80,7 +80,6 @@ model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "VanDerPol";
     info.description = "VanDerPol oscillator";
-    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     info.defaultExperiment = {0.0, 20};
     return info;
 }

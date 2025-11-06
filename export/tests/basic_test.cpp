@@ -45,8 +45,11 @@ private:
 
 fmu4cpp::model_info fmu4cpp::get_model_info() {
     model_info m;
-    m.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     return m;
+}
+
+std::string fmu4cpp::model_identifier() {
+    return "basic";
 }
 
 FMU4CPP_INSTANTIATE(Model);

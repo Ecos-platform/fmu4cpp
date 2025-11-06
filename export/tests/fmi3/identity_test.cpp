@@ -82,8 +82,11 @@ fmu4cpp::model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "Identity";
     info.description = "A simple feed-trough model";
-    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     return info;
+}
+
+std::string fmu4cpp::model_identifier() {
+    return "identity";
 }
 
 FMU4CPP_INSTANTIATE(Model);

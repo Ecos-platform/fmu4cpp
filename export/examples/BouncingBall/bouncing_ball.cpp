@@ -80,7 +80,6 @@ model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "BouncingBall";
     info.description = "A bouncing ball model";
-    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     return info;
 }
 

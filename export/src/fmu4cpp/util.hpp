@@ -8,6 +8,7 @@
 
 #include "fmu4cpp/fmu_base.hpp"
 
+
 namespace fmu4cpp {
 
     inline std::vector<const VariableBase *> collect(
