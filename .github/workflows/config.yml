@@ -20,13 +20,17 @@ jobs:
 
       - name: "Read model name"
         run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
+          mp=$(cat build/model.txt)
+          mp=$(echo "$mp" | tr -d '\r' | xargs)
+          mb=$(basename "$mp")
+          printf 'MODEL_PATH=%s\n' "$mp" >> $GITHUB_ENV
+          printf 'MODEL_BASENAME=%s\n' "$mb" >> $GITHUB_ENV
 
       - name: Download and run FMUchecker
         run: |
           wget https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip
           7z x FMUChecker-2.0.4-linux64.zip && cd FMUChecker-2.0.4-linux64
-          ./fmuCheck.linux64 ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_PATH }}.fmu
+          ./fmuCheck.linux64 ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
 
       - name: Test
         run: |
@@ -51,13 +55,15 @@ jobs:
       - name: "Read model name"
         run: |
           echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $mb = Split-Path $mp -Leaf
+          "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
       - name: "Download and run FMUChecker"
         run: |
           Invoke-WebRequest -Uri "https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip" -OutFile "FMUChecker-2.0.4-win64.zip"
           Expand-Archive -Path "FMUChecker-2.0.4-win64.zip" -DestinationPath "." -Force
           cd "FMUChecker-2.0.4-win64"
-          ./fmuCheck.win64.exe "../build/${env:MODEL_PATH}/${env:MODEL_PATH}.fmu"
+          ./fmuCheck.win64.exe "../build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
 
       - name: Test
         run: |
