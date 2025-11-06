@@ -18,7 +18,7 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON
           cmake --build build
 
-      - name: "Read model name"
+      - name: "Read model path/name"
         run: |
           mp=$(cat build/model.txt)
           mp=$(echo "$mp" | tr -d '\r' | xargs)
@@ -52,9 +52,10 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON -A x64 
           cmake --build build --config Release
 
-      - name: "Read model name"
+      - name: "Read model path/name"
         run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $mp = (Get-Content -Raw build/model.txt).Trim()
+          "MODEL_PATH=$mp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
           $mb = Split-Path $mp -Leaf
           "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
