@@ -21,8 +21,6 @@ function(generateFMU modelIdentifier)
     target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
     set_target_properties(${modelIdentifier} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-    set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
-
     foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
 
         # versioned shared library target built from object libraries

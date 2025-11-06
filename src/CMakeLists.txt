@@ -9,4 +9,4 @@ generateFMU("${modelIdentifier}" FMI_VERSIONS ${fmi_version} RESOURCE_FOLDER "${
 
 # write the identifier to file so that the CI process knows what to package
 set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/model.txt")
-file(WRITE ${OUTPUT_FILE} "${modelIdentifier}")
+file(WRITE ${OUTPUT_FILE} "${fmi_version}/${modelIdentifier}")
