@@ -24,14 +24,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
 
 
-############modelIdentifier and export version###########
-
-set(modelIdentifier identity) # <-- CHANGE ME
-set(fmi_version "fmi2") # fmi2 and fmi3 is supported
-
-########################################################
+# write the identifier to file so that the CI process knows what to package
+set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/models.txt")
+file(WRITE ${OUTPUT_FILE} "")
 
 include("cmake/generate_fmu.cmake")
 
 add_subdirectory(export)
-add_subdirectory(src)
+
+if (FMU4CPP_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif ()

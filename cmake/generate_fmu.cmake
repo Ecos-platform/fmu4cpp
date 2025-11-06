@@ -168,6 +168,8 @@ function(generateFMU modelIdentifier)
                 COMMAND ${CMAKE_COMMAND} -E tar c "${modelIdentifier}.fmu" --format=zip ${TAR_INPUTS}
         )
 
+        file(APPEND ${OUTPUT_FILE} "${fmiVersion}/${modelIdentifier}\n")
+
     endforeach ()
 
 endfunction()
