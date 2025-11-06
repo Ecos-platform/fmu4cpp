@@ -35,8 +35,9 @@ jobs:
           wget -q "$url" -O "$zip"
           mkdir -p "$folder"
           unzip -q "$zip" -d "$folder"
+          
           cd Reference-FMUs-0.0.39/fmusim-x86_64-linux
-          ./fmusim ../build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
+          ./fmusim ${{ github.workspace }}/build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
 
       - name: Test
         run: |
@@ -73,8 +74,9 @@ jobs:
           
           Invoke-WebRequest -Uri $url -OutFile $zip
           Expand-Archive -Path $zip -DestinationPath $folder -Force
+          
           cd "$folder/fmusim-x86_64-windows"
-          ./fmusim.exe "../build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
+          ./fmusim.exe "$env:GITHUB_WORKSPACE/build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
 
       - name: Test
         run: |
