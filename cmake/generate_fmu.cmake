@@ -3,7 +3,7 @@ function(generateFMU modelIdentifier)
 
     set(options)
     set(oneValueArgs RESOURCE_FOLDER)
-    set(multiValueArgs FMI_VERSIONS)
+    set(multiValueArgs FMI_VERSIONS SOURCES LINK_TARGETS COMPILE_DEFINITIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if (NOT FMU_RESOURCE_FOLDER)
@@ -15,11 +15,29 @@ function(generateFMU modelIdentifier)
         message(FATAL_ERROR "generateFMU requires at least one FMI version to be specified")
     endif ()
 
-    # Expect the user to provide modelIdentifier as an OBJECT library.
-    # We will build per-version shared libraries from those object files.
+    # require sources list (user now passes sources instead of an object library)
+    if (NOT FMU_SOURCES)
+        message(FATAL_ERROR "generateFMU requires SOURCES to be provided")
+    endif ()
+
+
+    # common object files from the base target
     set(COMMON_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_base>")
-    target_include_directories(${modelIdentifier} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
-    set_target_properties(${modelIdentifier} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+    # create an internal object library from provided sources (if not already created)
+    set(model_objects_target "${modelIdentifier}_fmu_objects")
+    if (NOT TARGET ${model_objects_target})
+        add_library(${model_objects_target} OBJECT ${FMU_SOURCES})
+        target_include_directories(${model_objects_target} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
+        if (FMU_LINK_TARGETS)
+            target_link_libraries(${model_objects_target} PRIVATE ${FMU_LINK_TARGETS})
+        endif ()
+        # apply user-provided compile definitions to the object target
+        if (FMU_COMPILE_DEFINITIONS)
+            target_compile_definitions(${model_objects_target} PRIVATE ${FMU_COMPILE_DEFINITIONS})
+        endif ()
+        set_target_properties(${model_objects_target} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    endif ()
 
     foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
 
@@ -86,12 +104,36 @@ function(generateFMU modelIdentifier)
 
         add_library(${versionTarget} SHARED
                 ${COMMON_OBJECTS}
-                "$<TARGET_OBJECTS:${modelIdentifier}>"
+                "$<TARGET_OBJECTS:${model_objects_target}>"
                 ${VERSION_OBJECTS}
         )
         target_include_directories(${versionTarget} PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
         target_compile_definitions(${versionTarget} PRIVATE ${VERSION_DEFS})
 
+        # link user-provided link targets (must be propagated to the final shared lib)
+        if (FMU_LINK_TARGETS)
+            target_link_libraries(${versionTarget} PRIVATE ${FMU_LINK_TARGETS})
+
+            foreach(dep IN LISTS FMU_LINK_TARGETS)
+                if (TARGET ${dep})
+                    add_custom_command(TARGET ${versionTarget} POST_BUILD
+                            WORKING_DIRECTORY "${modelOutputDir}"
+                            COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Copying runtime of ${dep} to ${binaryOutputDir}"
+                            COMMAND ${CMAKE_COMMAND} -E make_directory "${binaryOutputDir}"
+                            # copy the target's runtime file (dll/so/dylib) into the binaries folder
+                            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                            $<TARGET_FILE:${dep}>
+                            "${binaryOutputDir}/$<TARGET_FILE_NAME:${dep}>"
+                    )
+                endif()
+            endforeach()
+        endif ()
+
+        # if user provided compile definitions, also ensure final target sees them (optional)
+        if (FMU_COMPILE_DEFINITIONS)
+            target_compile_definitions(${model_objects_target} PRIVATE ${FMU_COMPILE_DEFINITIONS})
+            target_compile_definitions(${versionTarget} PRIVATE ${FMU_COMPILE_DEFINITIONS})
+        endif ()
 
         if (WIN32)
             set_target_properties(${versionTarget}
@@ -108,9 +150,9 @@ function(generateFMU modelIdentifier)
 
         # Generate modelDescription.xml
         add_custom_command(TARGET ${versionTarget} POST_BUILD
-                WORKING_DIRECTORY "${fmuOutputDir}"
+                WORKING_DIRECTORY "${binaryOutputDir}"
                 COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Generating modelDescription.xml for model '${modelIdentifier}'"
-                COMMAND descriptionGenerator ${modelIdentifier} "${binaryOutputDir}/$<TARGET_FILE_NAME:${versionTarget}>")
+                COMMAND descriptionGenerator "${versionTarget}")
 
         # Package FMU
         set(TAR_INPUTS "${modelOutputDir}/binaries" "${modelOutputDir}/modelDescription.xml")

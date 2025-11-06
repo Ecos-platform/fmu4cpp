@@ -1,6 +1,8 @@
 
-add_library(resource OBJECT
+generateFMU("resource"
+        SOURCES
         "resource.cpp"
+        FMI_VERSIONS "fmi3"
+        RESOURCE_FOLDER
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources"
 )
-
-generateFMU("resource" FMI_VERSIONS "fmi2" RESOURCE_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/resources")
