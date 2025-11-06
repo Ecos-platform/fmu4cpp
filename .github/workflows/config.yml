@@ -35,7 +35,7 @@ jobs:
             else
               MODEL_PATHS="$MODEL_PATHS;$line"
             fi
-          done < build/model.txt
+          done < build/models.txt
           printf 'MODEL_PATHS=%s\n' "$MODEL_PATHS" >> $GITHUB_ENV
 
       - name: "Download and run FMUchecker"
@@ -77,7 +77,7 @@ jobs:
       - name: "Read models path/name"
         shell: pwsh
         run: |
-          $paths = Get-Content -Path build/model.txt | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+          $paths = Get-Content -Path build/models.txt | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
           $joined = $paths -join ';'
           "MODEL_PATHS=$joined" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
