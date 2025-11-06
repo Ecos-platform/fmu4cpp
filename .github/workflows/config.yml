@@ -57,7 +57,7 @@ jobs:
             mb=$(basename "$mp")
           
             echo "Checking model: $mp ($mb)"
-            ./fmusim --logging-on ${{ github.workspace }}/build/$mp/$mb.fmu"
+            ./fmusim --logging-on "${{ github.workspace }}/build/$mp/$mb.fmu"
           done
 
       - name: "Test"
@@ -80,13 +80,12 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON -A x64 
           cmake --build build --config Release
 
-      - name: "Read model path/name"
+      - name: "Read model paths"
         shell: pwsh
         run: |
-          $mp = (Get-Content -Raw build/models.txt).Trim()
-          "MODEL_PATH=$mp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
-          $mb = Split-Path $mp -Leaf
-          "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+          $paths = Get-Content -Path build/models.txt | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+          $joined = $paths -join ';'
+          "MODEL_PATHS=$joined" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
 
       - name: "Download fmusim"
         shell: pwsh
