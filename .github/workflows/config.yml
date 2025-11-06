@@ -31,7 +31,7 @@ jobs:
             else
               MODEL_PATHS="$MODEL_PATHS;$line"
             fi
-          done < build/model.txt
+          done < build/models.txt
           printf 'MODEL_PATHS=%s\n' "$MODEL_PATHS" >> $GITHUB_ENV
           
 
@@ -83,7 +83,7 @@ jobs:
       - name: "Read model path/name"
         shell: pwsh
         run: |
-          $mp = (Get-Content -Raw build/model.txt).Trim()
+          $mp = (Get-Content -Raw build/models.txt).Trim()
           "MODEL_PATH=$mp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
           $mb = Split-Path $mp -Leaf
           "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
