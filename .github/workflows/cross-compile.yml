@@ -133,9 +133,9 @@ jobs:
           path: models
           merge-multiple: true
 
-      - name: "Set permissions"
-        run: |
-          sudo chmod -R +x models/binaries
+#      - name: "Set permissions"
+#        run: |
+#          sudo chmod -R +x models/**/binaries
 
       - name: "Upload merged models"
         uses: actions/upload-artifact@v4
