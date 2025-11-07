@@ -65,8 +65,23 @@ jobs:
           set -euo pipefail
           find `models` -type d -name binaries -exec sudo chmod -R a+X '{}' +
 
+      - name: "Zip model folders"
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          
+          for dir in models/fmi*/*; do
+            if [ -d "$dir" ]; then
+              zip_path="$dir.fmu"
+              echo "Zipping $dir -> $zip_path"
+              (cd "$(dirname "$dir")" && zip -r "$(basename "$dir").fmu" "$(basename "$dir")")
+              echo "Deleting folder: $dir"
+              rm -rf "$dir"
+            fi
+          done
+
       - name: "Upload merged models"
         uses: actions/upload-artifact@v4
         with:
-          name: models
+          name: models-merged
           path: models
