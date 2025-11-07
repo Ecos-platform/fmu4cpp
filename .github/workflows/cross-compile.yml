@@ -63,7 +63,7 @@ jobs:
       - name: "Set permissions"
         run: |
           set -euo pipefail
-          find `models` -type d -name binaries -exec sudo chmod -R a+X '{}' +
+          find models -type d -name binaries -exec sudo chmod -R a+X '{}' +
 
       - name: "Zip model folders"
         run: |
@@ -73,8 +73,8 @@ jobs:
           for dir in models/fmi*/*; do
             if [ -d "$dir" ]; then
               zip_path="$dir.fmu"
-              echo "Zipping $dir -> $zip_path"
-              (cd "$(dirname "$dir")" && zip -r "$(basename "$dir").fmu" "$(basename "$dir")")
+              echo "Zipping contents of $dir -> $zip_path"
+              (cd "$(dirname "$dir")" && zip -r "$(basename "$dir").fmu" .)
               echo "Deleting folder: $dir"
               rm -rf "$dir"
             fi
