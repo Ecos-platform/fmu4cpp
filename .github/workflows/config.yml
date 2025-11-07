@@ -18,28 +18,34 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON
           cmake --build build
 
-      - name: "Read model path/name"
+      - name: "Download fmusim"
         run: |
-          mp=$(cat build/model.txt)
-          mp=$(echo "$mp" | tr -d '\r' | xargs)
-          mb=$(basename "$mp")
-          printf 'MODEL_PATH=%s\n' "$mp" >> $GITHUB_ENV
-          printf 'MODEL_BASENAME=%s\n' "$mb" >> $GITHUB_ENV
-
-      - name: "Download and run fmusim"
-        run: |
-          folder=Reference-FMUs-0.0.39
-          zip="$folder.zip"
-          url="https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/$zip"
+          version=0.0.39
+          zip=Reference-FMUs-$version.zip
+          url="https://github.com/modelica/Reference-FMUs/releases/download/v$version/$zip"
           
           wget -q "$url" -O "$zip"
-          mkdir -p "$folder"
-          unzip -q "$zip" -d "$folder"
-          
-          cd Reference-FMUs-0.0.39/fmusim-x86_64-linux
-          ./fmusim --logging-on ${{ github.workspace }}/build/${{ env.MODEL_PATH }}/${{ env.MODEL_BASENAME }}.fmu
+          mkdir -p "Reference-FMUs"
+          unzip -q "$zip" -d "Reference-FMUs"
 
-      - name: Test
+      - name: "Run fmusim"
+        working-directory: "Reference-FMUs/fmusim-x86_64-linux"
+        run: |
+          set -e
+          found=0
+          # find all .fmu files under `build/models` (fmi2 and fmi3)
+          while IFS= read -r -d '' f; do
+            found=1
+            mb=$(basename "$f")
+            echo "Checking FMU: $f ($mb)"
+            ./fmusim "$f"
+          done < <(find ${{ github.workspace }}/build/models -type f -name '*.fmu' -print0 2>/dev/null || true)
+      
+          if [ "$found" -eq 0 ]; then
+            echo "No FMUs found under `build/models`, skipping fmusim run"
+          fi
+
+      - name: "Test"
         run: |
           ctest --no-tests=error --test-dir build/export/tests --output-on-failure
 
@@ -59,25 +65,34 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON -A x64 
           cmake --build build --config Release
 
-      - name: "Read model path/name"
+      - name: "Download fmusim"
+        shell: pwsh
         run: |
-          $mp = (Get-Content -Raw build/model.txt).Trim()
-          "MODEL_PATH=$mp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
-          $mb = Split-Path $mp -Leaf
-          "MODEL_BASENAME=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
-
-      - name: "Download and run fmusim"
-        run: |
-          $folder = "Reference-FMUs-0.0.39"
-          $zip = "$folder.zip"
-          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v0.0.39/$zip"
+          $version = "0.0.39"
+          $zip = "Reference-FMUs-$version.zip"
+          $url = "https://github.com/modelica/Reference-FMUs/releases/download/v$version/$zip"
           
           Invoke-WebRequest -Uri $url -OutFile $zip
-          Expand-Archive -Path $zip -DestinationPath $folder -Force
-          
-          cd "$folder/fmusim-x86_64-windows"
-          ./fmusim.exe --logging-on "$env:GITHUB_WORKSPACE/build/${env:MODEL_PATH}/${env:MODEL_BASENAME}.fmu"
+          Expand-Archive -Path $zip -DestinationPath Reference-FMUs -Force
 
-      - name: Test
+      - name: "Run fmusim"
+        shell: pwsh
+        working-directory: "Reference-FMUs/fmusim-x86_64-windows"
+        run: |
+          $fmus = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\build\models" -Recurse -Filter '*.fmu' -File -ErrorAction SilentlyContinue
+          if (-not $fmus -or $fmus.Count -eq 0) {
+            Write-Host "No FMUs found under `build/models`, skipping fmusim run"
+            exit 0
+          }
+          foreach ($f in $fmus) {
+            Write-Host "Checking FMU: $($f.FullName) ($($f.Name))"
+            & ./fmusim.exe $f.FullName
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "FMUChecker failed for $($f.FullName) with exit code $LASTEXITCODE"
+              exit $LASTEXITCODE
+            }
+          }
+
+      - name: "Test"
         run: |
           ctest -C Release --no-tests=error --test-dir build/export/tests --output-on-failure

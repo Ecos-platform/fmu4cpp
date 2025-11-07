@@ -97,7 +97,7 @@ function(generateFMU modelIdentifier)
         endif ()
 
 
-        set(fmuOutputDir "${CMAKE_BINARY_DIR}/${fmiVersion}")
+        set(fmuOutputDir "${fmuResultDir}/${fmiVersion}")
         set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
         set(binaryOutputDir "$<1:${modelOutputDir}/binaries/${TARGET_PLATFORM}>")
 

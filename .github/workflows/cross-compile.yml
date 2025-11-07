@@ -1,3 +1,4 @@
+
 name: Cross-compile
 
 on: [push, workflow_dispatch]
@@ -12,40 +13,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Configure and build (Linux)"
+      - name: Configure and build (Linux)
         if: startsWith(runner.os, 'Linux')
         run: |
-          cmake . -B build
+          cmake . -B build -DFMU4CPP_BUILD_EXAMPLES=ON -DFMU4CPP_BUILD_TESTS=OFF
           cmake --build build
 
-      - name: "Configure and build (Windows)"
+      - name: Configure and build (Windows)
         if: startsWith(runner.os, 'Windows')
         run: |
-          cmake . -B build -A x64
+          cmake . -B build -DFMU4CPP_BUILD_EXAMPLES=ON -DFMU4CPP_BUILD_TESTS=OFF -A x64
           cmake --build build --config Release
 
-      - name: "Read model name (Linux)"
-        run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" >> $GITHUB_ENV
-        if: runner.os != 'Windows'
-
-      - name: "Read model name (Windows)"
-        run: |
-          echo "MODEL_PATH=$(cat build/model.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
-        if: runner.os == 'Windows'
-
-      - name: "Archive library"
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries-${{ matrix.os }}
-          path: build/${{ env.MODEL_PATH }}/binaries
-
-      - name: "Archive modelDescription.xml"
+      - name: "Stage models for upload (Linux)"
         if: startsWith(runner.os, 'Linux')
+        run: |
+          mkdir -p artifacts/models-${{ matrix.os }}
+          rsync -a --exclude='*.fmu' build/models/ artifacts/models/ || true
+
+      - name: "Stage models for upload (Windows)"
+        if: startsWith(runner.os, 'Windows')
+        shell: pwsh
+        run: |
+          $dst = Join-Path $env:GITHUB_WORKSPACE "artifacts\models"
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          $rc = robocopy "$env:GITHUB_WORKSPACE\build\models" $dst /S /XF *.fmu
+          if ($rc -ge 8) { exit $rc }
+
+      - name: Upload models
         uses: actions/upload-artifact@v4
         with:
-          name: modelDescription
-          path: build/${{ env.MODEL_PATH }}/modelDescription.xml
+          name: models-${{ matrix.os }}
+          path: artifacts/models
+
 
   deploy:
     needs: build
@@ -53,25 +53,35 @@ jobs:
 
     steps:
 
-      - name: "Download binaries"
+      - name: "Download models"
         uses: actions/download-artifact@v4
         with:
-          pattern: binaries-*
-          path: model/binaries
+          pattern: models-*
+          path: models
           merge-multiple: true
-
-      - name: "Download modelDescription.xml"
-        uses: actions/download-artifact@v4
-        with:
-         name: modelDescription
-         path: model
 
       - name: "Set permissions"
         run: |
-         sudo chmod -R +x model/binaries
+          set -euo pipefail
+          find models -type d -name binaries -exec sudo chmod -R a+X '{}' +
 
-      - name: "Upload FMU"
+      - name: "Zip model folders"
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          
+          for dir in models/fmi*/*; do
+            if [ -d "$dir" ]; then
+              zip_path="$dir.fmu"
+              echo "Zipping contents of $dir -> $zip_path"
+              (cd "$dir" && zip -r "../$(basename "$dir").fmu" .)
+              echo "Deleting folder: $dir"
+              rm -rf "$dir"
+            fi
+          done
+
+      - name: "Upload merged models"
         uses: actions/upload-artifact@v4
         with:
-         name: model
-         path: model
+          name: models-merged
+          path: models
