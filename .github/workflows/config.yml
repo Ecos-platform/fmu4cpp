@@ -38,7 +38,7 @@ jobs:
             found=1
             mb=$(basename "$f")
             echo "Checking FMU: $f ($mb)"
-            ./fmusim --logging-on "$f"
+            ./fmusim "$f"
           done < <(find ${{ github.workspace }}/build/models -type f -name '*.fmu' -print0 2>/dev/null || true)
       
           if [ "$found" -eq 0 ]; then
