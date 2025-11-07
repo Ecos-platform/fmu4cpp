@@ -89,6 +89,7 @@ jobs:
           }
 
       - name: Upload models list
+        if: startsWith(runner.os, 'Linux')
         uses: actions/upload-artifact@v4
         with:
           name: models-list
