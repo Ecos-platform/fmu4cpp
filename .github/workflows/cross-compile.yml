@@ -16,13 +16,13 @@ jobs:
       - name: Configure and build (Linux)
         if: startsWith(runner.os, 'Linux')
         run: |
-          cmake . -B build
+          cmake . -B build -DFMU4CPP_BUILD_EXAMPLES=ON -DFMU4CPP_BUILD_TESTS=OFF
           cmake --build build
 
       - name: Configure and build (Windows)
         if: startsWith(runner.os, 'Windows')
         run: |
-          cmake . -B build -A x64
+          cmake . -B build -DFMU4CPP_BUILD_EXAMPLES=ON -DFMU4CPP_BUILD_TESTS=OFF -A x64
           cmake --build build --config Release
 
       - name: Discover models and create per-model archives (Linux)
