@@ -1,0 +1,200 @@
+
+name: Cross-compile
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04, windows-2022 ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure and build (Linux)
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          cmake . -B build
+          cmake --build build
+
+      - name: Configure and build (Windows)
+        if: startsWith(runner.os, 'Windows')
+        run: |
+          cmake . -B build -A x64
+          cmake --build build --config Release
+
+      - name: Discover models and create per-model archives (Linux)
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          set -euo pipefail
+          mkdir -p tmp artifacts model-descriptions
+          # list directories that contain modelDescription.xml, produce paths relative to repo (remove leading build/)
+          find build/models -type f -name modelDescription.xml -printf '%h\n' 2>/dev/null | sed 's#^build/##' | sort -u > tmp/models.txt || true
+          # build MODEL_PATHS as semicolon-separated for per-OS loop
+          MODEL_PATHS=""
+          while IFS= read -r line || [ -n "$line" ]; do
+            line=$(echo "$line" | tr -d '\r' | xargs)
+            [ -z "$line" ] && continue
+            if [ -z "$MODEL_PATHS" ]; then MODEL_PATHS="$line"; else MODEL_PATHS="$MODEL_PATHS;$line"; fi
+          done < tmp/models.txt
+          printf 'MODEL_PATHS=%s\n' "$MODEL_PATHS" >> $GITHUB_ENV
+          
+          IFS=';' read -ra paths <<< "$MODEL_PATHS"
+          for p in "${paths[@]}"; do
+            p_trimmed=$(echo "$p" | tr -d '\r' | xargs)
+            [ -z "$p_trimmed" ] && continue
+            safe=$(printf '%s' "$p_trimmed" | sed 's#[/\\]#-#g; s/[^A-Za-z0-9._-]/_/g')
+            src="build/${p_trimmed}/binaries"
+            if [ -d "$src" ]; then
+              zip -r "artifacts/binaries-${safe}-${{ matrix.os }}.zip" "$src" >/dev/null
+            else
+              echo "::warning:: $src not found, skipping"
+            fi
+            md="build/${p_trimmed}/modelDescription.xml"
+            if [ -f "$md" ]; then
+              cp "$md" "model-descriptions/modelDescription-${safe}-${{ matrix.os }}.xml"
+            fi
+          done
+
+      - name: Discover models and create per-model archives (Windows)
+        if: startsWith(runner.os, 'Windows')
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path tmp,artifacts,model-descriptions | Out-Null
+          $wd = $env:GITHUB_WORKSPACE
+          $models = Get-ChildItem -Path (Join-Path $wd 'build\models') -Recurse -Filter 'modelDescription.xml' -File -ErrorAction SilentlyContinue |
+                    ForEach-Object { $_.Directory.FullName.Substring($wd.Length + 1) } |
+                    Sort-Object -Unique
+          $models | Out-File -FilePath tmp/models.txt -Encoding UTF8
+          $paths = (Get-Content -Path tmp/models.txt | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+          $joined = $paths -join ';'
+          "MODEL_PATHS=$joined" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
+          
+          foreach ($p in $paths) {
+            $safe = ($p -replace '[\\/]', '-') -replace '[^A-Za-z0-9._-]', '_'
+            $src = Join-Path -Path $wd -ChildPath ("build\" + $p + "\binaries")
+            if (Test-Path $src) {
+              $dest = Join-Path -Path $wd -ChildPath ("artifacts\binaries-$safe-${{ matrix.os }}.zip")
+              Remove-Item -Force -ErrorAction SilentlyContinue $dest
+              Compress-Archive -Path (Join-Path $src '*') -DestinationPath $dest -Force
+            } else {
+              Write-Warning "$src not found, skipping"
+            }
+            $md = Join-Path -Path $wd -ChildPath ("build\" + $p + "\modelDescription.xml")
+            if (Test-Path $md) {
+              Copy-Item $md -Destination (Join-Path $wd ("model-descriptions\modelDescription-$safe-${{ matrix.os }}.xml")) -Force
+            }
+          }
+
+      - name: Upload models list
+        uses: actions/upload-artifact@v4
+        with:
+          name: models-list
+          path: tmp/models.txt
+
+      - name: Upload per-OS binaries zips
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.os }}
+          path: artifacts/*.zip
+
+      - name: Upload per-OS modelDescription files
+        uses: actions/upload-artifact@v4
+        with:
+          name: modelDescription-${{ matrix.os }}
+          path: model-descriptions/*.xml
+
+  generate-matrix:
+    runs-on: ubuntu-22.04
+    needs: build
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Download models-list
+        uses: actions/download-artifact@v4
+        with:
+          name: models-list
+          path: tmp
+
+      - id: set-matrix
+        run: |
+          if [ ! -f tmp/models.txt ]; then
+            echo "matrix=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          readarray -t arr < tmp/models.txt
+          vals=()
+          for v in "${arr[@]}"; do
+            v=$(echo "$v" | tr -d '\r' | xargs)
+            [ -z "$v" ] && continue
+            esc=$(printf '%s' "$v" | sed 's/"/\\"/g')
+            vals+=("\"$esc\"")
+          done
+          if [ ${#vals[@]} -eq 0 ]; then
+            echo "matrix=[]" >> $GITHUB_OUTPUT
+          else
+            IFS=,; joined="${vals[*]}"
+            echo "matrix=[${joined}]" >> $GITHUB_OUTPUT
+          fi
+
+  upload-per-model:
+    needs: [build, generate-matrix]
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        path: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Download all per-OS binaries bundles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binaries-*
+          path: model/binaries
+          merge-multiple: true
+
+      - name: Download all per-OS modelDescription files
+        uses: actions/download-artifact@v4
+        with:
+          pattern: modelDescription-*
+          path: model/descriptions
+          merge-multiple: true
+
+      - id: create
+        run: |
+          set -euo pipefail
+          p="${{ matrix.path }}"
+          safe=$(printf '%s' "$p" | sed 's#[/\\]#-#g; s/[^A-Za-z0-9._-]/_/g')
+          mkdir -p artifacts
+          # find matching binaries directories inside downloaded model/binaries
+          mapfile -t matches < <(find model/binaries -type d -path "*/${p}/binaries" 2>/dev/null || true)
+          if [ ${#matches[@]} -eq 0 ]; then
+            echo "::warning::No binaries found for path: ${p}"
+            echo "zipfile=" >> $GITHUB_OUTPUT
+            echo "name=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          zipname="artifacts/${safe}.zip"
+          rm -f "$zipname"
+          # add each matching directory into the zip (preserves platform subtrees)
+          zip -r "$zipname" "${matches[@]}" >/dev/null
+          # pick one modelDescription (prefer Linux build artifact if present)
+          md_pref=$(find model/descriptions -type f -name "modelDescription-${safe}-ubuntu-22.04*.xml" -print -quit 2>/dev/null || true)
+          if [ -z "$md_pref" ]; then
+            md_pref=$(find model/descriptions -type f -name "modelDescription-${safe}-*.xml" -print -quit 2>/dev/null || true)
+          fi
+          if [ -n "$md_pref" ]; then
+            # store modelDescription at root of the zip with canonical name
+            zip -j "$zipname" "$md_pref" -q || true
+          fi
+          echo "zipfile=$zipname" >> $GITHUB_OUTPUT
+          echo "name=model-${safe}" >> $GITHUB_OUTPUT
+
+      - name: Upload final per-model artifact
+        if: steps.create.outputs.zipfile != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.create.outputs.name }}
+          path: ${{ steps.create.outputs.zipfile }}
