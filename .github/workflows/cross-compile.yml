@@ -74,7 +74,7 @@ jobs:
             if [ -d "$dir" ]; then
               zip_path="$dir.fmu"
               echo "Zipping contents of $dir -> $zip_path"
-              (cd "$dir" && zip -r "$(basename "$dir").fmu" .)
+              (cd "$dir" && zip -r "../$(basename "$dir").fmu" .)
               echo "Deleting folder: $dir"
               rm -rf "$dir"
             fi
