@@ -9,7 +9,7 @@ the necessary content into a ready-to-use FMU archive.
 ### How do I get started?
 
 1. Clone this repository using the "Use this template" button.
-2. Browse the example models provided in the `/examples` folder.
+2. Browse the example models from the `examples` branch.
 3. Implement your own model by inheriting from the provided `fmu_base` abstract class.
 4. Create an FMU target by using the provided `generate_fmu` CMake function.
 5. Build. Models for your platform are located in a `models` folder within the build folder.

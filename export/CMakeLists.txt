@@ -1,5 +1,10 @@
-add_subdirectory(src)
+set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
+set(fmuResultDir "${CMAKE_BINARY_DIR}/models")
 
+file(MAKE_DIRECTORY ${generatedSourcesDir})
+file(MAKE_DIRECTORY ${fmuResultDir})
+
+add_subdirectory(src)
 
 # internal executable invoked by CMake to generate the modelDescription.xml from a shared library
 add_executable(descriptionGenerator "descriptionGenerator.cpp")
