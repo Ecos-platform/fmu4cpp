@@ -24,7 +24,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
 
 
-# write the identifier to file so that the CI process knows what to package
+# this will be populated by a list of all generated models
 set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/models.txt")
 file(WRITE ${OUTPUT_FILE} "")
 
