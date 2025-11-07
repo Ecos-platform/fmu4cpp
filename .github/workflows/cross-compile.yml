@@ -63,7 +63,7 @@ jobs:
       - name: "Set permissions"
         run: |
           set -euo pipefail
-          find models -type d -name binaries -print0 | xargs -0 -r sudo chmod -R a+X
+          find models -type d -name binaries -print0 2>/dev/null | xargs -0 -r sudo chmod -R a+X || true
 
       - name: "Zip model folders"
         run: |
