@@ -88,10 +88,10 @@ jobs:
             Write-Host "Checking FMU: $($f.FullName) ($($f.Name))"
             & ./fmusim.exe $f.FullName
             if ($LASTEXITCODE -ne 0) {
-            Write-Error "FMUChecker failed for $($f.FullName) with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
+              Write-Error "FMUChecker failed for $($f.FullName) with exit code $LASTEXITCODE"
+              exit $LASTEXITCODE
+            }
           }
-        }
 
       - name: "Test"
         run: |
