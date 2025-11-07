@@ -39,7 +39,7 @@ jobs:
             mb=$(basename "$f")
             echo "Checking FMU: $f ($mb)"
             ./fmusim --logging-on "${{ github.workspace }}/$f"
-          done < <(find build/models -type f -name '*.fmu' -print0 2>/dev/null || true)
+          done < <(find ${{ github.workspace }}/build/models -type f -name '*.fmu' -print0 2>/dev/null || true)
       
           if [ "$found" -eq 0 ]; then
             echo "No FMUs found under `build/models`, skipping fmusim run"
