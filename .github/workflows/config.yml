@@ -18,23 +18,6 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON
           cmake --build build
 
-      - name: "Read model paths"
-        run: |
-          MODEL_PATHS=""
-          while IFS= read -r line || [ -n "$line" ]; do
-            line=$(echo "$line" | tr -d '\r' | xargs)
-            if [ -z "$line" ]; then
-              continue
-            fi
-            if [ -z "$MODEL_PATHS" ]; then
-              MODEL_PATHS="$line"
-            else
-              MODEL_PATHS="$MODEL_PATHS;$line"
-            fi
-          done < build/models.txt
-          printf 'MODEL_PATHS=%s\n' "$MODEL_PATHS" >> $GITHUB_ENV
-          
-
       - name: "Download fmusim"
         run: |
           version=0.0.39
@@ -48,16 +31,19 @@ jobs:
       - name: "Run fmusim"
         working-directory: "Reference-FMUs/fmusim-x86_64-linux"
         run: |
-          IFS=';' read -r -a paths <<< "${{ env.MODEL_PATHS }}"
-          for mp in "${paths[@]}"; do
-            if [ -z "$mp" ]; then
-              continue
-            fi
-            mb=$(basename "$mp")
-          
-            echo "Checking model: $mp ($mb)"
-            ./fmusim --logging-on "${{ github.workspace }}/build/$mp/$mb.fmu"
-          done
+          set -e
+          found=0
+          # find all .fmu files under `build/models` (fmi2 and fmi3)
+          while IFS= read -r -d '' f; do
+            found=1
+            mb=$(basename "$f")
+            echo "Checking FMU: $f ($mb)"
+            ./fmusim --logging-on "${{ github.workspace }}/$f"
+          done < <(find build/models -type f -name '*.fmu' -print0 2>/dev/null || true)
+      
+          if [ "$found" -eq 0 ]; then
+            echo "No FMUs found under `build/models`, skipping fmusim run"
+          fi
 
       - name: "Test"
         run: |
@@ -79,13 +65,6 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_TESTS=ON -DFMU4CPP_BUILD_EXAMPLES=ON -A x64 
           cmake --build build --config Release
 
-      - name: "Read model paths"
-        shell: pwsh
-        run: |
-          $paths = Get-Content -Path build/models.txt | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
-          $joined = $paths -join ';'
-          "MODEL_PATHS=$joined" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding UTF8
-
       - name: "Download fmusim"
         shell: pwsh
         run: |
@@ -100,17 +79,19 @@ jobs:
         shell: pwsh
         working-directory: "Reference-FMUs/fmusim-x86_64-windows"
         run: |
-          $paths = $env:MODEL_PATHS -split ';'
-          foreach ($mp in $paths) {
-            if ([string]::IsNullOrWhiteSpace($mp)) { continue }
-            $mb = Split-Path $mp -Leaf
-            Write-Host "Checking model: $mp ($mb)"
-            & ./fmusim.exe "$env:GITHUB_WORKSPACE\build\$mp\$mb.fmu"
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "FMUChecker failed for $mp with exit code $LASTEXITCODE"
-              exit $LASTEXITCODE
-            }
+          $fmus = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\build\models" -Recurse -Filter '*.fmu' -File -ErrorAction SilentlyContinue
+          if (-not $fmus -or $fmus.Count -eq 0) {
+            Write-Host "No FMUs found under `build/models`, skipping fmusim run"
+            exit 0
           }
+          foreach ($f in $fmus) {
+            Write-Host "Checking FMU: $($f.FullName) ($($f.Name))"
+            & ./fmusim.exe $f.FullName
+            if ($LASTEXITCODE -ne 0) {
+            Write-Error "FMUChecker failed for $($f.FullName) with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+        }
 
       - name: "Test"
         run: |

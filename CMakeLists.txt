@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.15)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" projectVersion)
 project(fmu4cpp-template VERSION ${projectVersion})
 
+
+option(FMU4CPP_BUILD_EXAMPLES "Build example FMUs" OFF)
+option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
+
+set(CMAKE_CXX_STANDARD 17)
+
 if (POLICY CMP0091)
     cmake_policy(SET CMP0091 NEW)
     if (WIN32)
@@ -16,17 +22,12 @@ if (POLICY CMP0091)
     endif ()
 endif ()
 
-option(FMU4CPP_BUILD_EXAMPLES "Build example FMUs" OFF)
-option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
-
-set(CMAKE_CXX_STANDARD 17)
 
 set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
+set(fmuResultDir "${CMAKE_BINARY_DIR}/models")
 
-
-# this will be populated by a list of all generated models
-set(OUTPUT_FILE "${CMAKE_BINARY_DIR}/models.txt")
-file(WRITE ${OUTPUT_FILE} "")
+file(MAKE_DIRECTORY ${generatedSourcesDir})
+file(MAKE_DIRECTORY ${fmuResultDir})
 
 include("cmake/generate_fmu.cmake")
 
