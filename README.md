@@ -8,12 +8,14 @@ the necessary content into a ready-to-use FMU archive.
 
 ### How do I get started?
 
-1. Change the value of the `modelIdentifier` variable in `CMakeLists.txt` to something more appropriate.
-2. Select between FMI 2 or FMI 3 export.
-3. Edit the content of [model.cpp](src/model.cpp).
-4. Build.
+1. Clone this repository using the "Use this template" button.
+2. Browse the example models provided in the `/examples` folder.
+3. Implement your own model by inheriting from the provided `fmu_base` abstract class.
+4. Create an FMU target by using the provided `generate_fmu` CMake function.
+5. Build. Models for your platform are located in a `models`folder within the build folder.
+6. Upload your changes to GitHub to trigger cross-compilation.
+7. Download cross-compiled FMUs from the Actions tab.
 
-An FMU named `<modelIdentifier>.fmu` is now located in a folder `\<modelIdentifier>` within your build folder.
 
 ### Example (BouncingBall)
 
@@ -26,8 +28,7 @@ using namespace fmu4cpp;
 class BouncingBall : public fmu_base {
 
 public:
-    BouncingBall(const fmu_data& data)
-        : fmu_base(data) {
+    FMU4CPP_CTOR(BouncingBall) {
 
         register_variable(
                 real(
@@ -91,7 +92,6 @@ model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "BouncingBall";
     info.description = "A bouncing ball model";
-    info.modelIdentifier = FMU4CPP_MODEL_IDENTIFIER;
     return info;
 }
 
