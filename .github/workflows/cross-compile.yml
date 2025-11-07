@@ -113,116 +113,32 @@ jobs:
             }
           }
 
-      - name: Upload models list
-        if: startsWith(runner.os, 'Linux')
+      - name: Upload models
         uses: actions/upload-artifact@v4
         with:
-          name: models-list
-          path: tmp/models.txt
-
-      - name: Upload modelDescription files
-        if: startsWith(runner.os, 'Linux')
-        uses: actions/upload-artifact@v4
-        with:
-          name: modelDescription-${{ matrix.os }}
-          path: model-descriptions/*.xml
-
-      - name: Upload per-OS binaries zips
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries-${{ matrix.os }}
-          path: artifacts/*.zip
+          name: models-${{ matrix.os }}
+          path: build/models
 
 
-
-  generate-matrix:
-    runs-on: ubuntu-22.04
+  deploy:
     needs: build
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - name: Download models-list
-        uses: actions/download-artifact@v4
-        with:
-          name: models-list
-          path: tmp
-
-      - id: set-matrix
-        run: |
-          if [ ! -f tmp/models.txt ]; then
-            echo "matrix=[]" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          readarray -t arr < tmp/models.txt
-          vals=()
-          for v in "${arr[@]}"; do
-            v=$(echo "$v" | tr -d '\r' | xargs)
-            [ -z "$v" ] && continue
-            esc=$(printf '%s' "$v" | sed 's/"/\\"/g')
-            vals+=("\"$esc\"")
-          done
-          if [ ${#vals[@]} -eq 0 ]; then
-            echo "matrix=[]" >> $GITHUB_OUTPUT
-          else
-            IFS=,; joined="${vals[*]}"
-            echo "matrix=[${joined}]" >> $GITHUB_OUTPUT
-          fi
-
-  upload-per-model:
-    needs: [build, generate-matrix]
     runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        path: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
 
     steps:
-      - name: Download all per-OS binaries bundles
+
+      - name: "Download models"
         uses: actions/download-artifact@v4
         with:
-          pattern: binaries-*
-          path: model/binaries
+          pattern: models-*
+          path: models
           merge-multiple: true
 
-      - name: Download all modelDescription files
-        uses: actions/download-artifact@v4
-        with:
-          pattern: modelDescription-*
-          path: model/descriptions
-
-      - id: create
+      - name: "Set permissions"
         run: |
-          set -euo pipefail
-          p="${{ matrix.path }}"
-          safe=$(printf '%s' "$p" | sed 's#[/\\]#-#g; s/[^A-Za-z0-9._-]/_/g')
-          mkdir -p artifacts
-          # find matching binaries directories inside downloaded model/binaries
-          mapfile -t matches < <(find model/binaries -type d -path "*/${p}/binaries" 2>/dev/null || true)
-          if [ ${#matches[@]} -eq 0 ]; then
-            echo "::warning::No binaries found for path: ${p}"
-            echo "zipfile=" >> $GITHUB_OUTPUT
-            echo "name=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          zipname="artifacts/${safe}.zip"
-          rm -f "$zipname"
-          # add each matching directory into the zip (preserves platform subtrees)
-          zip -r "$zipname" "${matches[@]}" >/dev/null
-          # pick one modelDescription (prefer Linux build artifact if present)
-          md_pref=$(find model/descriptions -type f -name "modelDescription-${safe}-ubuntu-22.04*.xml" -print -quit 2>/dev/null || true)
-          if [ -z "$md_pref" ]; then
-            md_pref=$(find model/descriptions -type f -name "modelDescription-${safe}-*.xml" -print -quit 2>/dev/null || true)
-          fi
-          if [ -n "$md_pref" ]; then
-            # store modelDescription at root of the zip with canonical name
-            zip -j "$zipname" "$md_pref" -q || true
-          fi
-          echo "zipfile=$zipname" >> $GITHUB_OUTPUT
-          echo "name=model-${safe}" >> $GITHUB_OUTPUT
+          sudo chmod -R +x models/binaries
 
-      - name: Upload final per-model artifact
-        if: steps.create.outputs.zipfile != ''
+      - name: "Upload merged models"
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.create.outputs.name }}
-          path: ${{ steps.create.outputs.zipfile }}
+          name: models
+          path: models
