@@ -25,11 +25,26 @@ jobs:
           cmake . -B build -DFMU4CPP_BUILD_EXAMPLES=ON -DFMU4CPP_BUILD_TESTS=OFF -A x64
           cmake --build build --config Release
 
+      - name: "Stage models for upload (Linux)"
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          mkdir -p artifacts/models-${{ matrix.os }}
+          rsync -a --exclude='*.fmu' build/models/ artifacts/models/ || true
+
+      - name: "Stage models for upload (Windows)"
+        if: startsWith(runner.os, 'Windows')
+        shell: pwsh
+        run: |
+          $dst = Join-Path $env:GITHUB_WORKSPACE "artifacts\models"
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          $rc = robocopy "$env:GITHUB_WORKSPACE\build\models" $dst /S /XF *.fmu
+          if ($rc -ge 8) { exit $rc }
+
       - name: Upload models
         uses: actions/upload-artifact@v4
         with:
           name: models-${{ matrix.os }}
-          path: build/models
+          path: artifacts/models
 
 
   deploy:
@@ -45,9 +60,10 @@ jobs:
           path: models
           merge-multiple: true
 
-#      - name: "Set permissions"
-#        run: |
-#          sudo chmod -R +x models/**/binaries
+      - name: "Set permissions"
+        run: |
+          set -euo pipefail
+          find `models` -type d -name binaries -exec sudo chmod -R a+X '{}' +
 
       - name: "Upload merged models"
         uses: actions/upload-artifact@v4
