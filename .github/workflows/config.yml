@@ -86,7 +86,7 @@ jobs:
           }
           foreach ($f in $fmus) {
             Write-Host "Checking FMU: $($f.FullName) ($($f.Name))"
-            & ./fmusim.exe $f.FullName
+            & ./fmusim.exe --logging-on $f.FullName
             if ($LASTEXITCODE -ne 0) {
               Write-Error "FMUChecker failed for $($f.FullName) with exit code $LASTEXITCODE"
               exit $LASTEXITCODE
