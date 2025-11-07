@@ -12,7 +12,7 @@ the necessary content into a ready-to-use FMU archive.
 2. Browse the example models provided in the `/examples` folder.
 3. Implement your own model by inheriting from the provided `fmu_base` abstract class.
 4. Create an FMU target by using the provided `generate_fmu` CMake function.
-5. Build. Models for your platform are located in a `models`folder within the build folder.
+5. Build. Models for your platform are located in a `models` folder within the build folder.
 6. Upload your changes to GitHub to trigger cross-compilation.
 7. Download cross-compiled FMUs from the Actions tab.
 
@@ -102,8 +102,7 @@ FMU4CPP_INSTANTIATE(BouncingBall);
 
 #### Cross-compilation
 
-Cross-compilation (64-bit linux/windows) occurs automatically when you push your changes to GitHub. 
-Simply rename the produced `model.zip` to `<modelName>.fmu`.
+Cross-compilation (64-bit linux/windows) occurs automatically when you push your changes to GitHub.
 
 
 Such easy, such wow.
