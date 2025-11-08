@@ -10,6 +10,16 @@ function(generateFMU modelIdentifier)
     set(multiValueArgs FMI_VERSIONS SOURCES LINK_TARGETS COMPILE_DEFINITIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    set(fmuResultDir "${CMAKE_BINARY_DIR}/models")
+    if (NOT EXISTS "${fmuResultDir}")
+        file(MAKE_DIRECTORY "${fmuResultDir}")
+    endif ()
+
+    set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
+    if (NOT EXISTS "${generatedSourcesDir}")
+        file(MAKE_DIRECTORY "${generatedSourcesDir}")
+    endif ()
+
     if (NOT FMU_RESOURCE_FOLDER)
         set(FMU_RESOURCE_FOLDER "")
     endif ()

@@ -1,3 +1,4 @@
+set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
 
 add_subdirectory(src)
 
