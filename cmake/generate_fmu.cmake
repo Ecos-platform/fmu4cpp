@@ -6,7 +6,7 @@ set(_fmu4cpp_root "${_fmu4cpp_root}" CACHE INTERNAL "")
 function(generateFMU modelIdentifier)
 
     set(options)
-    set(oneValueArgs RESOURCE_FOLDER)
+    set(oneValueArgs RESOURCE_FOLDER DESTINATION)
     set(multiValueArgs FMI_VERSIONS SOURCES LINK_TARGETS COMPILE_DEFINITIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -176,10 +176,17 @@ function(generateFMU modelIdentifier)
             list(PREPEND TAR_INPUTS "resources")
         endif ()
 
+        if (FMU_DESTINATION)
+            set(FMU_DEST_DIR "${FMU_DESTINATION}/${fmiVersion}")
+            file(MAKE_DIRECTORY "${FMU_DEST_DIR}")
+            set(FMU_DESTINATION_ "${FMU_DEST_DIR}/${modelIdentifier}.fmu")
+        else()
+            set(FMU_DESTINATION_ "${modelIdentifier}.fmu")
+        endif()
         add_custom_command(TARGET ${versionTarget} POST_BUILD
                 WORKING_DIRECTORY "${modelOutputDir}"
-                COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Packaging ${modelIdentifier}.fmu in ${modelOutputDir}"
-                COMMAND ${CMAKE_COMMAND} -E tar c "${modelIdentifier}.fmu" --format=zip ${TAR_INPUTS}
+                COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Packaging ${modelIdentifier}.fmu in ${FMU_DESTINATION_}"
+                COMMAND ${CMAKE_COMMAND} -E tar c "${FMU_DESTINATION_}" --format=zip ${TAR_INPUTS}
         )
 
     endforeach ()
