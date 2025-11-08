@@ -1,10 +1,24 @@
 
+set(_fmu4cpp_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
+get_filename_component(_fmu4cpp_root "${_fmu4cpp_cmake_dir}/.." ABSOLUTE)
+set(_fmu4cpp_root "${_fmu4cpp_root}" CACHE INTERNAL "")
+
 function(generateFMU modelIdentifier)
 
     set(options)
     set(oneValueArgs RESOURCE_FOLDER)
     set(multiValueArgs FMI_VERSIONS SOURCES LINK_TARGETS COMPILE_DEFINITIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(fmuResultDir "${CMAKE_BINARY_DIR}/models")
+    if (NOT EXISTS "${fmuResultDir}")
+        file(MAKE_DIRECTORY "${fmuResultDir}")
+    endif ()
+
+    set(generatedSourcesDir "${CMAKE_BINARY_DIR}/generated")
+    if (NOT EXISTS "${generatedSourcesDir}")
+        file(MAKE_DIRECTORY "${generatedSourcesDir}")
+    endif ()
 
     if (NOT FMU_RESOURCE_FOLDER)
         set(FMU_RESOURCE_FOLDER "")
@@ -28,7 +42,7 @@ function(generateFMU modelIdentifier)
     set(model_objects_target "${modelIdentifier}_fmu_objects")
     if (NOT TARGET ${model_objects_target})
         add_library(${model_objects_target} OBJECT ${FMU_SOURCES})
-        target_include_directories(${model_objects_target} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
+        target_include_directories(${model_objects_target} PUBLIC "${_fmu4cpp_root}/export/include")
         if (FMU_LINK_TARGETS)
             target_link_libraries(${model_objects_target} PRIVATE ${FMU_LINK_TARGETS})
         endif ()
@@ -47,7 +61,7 @@ function(generateFMU modelIdentifier)
         set(FMU4CPP_MODEL_IDENTIFIER "${versionTarget}")
         set(model_identifier_src "${generatedSourcesDir}/fmu4cpp/model_identifier_${versionTarget}.cpp")
         configure_file(
-                "${PROJECT_SOURCE_DIR}/export/src/fmu4cpp/model_identifier.cpp.in"
+                "${_fmu4cpp_root}/export/src/fmu4cpp/model_identifier.cpp.in"
                 "${model_identifier_src}"
                 @ONLY
         )
@@ -107,7 +121,7 @@ function(generateFMU modelIdentifier)
                 "$<TARGET_OBJECTS:${model_objects_target}>"
                 ${VERSION_OBJECTS}
         )
-        target_include_directories(${versionTarget} PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
+        target_include_directories(${versionTarget} PRIVATE "${_fmu4cpp_root}/export/include")
         target_compile_definitions(${versionTarget} PRIVATE ${VERSION_DEFS})
 
         # link user-provided link targets (must be propagated to the final shared lib)
