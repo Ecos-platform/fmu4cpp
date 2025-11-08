@@ -1,6 +1,7 @@
 
 set(_fmu4cpp_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 get_filename_component(_fmu4cpp_root "${_fmu4cpp_cmake_dir}/.." ABSOLUTE)
+set(_fmu4cpp_root "${_fmu4cpp_root}" CACHE INTERNAL "")
 
 function(generateFMU modelIdentifier)
 
@@ -31,7 +32,7 @@ function(generateFMU modelIdentifier)
     set(model_objects_target "${modelIdentifier}_fmu_objects")
     if (NOT TARGET ${model_objects_target})
         add_library(${model_objects_target} OBJECT ${FMU_SOURCES})
-        target_include_directories(${model_objects_target} PUBLIC "${PROJECT_SOURCE_DIR}/export/include")
+        target_include_directories(${model_objects_target} PUBLIC "${_fmu4cpp_root}/export/include")
         if (FMU_LINK_TARGETS)
             target_link_libraries(${model_objects_target} PRIVATE ${FMU_LINK_TARGETS})
         endif ()
@@ -110,7 +111,7 @@ function(generateFMU modelIdentifier)
                 "$<TARGET_OBJECTS:${model_objects_target}>"
                 ${VERSION_OBJECTS}
         )
-        target_include_directories(${versionTarget} PRIVATE "${PROJECT_SOURCE_DIR}/export/include")
+        target_include_directories(${versionTarget} PRIVATE "${_fmu4cpp_root}/export/include")
         target_compile_definitions(${versionTarget} PRIVATE ${VERSION_DEFS})
 
         # link user-provided link targets (must be propagated to the final shared lib)
