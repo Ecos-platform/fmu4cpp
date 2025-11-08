@@ -1,4 +1,7 @@
 
+set(_fmu4cpp_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
+get_filename_component(_fmu4cpp_root "${_fmu4cpp_cmake_dir}/.." ABSOLUTE)
+
 function(generateFMU modelIdentifier)
 
     set(options)
@@ -47,7 +50,7 @@ function(generateFMU modelIdentifier)
         set(FMU4CPP_MODEL_IDENTIFIER "${versionTarget}")
         set(model_identifier_src "${generatedSourcesDir}/fmu4cpp/model_identifier_${versionTarget}.cpp")
         configure_file(
-                "${PROJECT_SOURCE_DIR}/export/src/fmu4cpp/model_identifier.cpp.in"
+                "${_fmu4cpp_root}/export/src/fmu4cpp/model_identifier.cpp.in"
                 "${model_identifier_src}"
                 @ONLY
         )
