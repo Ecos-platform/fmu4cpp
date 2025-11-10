@@ -47,7 +47,7 @@ endfunction()
 
 function(generateFMU modelIdentifier)
 
-    set(options)
+    set(options WITH_SOURCES)
     set(oneValueArgs RESOURCE_FOLDER DESTINATION)
     set(multiValueArgs FMI_VERSIONS SOURCES LINK_TARGETS COMPILE_DEFINITIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -122,7 +122,6 @@ function(generateFMU modelIdentifier)
         set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
         set(binaryOutputDir "$<1:${modelOutputDir}/binaries/${TARGET_PLATFORM}>")
 
-
         add_library(${versionTarget} SHARED
                 ${COMMON_OBJECTS}
                 "$<TARGET_OBJECTS:${model_objects_target}>"
@@ -169,6 +168,53 @@ function(generateFMU modelIdentifier)
             )
         endif ()
 
+        if (FMU_WITH_SOURCES)
+            if (fmiVersion STREQUAL "fmi2")
+                message(WARNING "[generateFMU-fmi2] FMU_WITH_SOURCES is not supported for fmi2; skipping source inclusion for model '${modelIdentifier}'")
+                continue()
+            endif ()
+
+            message("[generateFMU-${fmiVersion}] Including sources in FMU for model '${modelIdentifier}'")
+
+            set(VERSION_SOURCES ${VERSION_OBJECTS})
+            file(MAKE_DIRECTORY "${modelOutputDir}/sources")
+            file(COPY ${_fmu4cpp_root}/export/src/fmu4cpp DESTINATION "${modelOutputDir}/sources/")
+            file(COPY ${_fmu4cpp_root}/export/include/fmu4cpp DESTINATION "${modelOutputDir}/sources/")
+            foreach (s IN LISTS FMU_SOURCES VERSION_SOURCES)
+                if (NOT "${s}" MATCHES "^\\$<") # skip generator expressions
+                    if (IS_ABSOLUTE "${s}")
+                        set(abs "${s}")
+                    else ()
+                        get_filename_component(abs "${CMAKE_CURRENT_SOURCE_DIR}/${s}" ABSOLUTE)
+                    endif ()
+                    file(COPY "${abs}" DESTINATION "${modelOutputDir}/sources/")
+                endif ()
+            endforeach ()
+
+            #glob .cpp files in ${modelOutputDir}/sources/
+            set(SOURCE_SET)
+            file(GLOB_RECURSE COPIED_CPP_FILES "${modelOutputDir}/sources/*.cpp")
+            foreach (cpp_file IN LISTS COPIED_CPP_FILES)
+                #get relative path to sources dir
+                file(RELATIVE_PATH rel_path "${modelOutputDir}/sources" "${cpp_file}")
+                set(SOURCE_SET "${SOURCE_SET}<SourceFile name=\"${rel_path}\"/>\n")
+            endforeach ()
+
+            #write buildDescription.xml
+            file(WRITE "${modelOutputDir}/sources/buildDescription.xml"
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+"<fmiBuildDescription fmiVersion=\"3.0\">\n"
+    "\t<BuildConfiguration modelIdentifier=\"${FMU4CPP_MODEL_IDENTIFIER}\">\n"
+       "\t\t<SourceFileSet language=\"C++17\" compilerOptions=\"cxx_std_17\">\n"
+            ${SOURCE_SET}
+            "\t\t\t<PreprocessorDefinition name=\"FMI3\"/>\n"
+            "\t\t\t<IncludeDirectory name=\"include/\"/>\n"
+       "\t\t</SourceFileSet>\n"
+    "\t</BuildConfiguration>\n"
+"</fmiBuildDescription>"
+)
+        endif ()
+
         # Generate modelDescription.xml
         add_custom_command(TARGET ${versionTarget} POST_BUILD
                 WORKING_DIRECTORY "${binaryOutputDir}"
@@ -177,6 +223,9 @@ function(generateFMU modelIdentifier)
 
         # Package FMU
         set(TAR_INPUTS "${modelOutputDir}/binaries" "${modelOutputDir}/modelDescription.xml")
+        if (FMU_WITH_SOURCES AND fmiVersion STREQUAL "fmi3")
+            list(APPEND TAR_INPUTS "${modelOutputDir}/sources" "${modelOutputDir}/sources/buildDescription.xml")
+        endif ()
         if (NOT FMU_RESOURCE_FOLDER STREQUAL "")
             message("[generateFMU-${fmiVersion}] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model '${modelIdentifier}'")
             file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${modelOutputDir}/resources")
