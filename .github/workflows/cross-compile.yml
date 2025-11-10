@@ -16,7 +16,7 @@ jobs:
       - name: Configure and build (Linux)
         if: startsWith(runner.os, 'Linux')
         run: |
-          cmake . -B build -DFMU4CPP_BUILD_TESTS=OFF -DFMU4CPP_BUILD_EXAMPLES=ON
+          cmake . -B build -DFMU4CPP_BUILD_TESTS=OFF
           cmake --build build
 
       - name: Configure and build (Windows)

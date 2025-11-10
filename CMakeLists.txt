@@ -26,6 +26,5 @@ include("cmake/generate_fmu.cmake")
 
 add_subdirectory(export)
 
-if (FMU4CPP_BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif ()
+
+add_subdirectory(examples)
