@@ -3,6 +3,48 @@ set(_fmu4cpp_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 get_filename_component(_fmu4cpp_root "${_fmu4cpp_cmake_dir}/.." ABSOLUTE)
 set(_fmu4cpp_root "${_fmu4cpp_root}" CACHE INTERNAL "")
 
+
+function(_getTargetPlatform fmiVersion)
+    set(_target "" PARENT_SCOPE)
+    if (fmiVersion STREQUAL "fmi2")
+
+        if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+            set(BITNESS 64)
+        else ()
+            set(BITNESS 32)
+        endif ()
+
+        if (WIN32)
+            set(_target win${BITNESS})
+        elseif (APPLE)
+            set(_target darwin${BITNESS})
+        else ()
+            set(_target linux${BITNESS})
+        endif ()
+
+    elseif (fmiVersion STREQUAL "fmi3")
+
+        set(_target "x86")
+        if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+            set(_target "${_target}_64")
+        endif ()
+
+        if (WIN32)
+            set(_target ${_target}-windows)
+        elseif (APPLE)
+            set(_target ${_target}-darwin)
+        else ()
+            set(_target ${_target}-linux)
+        endif ()
+
+    else ()
+        message(FATAL_ERROR "Unknown FMI version: ${fmiVersion}. Supported versions are 'fmi2' and 'fmi3'.")
+    endif ()
+
+    set(TARGET_PLATFORM ${_target} PARENT_SCOPE)
+
+endfunction()
+
 function(generateFMU modelIdentifier)
 
     set(options)
@@ -59,57 +101,22 @@ function(generateFMU modelIdentifier)
         set(versionTarget "${modelIdentifier}_${fmiVersion}")
 
         set(FMU4CPP_MODEL_IDENTIFIER "${versionTarget}")
-        set(model_identifier_src "${generatedSourcesDir}/fmu4cpp/model_identifier_${versionTarget}.cpp")
+        set(VERSION_OBJECTS "${generatedSourcesDir}/fmu4cpp/model_identifier_${versionTarget}.cpp")
         configure_file(
                 "${_fmu4cpp_root}/export/src/fmu4cpp/model_identifier.cpp.in"
-                "${model_identifier_src}"
+                "${VERSION_OBJECTS}"
                 @ONLY
         )
 
-        set(VERSION_OBJECTS "${model_identifier_src}")
+        _getTargetPlatform(${fmiVersion})
 
-        set(TARGET_PLATFORM)
         if (fmiVersion STREQUAL "fmi2")
-
-            if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-                set(BITNESS 64)
-            else ()
-                set(BITNESS 32)
-            endif ()
-
-            if (WIN32)
-                set(TARGET_PLATFORM win${BITNESS})
-            elseif (APPLE)
-                set(TARGET_PLATFORM darwin${BITNESS})
-            else ()
-                set(TARGET_PLATFORM linux${BITNESS})
-            endif ()
-
             list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
-            set(VERSION_DEFS FMI2)
-
+            list(APPEND VERSION_DEFS FMI2)
         elseif (fmiVersion STREQUAL "fmi3")
-
-            set(TARGET_PLATFORM "x86")
-            if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-                set(TARGET_PLATFORM "${TARGET_PLATFORM}_64")
-            endif ()
-
-            if (WIN32)
-                set(TARGET_PLATFORM ${TARGET_PLATFORM}-windows)
-            elseif (APPLE)
-                set(TARGET_PLATFORM ${TARGET_PLATFORM}-darwin)
-            else ()
-                set(TARGET_PLATFORM ${TARGET_PLATFORM}-linux)
-            endif ()
-
             list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
-            set(VERSION_DEFS FMI3)
-
-        else ()
-            message(FATAL_ERROR "Unknown FMI version: ${fmiVersion}. Supported versions are 'fmi2' and 'fmi3'.")
+            list(APPEND VERSION_DEFS FMI3)
         endif ()
-
 
         set(fmuOutputDir "${fmuResultDir}/${fmiVersion}")
         set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
@@ -128,7 +135,7 @@ function(generateFMU modelIdentifier)
         if (FMU_LINK_TARGETS)
             target_link_libraries(${versionTarget} PRIVATE ${FMU_LINK_TARGETS})
 
-            foreach(dep IN LISTS FMU_LINK_TARGETS)
+            foreach (dep IN LISTS FMU_LINK_TARGETS)
                 if (TARGET ${dep})
                     add_custom_command(TARGET ${versionTarget} POST_BUILD
                             WORKING_DIRECTORY "${modelOutputDir}"
@@ -139,8 +146,8 @@ function(generateFMU modelIdentifier)
                             $<TARGET_FILE:${dep}>
                             "${binaryOutputDir}/$<TARGET_FILE_NAME:${dep}>"
                     )
-                endif()
-            endforeach()
+                endif ()
+            endforeach ()
         endif ()
 
         # if user provided compile definitions, also ensure final target sees them (optional)
@@ -180,9 +187,9 @@ function(generateFMU modelIdentifier)
             set(FMU_DEST_DIR "${FMU_DESTINATION}/${fmiVersion}")
             file(MAKE_DIRECTORY "${FMU_DEST_DIR}")
             set(FMU_DESTINATION_ "${FMU_DEST_DIR}/${modelIdentifier}.fmu")
-        else()
+        else ()
             set(FMU_DESTINATION_ "${modelIdentifier}.fmu")
-        endif()
+        endif ()
         add_custom_command(TARGET ${versionTarget} POST_BUILD
                 WORKING_DIRECTORY "${modelOutputDir}"
                 COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Packaging ${modelIdentifier}.fmu in ${FMU_DESTINATION_}"
