@@ -20,9 +20,6 @@ if (POLICY CMP0091)
     endif ()
 endif ()
 
-file(MAKE_DIRECTORY ${generatedSourcesDir})
-file(MAKE_DIRECTORY ${fmuResultDir})
-
 
 include("cmake/generate_fmu.cmake")
 
