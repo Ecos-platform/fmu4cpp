@@ -178,7 +178,9 @@ function(generateFMU modelIdentifier)
 
             set(VERSION_SOURCES ${VERSION_OBJECTS})
             file(MAKE_DIRECTORY "${modelOutputDir}/sources")
+            file(COPY "${generatedSourcesDir}/fmu4cpp/lib_info.cpp" DESTINATION "${modelOutputDir}/sources/fmu4cpp/")
             file(COPY ${_fmu4cpp_root}/export/src/fmu4cpp DESTINATION "${modelOutputDir}/sources/")
+            file(REMOVE_RECURSE "${modelOutputDir}/sources/fmu4cpp/fmi2") # remove fmi2 sources
             file(COPY ${_fmu4cpp_root}/export/include/fmu4cpp DESTINATION "${modelOutputDir}/sources/")
             foreach (s IN LISTS FMU_SOURCES VERSION_SOURCES)
                 if (NOT "${s}" MATCHES "^\\$<") # skip generator expressions
