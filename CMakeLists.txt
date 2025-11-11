@@ -3,6 +3,7 @@ file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" projectVersion)
 project(fmu4cpp-template VERSION ${projectVersion})
 
 option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
+option(FMU4CPP_BUILD_EXAMPLES "Build example FMUs" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -24,3 +25,6 @@ endif ()
 include("cmake/generate_fmu.cmake")
 
 add_subdirectory(export)
+
+
+add_subdirectory(examples)
