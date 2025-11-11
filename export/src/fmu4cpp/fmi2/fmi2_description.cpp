@@ -4,6 +4,7 @@
 #include "fmu4cpp/time.hpp"
 #include "fmu4cpp/util.hpp"
 
+#include <algorithm>
 #include <sstream>
 
 using namespace fmu4cpp;
