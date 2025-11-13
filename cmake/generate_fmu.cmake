@@ -113,10 +113,9 @@ function(generateFMU modelIdentifier)
         if (FMU_WITH_SOURCES)
             if (fmiVersion STREQUAL "fmi2")
                 message(WARNING "[generateFMU-fmi2] FMU_WITH_SOURCES is not supported for fmi2; skipping source inclusion for model '${modelIdentifier}'")
-                continue()
+            else ()
+                _include_sources_in_fmu()
             endif ()
-
-            _include_sources_in_fmu()
         endif ()
 
         # Generate modelDescription.xml
