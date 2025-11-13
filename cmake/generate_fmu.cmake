@@ -136,15 +136,18 @@ function(generateFMU modelIdentifier)
 
             foreach (dep IN LISTS FMU_LINK_TARGETS)
                 if (TARGET ${dep})
-                    add_custom_command(TARGET ${versionTarget} POST_BUILD
-                            WORKING_DIRECTORY "${modelOutputDir}"
-                            COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Copying runtime of ${dep} to ${binaryOutputDir}"
-                            COMMAND ${CMAKE_COMMAND} -E make_directory "${binaryOutputDir}"
-                            # copy the target's runtime file (dll/so/dylib) into the binaries folder
-                            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                            $<TARGET_FILE:${dep}>
-                            "${binaryOutputDir}/$<TARGET_FILE_NAME:${dep}>"
-                    )
+                    get_target_property(target_type ${dep} TYPE)
+                    if (NOT "${target_type}" STREQUAL "INTERFACE_LIBRARY")
+                        add_custom_command(TARGET ${versionTarget} POST_BUILD
+                                WORKING_DIRECTORY "${modelOutputDir}"
+                                COMMAND ${CMAKE_COMMAND} -E echo "[generateFMU-${fmiVersion}] Copying runtime of ${dep} to ${binaryOutputDir}"
+                                COMMAND ${CMAKE_COMMAND} -E make_directory "${binaryOutputDir}"
+                                # copy the target's runtime file (dll/so/dylib) into the binaries folder
+                                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                                $<TARGET_FILE:${dep}>
+                                "${binaryOutputDir}/$<TARGET_FILE_NAME:${dep}>"
+                        )
+                    endif ()
                 endif ()
             endforeach ()
         endif ()
@@ -204,17 +207,17 @@ function(generateFMU modelIdentifier)
 
             #write buildDescription.xml
             file(WRITE "${modelOutputDir}/sources/buildDescription.xml"
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-"<fmiBuildDescription fmiVersion=\"3.0\">\n"
-    "\t<BuildConfiguration modelIdentifier=\"${FMU4CPP_MODEL_IDENTIFIER}\">\n"
-       "\t\t<SourceFileSet language=\"C++17\" compilerOptions=\"cxx_std_17\">\n"
-            ${SOURCE_SET}
-            "\t\t\t<PreprocessorDefinition name=\"FMI3\"/>\n"
-            "\t\t\t<IncludeDirectory name=\"include/\"/>\n"
-       "\t\t</SourceFileSet>\n"
-    "\t</BuildConfiguration>\n"
-"</fmiBuildDescription>"
-)
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                    "<fmiBuildDescription fmiVersion=\"3.0\">\n"
+                    "\t<BuildConfiguration modelIdentifier=\"${FMU4CPP_MODEL_IDENTIFIER}\">\n"
+                    "\t\t<SourceFileSet language=\"C++17\">\n"
+                    ${SOURCE_SET}
+                    "\t\t\t<PreprocessorDefinition name=\"FMI3\"/>\n"
+                    "\t\t\t<IncludeDirectory name=\"include/\"/>\n"
+                    "\t\t</SourceFileSet>\n"
+                    "\t</BuildConfiguration>\n"
+                    "</fmiBuildDescription>"
+            )
         endif ()
 
         # Generate modelDescription.xml
