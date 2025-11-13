@@ -5,4 +5,6 @@ generateFMU("bouncing_ball"
         FMI_VERSIONS
         "fmi2;fmi3"
         WITH_SOURCES
+        DOC_FOLDER
+        "${CMAKE_CURRENT_SOURCE_DIR}/documentation"
 )
