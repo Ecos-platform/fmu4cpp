@@ -58,11 +58,16 @@ foreach (h IN LISTS privateHeaders)
     list(APPEND privateHeadersFull "${CMAKE_CURRENT_SOURCE_DIR}/${h}")
 endforeach ()
 
+set(sourcesFull)
+foreach (h IN LISTS sources)
+    list(APPEND sourcesFull "${CMAKE_CURRENT_SOURCE_DIR}/${h}")
+endforeach ()
+
 add_library(fmu4cpp_base OBJECT
         "${lib_info}"
         "${publicHeadersFull}"
         "${privateHeadersFull}"
-        "${sources}"
+        "${sourcesFull}"
 )
 target_compile_features(fmu4cpp_base PRIVATE "cxx_std_17")
 set_target_properties(fmu4cpp_base PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -83,6 +88,7 @@ set_target_properties(fmu4cpp_fmi2 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(fmu4cpp_fmi2
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/fmi2>"
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
 )
@@ -97,6 +103,7 @@ set_target_properties(fmu4cpp_fmi3 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(fmu4cpp_fmi3
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include/fmi3>"
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
 )
