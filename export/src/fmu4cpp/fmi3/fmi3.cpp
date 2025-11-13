@@ -1,5 +1,5 @@
 
-#include "fmi3/fmi3Functions.h"
+#include "fmi3Functions.h"
 
 #include <fstream>
 #include <iostream>

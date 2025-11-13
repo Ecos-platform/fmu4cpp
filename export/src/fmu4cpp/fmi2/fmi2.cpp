@@ -1,5 +1,5 @@
 
-#include "fmi2/fmi2Functions.h"
+#include "fmi2Functions.h"
 
 #include <fstream>
 #include <limits>
