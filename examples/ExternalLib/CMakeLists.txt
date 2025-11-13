@@ -28,6 +28,5 @@ generateFMU(external_lib
         LINK_TARGETS
         fmt::fmt
         FMI_VERSIONS
-        "fmi2"
-        "fmi3"
+        "fmi2;fmi3"
 )
