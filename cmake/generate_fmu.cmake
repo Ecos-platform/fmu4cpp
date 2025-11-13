@@ -7,8 +7,8 @@ set(_fmu4cpp_root "${_fmu4cpp_root}" CACHE INTERNAL "")
 function(generateFMU modelIdentifier)
 
     set(options WITH_SOURCES)
-    set(oneValueArgs RESOURCE_FOLDER DESTINATION)
-    set(multiValueArgs FMI_VERSIONS SOURCES LINK_TARGETS COMPILE_DEFINITIONS)
+    set(oneValueArgs RESOURCE_FOLDER DOC_FOLDER DESTINATION)
+    set(multiValueArgs FMI_VERSIONS SOURCES INCLUDE_DIRS LINK_TARGETS COMPILE_DEFINITIONS)
     cmake_parse_arguments(FMU "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     set(fmuResultDir "${CMAKE_BINARY_DIR}/models")
@@ -23,6 +23,10 @@ function(generateFMU modelIdentifier)
 
     if (NOT FMU_RESOURCE_FOLDER)
         set(FMU_RESOURCE_FOLDER "")
+    endif ()
+
+    if (NOT FMU_DOC_FOLDER)
+        set(FMU_DOC_FOLDER "")
     endif ()
 
     # Require at least one fmi version; default to fmi2 if none provided
@@ -41,6 +45,11 @@ function(generateFMU modelIdentifier)
 
     add_library(${model_objects_target} OBJECT ${FMU_SOURCES})
     target_include_directories(${model_objects_target} PUBLIC "${_fmu4cpp_root}/export/include")
+    # apply user-provided include dirs to the object target
+    if (FMU_INCLUDE_DIRS)
+        target_include_directories(${model_objects_target} PRIVATE ${FMU_INCLUDE_DIRS})
+    endif ()
+    # apply user-provided link targets to the object target
     if (FMU_LINK_TARGETS)
         target_link_libraries(${model_objects_target} PRIVATE ${FMU_LINK_TARGETS})
     endif ()
@@ -135,8 +144,15 @@ macro(_package_fmu)
     if (FMU_WITH_SOURCES AND fmiVersion STREQUAL "fmi3")
         list(APPEND TAR_INPUTS "${modelOutputDir}/sources" "${modelOutputDir}/sources/buildDescription.xml")
     endif ()
+
+    if (NOT FMU_DOC_FOLDER STREQUAL "")
+        message("[generateFMU-${fmiVersion}] Using documentation folder=${FMU_DOC_FOLDER} for model '${modelIdentifier}'")
+        file(COPY "${FMU_DOC_FOLDER}/" DESTINATION "${modelOutputDir}/documentation")
+        list(PREPEND TAR_INPUTS "documentation")
+    endif ()
+
     if (NOT FMU_RESOURCE_FOLDER STREQUAL "")
-        message("[generateFMU-${fmiVersion}] Using resourceFolder=${FMU_RESOURCE_FOLDER} for model '${modelIdentifier}'")
+        message("[generateFMU-${fmiVersion}] Using resource folder=${FMU_RESOURCE_FOLDER} for model '${modelIdentifier}'")
         file(COPY "${FMU_RESOURCE_FOLDER}/" DESTINATION "${modelOutputDir}/resources")
         list(PREPEND TAR_INPUTS "resources")
     endif ()
