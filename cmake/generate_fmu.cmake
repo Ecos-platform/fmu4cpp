@@ -203,6 +203,10 @@ macro(_include_sources_in_fmu)
     file(REMOVE_RECURSE "${modelOutputDir}/sources/fmu4cpp/fmi2") # remove fmi2 sources
     file(COPY ${_fmu4cpp_root}/export/include/fmu4cpp DESTINATION "${modelOutputDir}/sources/")
 
+    foreach (dir IN LISTS FMU_INCLUDE_DIRS)
+        file(COPY "${dir}/" DESTINATION "${modelOutputDir}/sources/")
+    endforeach ()
+
     foreach (s IN LISTS FMU_SOURCES VERSION_SOURCES)
         if (NOT "${s}" MATCHES "^\\$<") # skip generator expressions
             if (IS_ABSOLUTE "${s}")
