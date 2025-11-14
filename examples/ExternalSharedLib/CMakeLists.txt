@@ -22,7 +22,7 @@ else()
     unset(BUILD_SHARED_LIBS CACHE)
 endif()
 
-generateFMU(external_lib
+generateFMU(external_shared_lib
         SOURCES
         "external_lib.cpp"
         LINK_TARGETS
