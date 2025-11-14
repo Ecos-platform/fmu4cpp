@@ -11,7 +11,8 @@ public:
     FMU4CPP_CTOR(ExternalInterfaceLib) {
 
         register_variable(string("jsonString_", &jsonString_)
-                                  .setCausality(fmu4cpp::causality_t::LOCAL));
+                                  .setCausality(fmu4cpp::causality_t::LOCAL)
+                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
 
         ExternalInterfaceLib::reset();
     }
