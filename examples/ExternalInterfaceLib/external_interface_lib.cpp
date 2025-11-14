@@ -10,8 +10,7 @@ class ExternalInterfaceLib : public fmu4cpp::fmu_base {
 public:
     FMU4CPP_CTOR(ExternalInterfaceLib) {
 
-        // register_variable(integer("i", &i));
-        register_variable(string("jsonString_", [this]{return jsonString_;}, [this](const std::string& val){jsonString_ = val;}));
+        register_variable(string("jsonString_", &jsonString_));
 
         ExternalInterfaceLib::reset();
     }
@@ -23,11 +22,7 @@ public:
         json["dt"] = dt;
         json["message"] = "This is an example of an external interface using JSON.";
 
-        // ++i;
-
         jsonString_ = json.dump();
-
-        std::cout << "Generated JSON string: " << jsonString_ << std::endl;
 
         log(fmiOK, "Generated JSON string: " + jsonString_);
 
@@ -35,12 +30,10 @@ public:
     }
 
     void reset() override {
-        // i = 0;
         jsonString_ = "";
     }
 
 private:
-    // int i{};
     std::string jsonString_{};
 };
 
