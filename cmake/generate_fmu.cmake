@@ -40,29 +40,12 @@ function(generateFMU modelIdentifier)
     endif ()
 
 
-    # create an internal object library from provided sources
-    set(model_objects_target "${modelIdentifier}_fmu_objects")
-
-    add_library(${model_objects_target} OBJECT ${FMU_SOURCES})
-    target_include_directories(${model_objects_target} PUBLIC "${_fmu4cpp_root}/export/include")
-    # apply user-provided include dirs to the object target
-    if (FMU_INCLUDE_DIRS)
-        target_include_directories(${model_objects_target} PRIVATE ${FMU_INCLUDE_DIRS})
-    endif ()
-    # apply user-provided link targets to the object target
-    if (FMU_LINK_TARGETS)
-        target_link_libraries(${model_objects_target} PRIVATE ${FMU_LINK_TARGETS})
-    endif ()
-    # apply user-provided compile definitions to the object target
-    if (FMU_COMPILE_DEFINITIONS)
-        target_compile_definitions(${model_objects_target} PRIVATE ${FMU_COMPILE_DEFINITIONS})
-    endif ()
-    set_target_properties(${model_objects_target} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-
     foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
 
-        # versioned shared library target built from object libraries
+        set(fmuOutputDir "${fmuResultDir}/${fmiVersion}")
+        set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
+        set(binaryOutputDir "$<1:${modelOutputDir}/binaries/${TARGET_PLATFORM}>")
+
         set(versionTarget "${modelIdentifier}_${fmiVersion}")
 
         set(FMU4CPP_MODEL_IDENTIFIER "${versionTarget}")
@@ -75,36 +58,48 @@ function(generateFMU modelIdentifier)
 
         _getTargetPlatform(${fmiVersion})
 
+        set(VERSIONS_DEFS "")
         if (fmiVersion STREQUAL "fmi2")
+            list(APPEND VERSION_DEFS "FMI2")
+            target_compile_definitions(fmu4cpp_fmi2 PUBLIC "FMI2")
             list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi2>")
-            list(APPEND VERSION_DEFS FMI2)
         elseif (fmiVersion STREQUAL "fmi3")
+            list(APPEND VERSION_DEFS "FMI3")
+            target_compile_definitions(fmu4cpp_fmi3 PUBLIC "FMI3")
             list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
-            list(APPEND VERSION_DEFS FMI3)
         endif ()
-
-        set(fmuOutputDir "${fmuResultDir}/${fmiVersion}")
-        set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
-        set(binaryOutputDir "$<1:${modelOutputDir}/binaries/${TARGET_PLATFORM}>")
 
         add_library(${versionTarget} SHARED
                 "$<TARGET_OBJECTS:fmu4cpp_base>"
-                "$<TARGET_OBJECTS:${model_objects_target}>"
+                "${FMU_SOURCES}"
                 "${VERSION_OBJECTS}"
         )
-        target_include_directories(${versionTarget} PRIVATE "${_fmu4cpp_root}/export/include")
-        target_compile_definitions(${versionTarget} PRIVATE ${VERSION_DEFS})
+        target_include_directories(${versionTarget}
+                PRIVATE
+                "${_fmu4cpp_root}/export/include"
+                "${FMU_INCLUDE_DIRS}"
+        )
 
-        # link user-provided link targets (must be propagated to the final shared lib)
+        target_compile_definitions(${versionTarget}
+                PUBLIC
+                ${VERSION_DEFS}
+                ${FMU_COMPILE_DEFINITIONS}
+        )
+
+
         if (FMU_LINK_TARGETS)
+            target_link_libraries(${versionTarget} PRIVATE ${FMU_LINK_TARGETS})
             _bundle_link_libraries()
         endif ()
 
-        # if user provided compile definitions, also ensure final target sees them (optional)
-        if (FMU_COMPILE_DEFINITIONS)
-            target_compile_definitions(${model_objects_target} PRIVATE ${FMU_COMPILE_DEFINITIONS})
-            target_compile_definitions(${versionTarget} PRIVATE ${FMU_COMPILE_DEFINITIONS})
+        if (FMU_WITH_SOURCES)
+            if (fmiVersion STREQUAL "fmi2")
+                message(WARNING "[generateFMU-fmi2] FMU_WITH_SOURCES is not supported for fmi2; skipping source inclusion for model '${modelIdentifier}'")
+            else ()
+                _include_sources_in_fmu()
+            endif ()
         endif ()
+
 
         if (WIN32)
             set_target_properties(${versionTarget}
@@ -119,13 +114,6 @@ function(generateFMU modelIdentifier)
             )
         endif ()
 
-        if (FMU_WITH_SOURCES)
-            if (fmiVersion STREQUAL "fmi2")
-                message(WARNING "[generateFMU-fmi2] FMU_WITH_SOURCES is not supported for fmi2; skipping source inclusion for model '${modelIdentifier}'")
-            else ()
-                _include_sources_in_fmu()
-            endif ()
-        endif ()
 
         # Generate modelDescription.xml
         add_custom_command(TARGET ${versionTarget} POST_BUILD
