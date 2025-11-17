@@ -263,7 +263,7 @@ namespace fmu4cpp {
             : Variable(name, vr, index, getter, setter) {}
     };
 
-    class StringVariable final : public Variable<std::string, StringVariable> {
+    class StringVariable : public Variable<std::string, StringVariable> {
 
     public:
         StringVariable(
@@ -272,6 +272,22 @@ namespace fmu4cpp {
             : Variable(name, vr, index, ptr, onChange) {}
 
         StringVariable(
+                const std::string &name,
+                unsigned int vr, size_t index,
+                const std::function<std::string()> &getter,
+                const std::optional<std::function<void(std::string)>> &setter)
+            : Variable(name, vr, index, getter, setter) {}
+    };
+
+    class BinaryVariable : public Variable<std::string, BinaryVariable> {
+
+    public:
+        BinaryVariable(
+                const std::string &name,
+                unsigned int vr, size_t index, std::string *ptr, const std::function<void(std::string)> &onChange)
+            : Variable(name, vr, index, ptr, onChange) {}
+
+        BinaryVariable(
                 const std::string &name,
                 unsigned int vr, size_t index,
                 const std::function<std::string()> &getter,

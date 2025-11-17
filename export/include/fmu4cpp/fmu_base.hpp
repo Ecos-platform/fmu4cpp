@@ -196,6 +196,20 @@ namespace fmu4cpp {
             }
         }
 
+        void set_binary(const unsigned int vr[], size_t nvr, const uint8_t *value[], const size_t size[]) {
+#ifdef FMI2
+            static_assert("set_binary not available for FMI2");
+#endif
+
+            for (unsigned i = 0; i < nvr; i++) {
+                const auto ref = vr[i];
+                const auto idx = vrToBinaryIndices_.at(ref);
+                const uint8_t *ptr = value[i];
+                const size_t len = size[i];
+                binary_[idx].set(std::string(reinterpret_cast<const char*>(ptr), len));
+            }
+        }
+
         [[nodiscard]] std::string guid() const;
 
         [[nodiscard]] std::string make_description() const;
@@ -246,10 +260,17 @@ namespace fmu4cpp {
                               const std::function<std::string()> &getter,
                               const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
+        BinaryVariable binary(const std::string &name, std::string *ptr, const std::function<void(std::string)> &onChange = {});
+        BinaryVariable binary(const std::string &name,
+                              const std::function<std::string()> &getter,
+                              const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
+
         void register_variable(IntVariable v);
         void register_variable(RealVariable v);
         void register_variable(BoolVariable v);
         void register_variable(StringVariable v);
+        void register_variable(BinaryVariable v);
+
 
         virtual void enter_initialisation_mode();
         virtual bool do_step(double dt) = 0;
@@ -283,6 +304,11 @@ namespace fmu4cpp {
         std::vector<StringVariable> strings_;
         std::vector<std::string> stringBuffer_;
         std::unordered_map<unsigned int, size_t> vrToStringIndices_;
+
+        std::vector<StringVariable> binary_;
+        std::vector<std::string> binaryBuffer_;
+        std::unordered_map<unsigned int, size_t> vrToBinaryIndices_;
+
     };
 
 

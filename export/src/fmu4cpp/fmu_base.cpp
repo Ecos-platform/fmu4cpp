@@ -88,6 +88,11 @@ namespace fmu4cpp {
         vrToStringIndices_.emplace(v.value_reference(), strings_.size() - 1);
     }
 
+    void fmu_base::register_variable(BinaryVariable v) {
+        binary_.emplace_back(std::move(v));
+        vrToBinaryIndices_.emplace(v.value_reference(), binary_.size() - 1);
+    }
+
     [[maybe_unused]] std::string fmu_base::guid() const {
         const model_info info = get_model_info();
         const std::vector content{
