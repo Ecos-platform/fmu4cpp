@@ -76,6 +76,13 @@ namespace fmu4cpp {
             return std::nullopt;
         }
 
+        [[nodiscard]] std::optional<BinaryVariable> get_binary_variable(const std::string &name) const {
+            for (const auto &v: binary_) {
+                if (v.name() == name) return v;
+            }
+            return std::nullopt;
+        }
+
         void enter_initialisation_mode(double start, std::optional<double> stop, std::optional<double> tolerance) {
             time_ = start;
             stop_ = stop;
@@ -305,7 +312,7 @@ namespace fmu4cpp {
         std::vector<std::string> stringBuffer_;
         std::unordered_map<unsigned int, size_t> vrToStringIndices_;
 
-        std::vector<StringVariable> binary_;
+        std::vector<BinaryVariable> binary_;
         std::vector<std::string> binaryBuffer_;
         std::unordered_map<unsigned int, size_t> vrToBinaryIndices_;
 
