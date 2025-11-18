@@ -42,6 +42,8 @@ function(generateFMU modelIdentifier)
 
     foreach (fmiVersion IN LISTS FMU_FMI_VERSIONS)
 
+        _getTargetPlatform(${fmiVersion})
+
         set(fmuOutputDir "${fmuResultDir}/${fmiVersion}")
         set(modelOutputDir "${fmuOutputDir}/${modelIdentifier}")
         set(binaryOutputDir "$<1:${modelOutputDir}/binaries/${TARGET_PLATFORM}>")
@@ -55,8 +57,6 @@ function(generateFMU modelIdentifier)
                 "${VERSION_OBJECTS}"
                 @ONLY
         )
-
-        _getTargetPlatform(${fmiVersion})
 
         set(VERSIONS_DEFS "")
         if (fmiVersion STREQUAL "fmi2")
