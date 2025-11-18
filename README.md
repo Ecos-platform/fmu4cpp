@@ -16,6 +16,20 @@ the necessary content into a ready-to-use FMU archive.
 6. Upload your changes to GitHub to trigger cross-compilation.
 7. Download cross-compiled FMUs from the Actions tab.
 
+#### Alternate workflow using CMake FetchContent
+You can also use FMU4cpp as a CMake FetchContent dependency in a pre-existing CMake project.
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+    fmu4cpp
+    GIT_REPOSITORY https://github.com/Ecos-platform/fmu4cpp.git
+    GIT_TAG git_tag_commit_or_branch_to_use
+)
+FetchContent_MakeAvailable(fmu4cpp)
+```
+
+Then, you can create your own FMU by inheriting from `fmu4cpp::fmu_base` and using the `generate_fmu` function.
 
 ### Example (BouncingBall)
 
