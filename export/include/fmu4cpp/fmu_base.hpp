@@ -203,7 +203,7 @@ namespace fmu4cpp {
             }
         }
 
-        void set_binary(const unsigned int vr[], size_t nvr, const uint8_t *value[], const size_t size[]) {
+        void set_binary(const unsigned int vr[], size_t nvr, const size_t valueSizes[], const uint8_t* const value[]) {
 #ifdef FMI2
             static_assert("set_binary not available for FMI2");
 #endif
@@ -212,7 +212,7 @@ namespace fmu4cpp {
                 const auto ref = vr[i];
                 const auto idx = vrToBinaryIndices_.at(ref);
                 const uint8_t *ptr = value[i];
-                const size_t len = size[i];
+                const size_t len = valueSizes[i];
                 binary_[idx].set(std::string(reinterpret_cast<const char*>(ptr), len));
             }
         }

@@ -11,6 +11,7 @@ function(make_test fmi_version modelIdentifier sources)
     )
     target_include_directories(${target_name}
             PRIVATE
+            "${PROJECT_SOURCE_DIR}/export/tests/external"
             "${PROJECT_SOURCE_DIR}/export/include"
             "${PROJECT_SOURCE_DIR}/export/src"
     )
