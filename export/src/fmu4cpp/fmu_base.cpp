@@ -68,6 +68,16 @@ namespace fmu4cpp {
         return {name, vr, numVariables_, getter, setter};
     }
 
+    BinaryVariable fmu_base::binary(const std::string &name, std::string *ptr, const std::function<void(std::string)> &onChange) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        return {name, vr, numVariables_, ptr, onChange};
+    }
+
+    BinaryVariable fmu_base::binary(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        return {name, vr, numVariables_, getter, setter};
+    }
+
     void fmu_base::register_variable(IntVariable v) {
         integers_.emplace_back(std::move(v));
         vrToIntegerIndices_.emplace(v.value_reference(), integers_.size() - 1);
@@ -86,6 +96,11 @@ namespace fmu4cpp {
     void fmu_base::register_variable(StringVariable v) {
         strings_.emplace_back(std::move(v));
         vrToStringIndices_.emplace(v.value_reference(), strings_.size() - 1);
+    }
+
+    void fmu_base::register_variable(BinaryVariable v) {
+        binary_.emplace_back(std::move(v));
+        vrToBinaryIndices_.emplace(v.value_reference(), binary_.size() - 1);
     }
 
     [[maybe_unused]] std::string fmu_base::guid() const {
