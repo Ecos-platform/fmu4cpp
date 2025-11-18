@@ -7,7 +7,7 @@
 class Model : public fmu4cpp::fmu_base {
 
 public:
-    explicit Model(const fmu4cpp::fmu_data &data) : fmu_base(data) {
+    FMU4CPP_CTOR(Model) {
 
         register_variable(real("myReal", &real_)
                                   .setCausality(fmu4cpp::causality_t::OUTPUT));
@@ -37,15 +37,14 @@ public:
     }
 
 private:
-    bool boolean_;
-    int integer_;
-    double real_;
+    bool boolean_{};
+    int integer_{};
+    double real_{};
     std::string str_;
 };
 
 fmu4cpp::model_info fmu4cpp::get_model_info() {
-    model_info m;
-    return m;
+    return {};
 }
 
 std::string fmu4cpp::model_identifier() {
