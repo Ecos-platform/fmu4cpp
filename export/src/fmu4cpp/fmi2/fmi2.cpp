@@ -1,6 +1,7 @@
 
 #include "fmi2Functions.h"
 
+#include <cstring>
 #include <fstream>
 #include <limits>
 #include <memory>
@@ -473,6 +474,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component,
 
 
 fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
+
     const auto component = static_cast<Fmi2Component *>(c);
 
     try {
@@ -491,6 +493,7 @@ fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
 }
 
 fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate state) {
+
     const auto component = static_cast<Fmi2Component *>(c);
 
     try {
@@ -509,6 +512,11 @@ fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate state) {
 
 
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate *state) {
+
+    if (state == nullptr || *state == nullptr) {
+        return fmi2OK;
+    }
+
     const auto component = static_cast<Fmi2Component *>(c);
 
     try {
@@ -525,23 +533,68 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate *state) {
     }
 }
 
-fmi2Status fmi2SerializedFMUstateSize(fmi2Component, fmi2FMUstate, size_t *) {
+fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate state, size_t *size) {
 
-    return fmi2Error;
+    const auto component = static_cast<Fmi2Component *>(c);
+
+    try {
+
+        component->slave->serializedFMUStateSize(state, *size);
+        return fmi2OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        return fmi2Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        return fmi2Error;
+    }
 }
 
-fmi2Status fmi2SerializeFMUstate(fmi2Component, fmi2FMUstate, fmi2Byte[], size_t) {
+fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate state, fmi2Byte data[], size_t size) {
 
-    return fmi2Error;
+    const auto component = static_cast<Fmi2Component *>(c);
+
+    try {
+
+        std::vector<uint8_t> serializedState(size);
+        component->slave->serializeFMUState(state, serializedState);
+        std::memcpy(data, serializedState.data(), size);
+        return fmi2OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        return fmi2Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        return fmi2Error;
+    }
 }
 
-fmi2Status fmi2DeSerializeFMUstate(fmi2Component, const fmi2Byte[], size_t, fmi2FMUstate *) {
+fmi2Status fmi2DeSerializeFMUstate(fmi2Component c, const fmi2Byte data[], size_t size, fmi2FMUstate *state) {
 
-    return fmi2Error;
+    const auto component = static_cast<Fmi2Component *>(c);
+
+    try {
+
+        std::vector<uint8_t> serializedState(data, data + size);
+        component->slave->deserializeFMUState(serializedState, state);
+        return fmi2OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        return fmi2Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        return fmi2Error;
+    }
 }
 
 void fmi2FreeInstance(fmi2Component c) {
-    const auto component = static_cast<Fmi2Component *>(c);
-    delete component;
+    if (c) {
+        const auto component = static_cast<Fmi2Component *>(c);
+        delete component;
+        c = nullptr;
+    }
 }
 }
