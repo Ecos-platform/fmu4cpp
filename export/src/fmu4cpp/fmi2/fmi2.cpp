@@ -1,6 +1,7 @@
 
 #include "fmi2Functions.h"
 
+#include <cstring>
 #include <fstream>
 #include <limits>
 #include <memory>
