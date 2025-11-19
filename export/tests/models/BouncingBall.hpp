@@ -5,6 +5,7 @@
 
 #include <fmu4cpp/fmu_base.hpp>
 
+#include <cstring>
 #include <iomanip>
 #include <sstream>
 
@@ -76,7 +77,7 @@ public:
     }
 
     void freeFmuState(void **state) override {
-        delete static_cast<State*>(*state);
+        delete static_cast<State *>(*state);
         *state = nullptr;
     }
 
