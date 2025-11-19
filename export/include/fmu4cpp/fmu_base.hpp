@@ -213,7 +213,7 @@ namespace fmu4cpp {
                 const auto idx = vrToBinaryIndices_.at(ref);
                 const uint8_t *ptr = value[i];
                 const size_t len = valueSizes[i];
-                binary_[idx].set(std::string(reinterpret_cast<const char*>(ptr), len));
+                binary_[idx].set(std::vector(ptr, ptr + len));
             }
         }
 
@@ -267,10 +267,10 @@ namespace fmu4cpp {
                               const std::function<std::string()> &getter,
                               const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
-        BinaryVariable binary(const std::string &name, std::string *ptr, const std::function<void()> &onChange = {});
+        BinaryVariable binary(const std::string &name, BinaryType *ptr, const std::function<void()> &onChange = {});
         BinaryVariable binary(const std::string &name,
-                              const std::function<std::string()> &getter,
-                              const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
+                              const std::function<std::vector<uint8_t>()> &getter,
+                              const std::optional<std::function<void(std::vector<uint8_t>)>> &setter = std::nullopt);
 
         void register_variable(IntVariable v);
         void register_variable(RealVariable v);
