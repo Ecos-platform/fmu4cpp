@@ -1,6 +1,7 @@
 
 #include "fmi3Functions.h"
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
