@@ -641,6 +641,11 @@ fmi3Status fmi3SetFMUState(fmi3Instance c, fmi3FMUState state) {
 
 
 fmi3Status fmi3FreeFMUState(fmi3Instance c, fmi3FMUState *state) {
+
+    if (state == nullptr || *state == nullptr) {
+        return fmi3OK;
+    }
+
     const auto component = static_cast<Fmi3Component *>(c);
 
     try {
@@ -660,6 +665,7 @@ fmi3Status fmi3FreeFMUState(fmi3Instance c, fmi3FMUState *state) {
 }
 
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance c, fmi3FMUState state, size_t *size) {
+
     const auto component = static_cast<Fmi3Component *>(c);
 
     try {
@@ -939,6 +945,7 @@ void fmi3FreeInstance(fmi3Instance c) {
         const auto component = static_cast<Fmi3Component *>(c);
         component->state = Fmi3Component::State::Invalid;
         delete component;
+        c = nullptr;
     }
 }
 }

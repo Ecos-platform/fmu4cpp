@@ -17,7 +17,7 @@ TEST_CASE("BouncingBall_test") {
     BouncingBall model({});
     const auto guid = model.guid();
 
-    auto c = fmi3InstantiateCoSimulation("array", guid.c_str(), "", false, false, false, false, nullptr, 0, nullptr, nullptr, nullptr);
+    auto c = fmi3InstantiateCoSimulation("bouncing_ball", guid.c_str(), "", false, false, false, false, nullptr, 0, nullptr, nullptr, nullptr);
     REQUIRE(c);
 
     REQUIRE(fmi3EnterInitializationMode(c, false, 0, 0, false, 0) == fmi3OK);
@@ -74,4 +74,5 @@ TEST_CASE("BouncingBall_test") {
 
 
     REQUIRE(fmi3FreeFMUState(c, &state) == fmi3OK);
+    REQUIRE(state == nullptr);
 }
