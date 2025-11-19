@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "fmu_base.hpp"
+#include "fmu_except.hpp"
 #include "fmu_variable.hpp"
 #include "logger.hpp"
 #include "model_info.hpp"
@@ -203,7 +204,7 @@ namespace fmu4cpp {
             }
         }
 
-        void set_binary(const unsigned int vr[], size_t nvr, const size_t valueSizes[], const uint8_t* const value[]) {
+        void set_binary(const unsigned int vr[], size_t nvr, const size_t valueSizes[], const uint8_t *const value[]) {
 #ifdef FMI2
             static_assert("set_binary not available for FMI2");
 #endif
@@ -228,18 +229,27 @@ namespace fmu4cpp {
         }
 
         virtual void *getFMUState() {
-            log(fmiError, "getFMUState not implemented");
-            return nullptr;
+            throw fatal_error("getFMUState not implemented");
         }
 
-        virtual bool setFmuState(void *state) {
-            log(fmiError, "getFMUState not implemented");
-            return false;
+        virtual void setFmuState(void *state) {
+            throw fatal_error("getFMUState not implemented");
         }
 
-        virtual bool freeFmuState(void **state) {
-            log(fmiError, "getFMUState not implemented");
-            return false;
+        virtual void freeFmuState(void **state) {
+            throw fatal_error("getFMUState not implemented");
+        }
+
+        virtual void serializedFMUStateSize(void *state, size_t &size) {
+            throw fatal_error("serializedFMUStateSize not implemented");
+        }
+
+        virtual void serializeFMUState(void *state, std::vector<uint8_t> &serializedState) {
+            throw fatal_error("serializeFMUState not implemented");
+        }
+
+        virtual void deserializeFMUState(const std::vector<uint8_t> &serializedState, void **state) {
+            throw fatal_error("deserializeFMUState not implemented");
         }
 
         [[nodiscard]] std::vector<unsigned int> get_value_refs() const;
@@ -315,7 +325,6 @@ namespace fmu4cpp {
         std::vector<BinaryVariable> binary_;
         std::vector<std::string> binaryBuffer_;
         std::unordered_map<unsigned int, size_t> vrToBinaryIndices_;
-
     };
 
 

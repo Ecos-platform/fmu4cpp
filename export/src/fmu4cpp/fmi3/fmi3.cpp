@@ -602,48 +602,122 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
 fmi3Status fmi3GetFMUState(fmi3Instance c, fmi3FMUState *state) {
     const auto component = static_cast<Fmi3Component *>(c);
 
-    if (auto s = component->slave->getFMUState()) {
+    try {
+
+        const auto s = component->slave->getFMUState();
         *state = s;
         return fmi3OK;
-    }
 
-    return fmi3Error;
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
+    }
 }
 
 fmi3Status fmi3SetFMUState(fmi3Instance c, fmi3FMUState state) {
     const auto component = static_cast<Fmi3Component *>(c);
 
-    if (component->slave->setFmuState(state)) {
-        return fmi3OK;
-    }
+    try {
 
-    return fmi3Error;
+        component->slave->setFmuState(state);
+        return fmi3OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
+    }
 }
 
 
 fmi3Status fmi3FreeFMUState(fmi3Instance c, fmi3FMUState *state) {
     const auto component = static_cast<Fmi3Component *>(c);
 
-    if (component->slave->freeFmuState(state)) {
+    try {
+
+        component->slave->freeFmuState(state);
         return fmi3OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
     }
-
-    return fmi3Error;
 }
 
-fmi3Status fmi3SerializedFMUStateSize(fmi3Instance, fmi3FMUState, size_t *) {
+fmi3Status fmi3SerializedFMUStateSize(fmi3Instance c, fmi3FMUState state, size_t *size) {
+    const auto component = static_cast<Fmi3Component *>(c);
 
-    return fmi3Error;
+    try {
+
+        component->slave->serializedFMUStateSize(state, *size);
+        return fmi3OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
+    }
 }
 
-fmi3Status fmi3SerializeFMUState(fmi3Instance, fmi3FMUState, fmi3Byte[], size_t) {
+fmi3Status fmi3SerializeFMUState(fmi3Instance c, fmi3FMUState state, fmi3Byte data[], size_t size) {
 
-    return fmi3Error;
+    const auto component = static_cast<Fmi3Component *>(c);
+
+    try {
+
+        std::vector<uint8_t> serializedState(size);
+        component->slave->serializeFMUState(state, serializedState);
+        std::memcpy(data, serializedState.data(), size);
+        return fmi3OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
+    }
 }
 
-fmi3Status fmi3DeserializeFMUState(fmi3Instance, const fmi3Byte[], size_t, fmi3FMUState *) {
+fmi3Status fmi3DeserializeFMUState(fmi3Instance c, const fmi3Byte data[], size_t size, fmi3FMUState *state) {
 
-    return fmi3Error;
+    const auto component = static_cast<Fmi3Component *>(c);
+
+    try {
+
+        std::vector serializedState(data, data + size);
+        component->slave->deserializeFMUState(serializedState, state);
+        return fmi3OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
+    }
 }
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
