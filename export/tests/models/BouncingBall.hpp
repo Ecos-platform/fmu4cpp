@@ -68,7 +68,7 @@ public:
     }
 
     void *getFMUState() override {
-        State *statePtr = new State(state_);
+        auto statePtr = new State(state_);
         return statePtr;
     }
 
@@ -86,13 +86,13 @@ public:
     }
 
     void serializeFMUState(void *state, std::vector<uint8_t> &serializedState) override {
-        State *statePtr = static_cast<State *>(state);
+        const State *statePtr = static_cast<State *>(state);
         serializedState.resize(sizeof(State));
         std::memcpy(serializedState.data(), statePtr, sizeof(State));
     }
 
     void deserializeFMUState(const std::vector<uint8_t> &serializedState, void **state) override {
-        State *statePtr = new State();
+        auto statePtr = new State();
         std::memcpy(statePtr, serializedState.data(), sizeof(State));
         *state = statePtr;
     }
@@ -109,7 +109,7 @@ private:
         double bounceFactor_{};// Factor to reduce velocity on bounce
 
         void setFromPtr(const void *ptr) {
-            const State *src = static_cast<const State *>(ptr);
+            const auto *src = static_cast<const State *>(ptr);
             *this = *src;
         }
 
