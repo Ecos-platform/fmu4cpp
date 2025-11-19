@@ -18,28 +18,36 @@ public:
     FMU4CPP_CTOR(Model) {
 
         register_variable(binary("binaryIn", &binaryIn_).setCausality(fmu4cpp::causality_t::INPUT));
-        register_variable(real("numberOut", &numberOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
+        register_variable(real("realOut", &realOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
+        register_variable(integer("integerOut", &integerOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
+        register_variable(string("stringOut", &stringOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
 
         Model::reset();
     }
 
     bool do_step(double dt) override {
 
-        std::cout << binaryIn_ << std::endl;
         nlohmann::json j = nlohmann::json::from_msgpack(binaryIn_);
-        numberOut_ = j["number"];
+        realOut_ = j["real"];
+        integerOut_ = j["integer"];
+        stringOut_ = j["string"];
 
         return true;
     }
 
     void reset() override {
-        binaryIn_ = "";
-        numberOut_ = 0;
+        binaryIn_ = {};
+        realOut_ = 0;
+        integerOut_ = 0;
+        stringOut_ = "empty";
     }
 
 private:
-    std::string binaryIn_;
-    double numberOut_;
+    std::vector<uint8_t> binaryIn_;
+
+    double realOut_;
+    int integerOut_;
+    std::string stringOut_;
 };
 
 fmu4cpp::model_info fmu4cpp::get_model_info() {
@@ -70,10 +78,14 @@ TEST_CASE("test_binary") {
     REQUIRE(fmi3EnterInitializationMode(c, false, 0, 0, false, 0) == fmi3OK);
     REQUIRE(fmi3ExitInitializationMode(c) == fmi3OK);
 
-    double numberIn = 3.9;
+    double realIn = 3.9;
+    int integerIn = 42;
+    std::string stringIn = "hello";
 
     nlohmann::json j;
-    j["number"] = numberIn;
+    j["real"] = realIn;
+    j["integer"] = integerIn;
+    j["string"] = stringIn;
 
     const auto data = nlohmann::json::to_msgpack(j);
     const uint8_t *binaryPtr = data.data();
@@ -95,15 +107,24 @@ TEST_CASE("test_binary") {
     bool terminateSimulation;
     bool earlyReturn;
     double lastSucessfulTime;
-
     REQUIRE(fmi3DoStep(c, 0, 0.1, true, &eventhandlingNeeded, &terminateSimulation, &earlyReturn, &lastSucessfulTime) == fmi3OK);
 
 
-    fmi3ValueReference outVr = 2;
-    double numberOut;
-    fmi3GetFloat64(c, &outVr, 1, &numberOut, 1);
+    double realOut;
+    fmi3ValueReference realVr = 2;
+    CHECK(fmi3GetFloat64(c, &realVr, 1, &realOut, 1) == fmi3OK);
 
-    CHECK(numberOut == Catch::Approx(3.9));
+    int integerOut;
+    fmi3ValueReference integerVr = 3;
+    CHECK(fmi3GetInt32(c, &integerVr, 1, &integerOut, 1) == fmi3OK);
+
+    fmi3String stringOut;
+    fmi3ValueReference stringVr = 4;
+    CHECK(fmi3GetString(c, &stringVr, 1, &stringOut, 1) == fmi3OK);
+
+    CHECK(realOut == Catch::Approx(realIn));
+    CHECK(integerOut == integerIn);
+    CHECK(stringOut == stringIn);
 
     REQUIRE(fmi3Terminate(c) == fmi3OK);
 

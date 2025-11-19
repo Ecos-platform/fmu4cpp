@@ -68,12 +68,12 @@ namespace fmu4cpp {
         return {name, vr, numVariables_, getter, setter};
     }
 
-    BinaryVariable fmu_base::binary(const std::string &name, std::string *ptr, const std::function<void()> &onChange) {
+    BinaryVariable fmu_base::binary(const std::string &name, BinaryType *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, ptr, onChange};
     }
 
-    BinaryVariable fmu_base::binary(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
+    BinaryVariable fmu_base::binary(const std::string &name, const std::function<BinaryType()> &getter, const std::optional<std::function<void(BinaryType)>> &setter) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, getter, setter};
     }

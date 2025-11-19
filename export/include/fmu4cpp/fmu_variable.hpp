@@ -10,8 +10,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstdint>
 
 namespace fmu4cpp {
+
+    using BinaryType = std::vector<uint8_t>;
 
     enum class causality_t {
         PARAMETER,
@@ -279,19 +282,19 @@ namespace fmu4cpp {
             : Variable(name, vr, index, getter, setter) {}
     };
 
-    class BinaryVariable : public Variable<std::string, BinaryVariable> {
+    class BinaryVariable : public Variable<BinaryType, BinaryVariable> {
 
     public:
         BinaryVariable(
                 const std::string &name,
-                unsigned int vr, size_t index, std::string *ptr, const std::function<void()> &onChange)
+                unsigned int vr, size_t index, BinaryType *ptr, const std::function<void()> &onChange)
             : Variable(name, vr, index, ptr, onChange) {}
 
         BinaryVariable(
                 const std::string &name,
                 unsigned int vr, size_t index,
-                const std::function<std::string()> &getter,
-                const std::optional<std::function<void(std::string)>> &setter)
+                const std::function<BinaryType()> &getter,
+                const std::optional<std::function<void(BinaryType)>> &setter)
             : Variable(name, vr, index, getter, setter) {}
     };
 
