@@ -76,7 +76,7 @@ const char *fmi2GetVersion(void) {
     return "2.0";
 }
 
-FMI2_Export void write_description(const char *location, const char* modelIdentifier) {
+FMI2_Export void write_description(const char *location, const char *modelIdentifier) {
     const auto instance = fmu4cpp::createInstance({});
     const auto xml = instance->make_description();
     std::ofstream of(location);
@@ -475,33 +475,54 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component,
 fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *state) {
     const auto component = static_cast<Fmi2Component *>(c);
 
-    if (auto s = component->slave->getFMUState()) {
+    try {
+
+        const auto s = component->slave->getFMUState();
         *state = s;
         return fmi2OK;
-    }
 
-    return fmi2Error;
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        return fmi2Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        return fmi2Error;
+    }
 }
 
 fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate state) {
     const auto component = static_cast<Fmi2Component *>(c);
 
-    if (component->slave->setFmuState(state)) {
-        return fmi2OK;
-    }
+    try {
 
-    return fmi2Error;
+        component->slave->setFmuState(state);
+        return fmi2OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        return fmi2Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        return fmi2Error;
+    }
 }
 
 
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate *state) {
     const auto component = static_cast<Fmi2Component *>(c);
 
-    if (component->slave->freeFmuState(state)) {
-        return fmi2OK;
-    }
+    try {
 
-    return fmi2Error;
+        component->slave->freeFmuState(state);
+        return fmi2OK;
+
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        return fmi2Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        return fmi2Error;
+    }
 }
 
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component, fmi2FMUstate, size_t *) {
