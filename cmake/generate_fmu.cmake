@@ -67,6 +67,8 @@ function(generateFMU modelIdentifier)
             list(APPEND VERSION_DEFS "FMI3")
             target_compile_definitions(fmu4cpp_fmi3 PUBLIC "FMI3")
             list(APPEND VERSION_OBJECTS "$<TARGET_OBJECTS:fmu4cpp_fmi3>")
+        else ()
+            message(FATAL_ERROR "Unknown FMI version: ${fmiVersion}. Supported versions are 'fmi2' and 'fmi3'.")
         endif ()
 
         add_library(${versionTarget} SHARED
