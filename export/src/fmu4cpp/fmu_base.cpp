@@ -28,7 +28,7 @@ namespace fmu4cpp {
         throw fatal_error("Reset is unimplemented in slave");
     }
 
-    IntVariable fmu_base::integer(const std::string &name, int *ptr, const std::function<void(int)> &onChange) {
+    IntVariable fmu_base::integer(const std::string &name, int *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, ptr, onChange};
     }
@@ -38,7 +38,7 @@ namespace fmu4cpp {
         return {name, vr, numVariables_, getter, setter};
     }
 
-    RealVariable fmu_base::real(const std::string &name, double *ptr, const std::function<void(double)> &onChange) {
+    RealVariable fmu_base::real(const std::string &name, double *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, ptr, onChange};
     }
@@ -48,7 +48,7 @@ namespace fmu4cpp {
         return {name, vr, numVariables_, getter, setter};
     }
 
-    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr, const std::function<void(bool)> &onChange) {
+    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, ptr, onChange};
     }
@@ -58,7 +58,7 @@ namespace fmu4cpp {
         return {name, vr, numVariables_, getter, setter};
     }
 
-    StringVariable fmu_base::string(const std::string &name, std::string *ptr, const std::function<void(std::string)> &onChange) {
+    StringVariable fmu_base::string(const std::string &name, std::string *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, ptr, onChange};
     }
@@ -68,7 +68,7 @@ namespace fmu4cpp {
         return {name, vr, numVariables_, getter, setter};
     }
 
-    BinaryVariable fmu_base::binary(const std::string &name, std::string *ptr, const std::function<void(std::string)> &onChange) {
+    BinaryVariable fmu_base::binary(const std::string &name, std::string *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
         return {name, vr, numVariables_, ptr, onChange};
     }
