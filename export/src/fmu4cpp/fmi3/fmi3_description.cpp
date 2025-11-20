@@ -27,6 +27,17 @@ namespace {
         throw std::runtime_error("Unknown variable type");
     }
 
+    static std::string hex_encode(const std::vector<unsigned char> &in) {
+        static const char hex[] = "0123456789ABCDEF";
+        std::string out;
+        out.reserve(in.size() * 2);
+        for (unsigned char c : in) {
+            out.push_back(hex[c >> 4]);
+            out.push_back(hex[c & 0x0F]);
+        }
+        return out;
+    }
+
 }// namespace
 
 
@@ -74,7 +85,7 @@ std::string fmu_base::make_description() const {
     ss << "\t<ModelVariables>\n";
 
     const auto allVars = [&] {
-        auto allVars = collect(integers_, reals_, booleans_, strings_);
+        auto allVars = collect(integers_, reals_, booleans_, strings_, binary_);
         std::sort(allVars.begin(), allVars.end(), [](const VariableBase *v1, const VariableBase *v2) {
             return v1->index() < v2->index();
         });
@@ -134,11 +145,21 @@ std::string fmu_base::make_description() const {
                 ss << "\t\t\t<Start value=\"" << s->get() << "\"/>\n";
             }
         } else if (auto bin = dynamic_cast<const BinaryVariable *>(v)) {
-            //TODO
+            if (with_start) {
+                ss << ">\n";
+                ss << "\t\t\t<Dimension start=\"1\"/>\n";
+                ss << "\t\t\t<Start value=\"" << hex_encode(bin->get()) << "\"/>\n";
+            }
         }
 
-        if (with_start && dynamic_cast<const StringVariable *>(v)) {
-            ss << "\t\t</String>\n";
+        if (with_start) {
+            if (dynamic_cast<const StringVariable *>(v)) {
+                ss << "\t\t</String>\n";
+            } else if (dynamic_cast<const BinaryVariable *>(v)) {
+                ss << "\t\t</Binary>\n";
+            } else {
+                ss << "/>\n";
+            }
         } else {
             ss << "/>\n";
         }
