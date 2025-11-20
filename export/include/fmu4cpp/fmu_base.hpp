@@ -2,24 +2,85 @@
 #ifndef FMU4CPP_FMU_BASE_HPP
 #define FMU4CPP_FMU_BASE_HPP
 
+#include <cstdint>
+#include <cstring>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "fmu_base.hpp"
-#include "fmu_except.hpp"
 #include "fmu_variable.hpp"
 #include "logger.hpp"
 #include "model_info.hpp"
 #include "status.hpp"
 
-#include <filesystem>
-
 
 namespace fmu4cpp {
+
+    namespace state {
+
+        // detection idiom for member reset()
+        template<typename T, typename = void>
+        struct has_reset : std::false_type {};
+
+        template<typename T>
+        struct has_reset<T, std::void_t<decltype(std::declval<T &>().reset())>> : std::true_type {};
+
+        // call_reset overloads selected by SFINAE
+        template<typename T>
+        std::enable_if_t<has_reset<T>::value, void> call_reset(void *dst) {
+            static_cast<T *>(dst)->reset();
+        }
+
+        template<typename T>
+        std::enable_if_t<!has_reset<T>::value, void> call_reset(void *dst) {
+            *static_cast<T *>(dst) = T();
+        }
+
+        struct Ops {
+            void *(*create_from_state)(const void *);
+            void (*assign_into_state)(void *, const void *);
+            void (*destroy)(void *);
+            size_t (*serialized_size)();
+            void (*serialize)(const void *, std::vector<uint8_t> &);
+            void (*deserialize)(const std::vector<uint8_t> &, void **);
+            void (*reset_inplace)(void *);// new: reset the in-place state to its initial/default values
+        };
+
+        template<typename State>
+        const Ops *make_state_ops() {
+            static_assert(std::is_trivially_copyable_v<State>, "State must be trivially copyable");
+            static const Ops ops = {
+                    // create_from_state
+                    +[](const void *p) -> void * { return new State(*static_cast<const State *>(p)); },
+                    // assign_into_state
+                    +[](void *dst, const void *src) { *static_cast<State *>(dst) = *static_cast<const State *>(src); },
+                    // destroy
+                    +[](void *p) { delete static_cast<State *>(p); },
+                    // serialized_size
+                    +[]() -> size_t { return sizeof(State); },
+                    // serialize
+                    +[](const void *p, std::vector<uint8_t> &out) {
+                        const auto *b = static_cast<const uint8_t *>(p);
+                        out.assign(b, b + sizeof(State));
+                    },
+                    // deserialize
+                    +[](const std::vector<uint8_t> &in, void **out) {
+                        auto *s = new State();
+                        std::memcpy(s, in.data(), sizeof(State));
+                        *out = s;
+                    },
+                    // reset_inplace: dispatch to call_reset<State>
+                    +[](void *dst) { call_reset<State>(dst); }};
+            return &ops;
+        }
+
+    }// namespace state
 
     struct fmu_data {
         logger *fmiLogger{nullptr};
@@ -30,13 +91,7 @@ namespace fmu4cpp {
     class fmu_base {
 
     public:
-        explicit fmu_base(fmu_data data)
-            : data_(std::move(data)) {
-
-            register_real("time", &time_)
-                    .setCausality(causality_t::INDEPENDENT)
-                    .setVariability(variability_t::CONTINUOUS);
-        }
+        explicit fmu_base(fmu_data data);
 
         fmu_base(const fmu_base &) = delete;
         fmu_base(const fmu_base &&) = delete;
@@ -49,208 +104,51 @@ namespace fmu4cpp {
             return data_.resourceLocation;
         }
 
-        [[nodiscard]] std::optional<IntVariable> get_int_variable(const std::string &name) const {
-            for (const auto &v: integers_) {
-                if (v.name() == name) return v;
-            }
-            return std::nullopt;
-        }
+        [[nodiscard]] std::optional<IntVariable> get_int_variable(const std::string &name) const;
+        [[nodiscard]] std::optional<RealVariable> get_real_variable(const std::string &name) const;
+        [[nodiscard]] std::optional<BoolVariable> get_bool_variable(const std::string &name) const;
+        [[nodiscard]] std::optional<StringVariable> get_string_variable(const std::string &name) const;
+        [[nodiscard]] std::optional<BinaryVariable> get_binary_variable(const std::string &name) const;
 
-        [[nodiscard]] std::optional<RealVariable> get_real_variable(const std::string &name) const {
-            for (const auto &v: reals_) {
-                if (v.name() == name) return v;
-            }
-            return std::nullopt;
-        }
-
-        [[nodiscard]] std::optional<BoolVariable> get_bool_variable(const std::string &name) const {
-            for (const auto &v: booleans_) {
-                if (v.name() == name) return v;
-            }
-            return std::nullopt;
-        }
-
-        [[nodiscard]] std::optional<StringVariable> get_string_variable(const std::string &name) const {
-            for (const auto &v: strings_) {
-                if (v.name() == name) return v;
-            }
-            return std::nullopt;
-        }
-
-        [[nodiscard]] std::optional<BinaryVariable> get_binary_variable(const std::string &name) const {
-            for (const auto &v: binary_) {
-                if (v.name() == name) return v;
-            }
-            return std::nullopt;
-        }
-
-        void enter_initialisation_mode(double start, std::optional<double> stop, std::optional<double> tolerance) {
-            time_ = start;
-            stop_ = stop;
-            tolerance_ = tolerance;
-            enter_initialisation_mode();
-        }
-
+        void enter_initialisation_mode(double start, std::optional<double> stop, std::optional<double> tolerance);
         virtual void exit_initialisation_mode();
-
-        bool step(double currentTime, double dt) {
-
-            if (stop_ && currentTime >= *stop_) {
-                log(fmiWarning, "Stop time reached");
-                return false;
-            }
-
-            constexpr double TIME_TOLERANCE = 1e-9;
-            if (std::abs(currentTime - time_) > TIME_TOLERANCE) {
-                throw std::runtime_error("Current time does not match the internal time (within tolerance)");
-            }
-
-            if (do_step(dt)) {
-                time_ += dt;
-
-                return true;
-            }
-
-            return false;
-        }
-
+        bool step(double currentTime, double dt);
         virtual void terminate();
-
         virtual void reset();
 
-        void get_integer(const unsigned int vr[], size_t nvr, int value[]) const {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToIntegerIndices_.at(ref);
-                value[i] = integers_[idx].get();
-            }
-        }
-
-        void get_real(const unsigned int vr[], size_t nvr, double value[]) const {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToRealIndices_.at(ref);
-                value[i] = reals_[idx].get();
-            }
-        }
+        void get_integer(const unsigned int vr[], size_t nvr, int value[]) const;
+        void get_real(const unsigned int vr[], size_t nvr, double value[]) const;
 
         //fmi2
-        void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToBooleanIndices_.at(ref);
-                value[i] = static_cast<int>(booleans_[idx].get());
-            }
-        }
+        void get_boolean(const unsigned int vr[], size_t nvr, int value[]) const;
 
         //fmi3
-        void get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToBooleanIndices_.at(ref);
-                value[i] = booleans_[idx].get();
-            }
-        }
+        void get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const;
 
-        void get_string(const unsigned int vr[], size_t nvr, const char *value[]) {
-            stringBuffer_.clear();
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToStringIndices_.at(ref);
-                stringBuffer_.push_back(strings_[idx].get());
-                value[i] = stringBuffer_.back().c_str();
-            }
-        }
-
-        void set_integer(const unsigned int vr[], size_t nvr, const int value[]) {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToIntegerIndices_.at(ref);
-                integers_[idx].set(value[i]);
-            }
-        }
-
-        void set_real(const unsigned int vr[], size_t nvr, const double value[]) {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToRealIndices_.at(ref);
-                reals_[idx].set(value[i]);
-            }
-        }
+        void get_string(const unsigned int vr[], size_t nvr, const char *value[]);
+        void set_integer(const unsigned int vr[], size_t nvr, const int value[]);
+        void set_real(const unsigned int vr[], size_t nvr, const double value[]);
 
         //fmi2
-        void set_boolean(const unsigned int vr[], size_t nvr, const int value[]) {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToBooleanIndices_.at(ref);
-                booleans_[idx].set(static_cast<bool>(value[i]));
-            }
-        }
-
+        void set_boolean(const unsigned int vr[], size_t nvr, const int value[]);
         //fmi3
-        void set_boolean(const unsigned int vr[], size_t nvr, const bool value[]) {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToBooleanIndices_.at(ref);
-                booleans_[idx].set(value[i]);
-            }
-        }
+        void set_boolean(const unsigned int vr[], size_t nvr, const bool value[]);
 
-        void set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToStringIndices_.at(ref);
-                strings_[idx].set(value[i]);
-            }
-        }
-
-        void set_binary(const unsigned int vr[], size_t nvr, const size_t valueSizes[], const uint8_t *const value[]) {
-#ifdef FMI2
-            static_assert("set_binary not available for FMI2");
-#endif
-
-            for (unsigned i = 0; i < nvr; i++) {
-                const auto ref = vr[i];
-                const auto idx = vrToBinaryIndices_.at(ref);
-                const uint8_t *ptr = value[i];
-                const size_t len = valueSizes[i];
-                binary_[idx].set(std::vector(ptr, ptr + len));
-            }
-        }
+        void set_string(const unsigned int vr[], size_t nvr, const char *const value[]);
+        void set_binary(const unsigned int vr[], size_t nvr, const size_t valueSizes[], const uint8_t *const value[]);
 
         [[nodiscard]] std::string guid() const;
-
         [[nodiscard]] std::string make_description() const;
 
-        void log(const fmiStatus s, const std::string &message) const {
-            if (data_.fmiLogger) {
-                data_.fmiLogger->log(s, message);
-            }
-        }
+        void debugLog(fmiStatus s, const std::string &message) const;
 
-        virtual void *getFMUState() {
-            throw fatal_error("getFMUState not implemented");
-        }
+        virtual void *getFMUState();
+        virtual void setFmuState(void *state);
+        virtual void freeFmuState(void **state);
 
-        virtual void setFmuState(void *state) {
-            throw fatal_error("getFMUState not implemented");
-        }
-
-        virtual void freeFmuState(void **state) {
-            throw fatal_error("getFMUState not implemented");
-        }
-
-        virtual void serializedFMUStateSize(void *state, size_t &size) {
-            throw fatal_error("serializedFMUStateSize not implemented");
-        }
-
-        virtual void serializeFMUState(void *state, std::vector<uint8_t> &serializedState) {
-            throw fatal_error("serializeFMUState not implemented");
-        }
-
-        virtual void deserializeFMUState(const std::vector<uint8_t> &serializedState, void **state) {
-            throw fatal_error("deserializeFMUState not implemented");
-        }
+        virtual void serializedFMUStateSize(void *state, size_t &size);
+        virtual void serializeFMUState(void *state, std::vector<uint8_t> &out);
+        virtual void deserializeFMUState(const std::vector<uint8_t> &in, void **out);
 
         [[nodiscard]] std::vector<unsigned int> get_value_refs() const;
 
@@ -293,6 +191,15 @@ namespace fmu4cpp {
             return tolerance_;
         }
 
+        template<typename Model, typename State>
+        void set_state_helpers(State Model::*stateMember) {
+            static_assert(std::is_trivially_copyable_v<State>, "State must be trivially copyable");
+            get_state_ptr_ = [stateMember](void *self) -> void * {
+                return &(static_cast<Model *>(self)->*stateMember);
+            };
+            state_ops_ = state::make_state_ops<State>();
+        }
+
     private:
         fmu_data data_;
 
@@ -318,6 +225,9 @@ namespace fmu4cpp {
         std::vector<BinaryVariable> binary_;
         std::vector<std::string> binaryBuffer_;
         std::unordered_map<unsigned int, size_t> vrToBinaryIndices_;
+
+        std::function<void *(void *)> get_state_ptr_{nullptr};
+        const state::Ops *state_ops_{nullptr};
     };
 
 
