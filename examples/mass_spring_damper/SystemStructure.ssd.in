@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription name="SpringMassDamperSystem" version="1.0"
+        xmlns:ssd="http://ssp-standard.org/SSP1/SystemStructureDescription"
+        xmlns:ssc="http://ssp-standard.org/SSP1/SystemStructureCommon"
+        xmlns:osp="http://opensimulationplatform.com/SSP/OSPAnnotations">
+
+    <ssd:System name="root">
+
+        <!-- Mass FMU -->
+        <ssd:Elements>
+            <ssd:Component
+                    name="mass"
+                    source="@MODEL_PATH@/fmi3/mass.fmu">
+                <ssd:Connectors>
+                    <ssd:Connector name="position" kind="output">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                    <ssd:Connector name="velocity" kind="output">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                    <ssd:Connector name="force_spring" kind="input">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                    <ssd:Connector name="force_damper" kind="input">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                    <ssd:Connector name="force_external" kind="input">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                </ssd:Connectors>
+                <ssd:ParameterBindings>
+                    <ssd:ParameterBinding>
+                        <ssd:ParameterValues>
+                            <ssv:ParameterSet version="1.0" name="initial_values">
+                                <ssv:Parameters>
+                                    <ssv:Parameter name="position">
+                                        <ssv:Real value="1.0"/>
+                                    </ssv:Parameter>
+                                     <ssv:Parameter name="mass">
+                                        <ssv:Real value="1.0"/>
+                                    </ssv:Parameter>
+                                </ssv:Parameters>
+                            </ssv:ParameterSet>
+                        </ssd:ParameterValues>
+                    </ssd:ParameterBinding>
+                </ssd:ParameterBindings>
+            </ssd:Component>
+
+            <!-- Spring FMU -->
+            <ssd:Component
+                    name="spring"
+                    source="@MODEL_PATH@/fmi3/spring.fmu">
+                <ssd:Connectors>
+                    <ssd:Connector name="position" kind="input">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                    <ssd:Connector name="force" kind="output">
+                         <ssc:Real/>
+                     </ssd:Connector>
+                </ssd:Connectors>
+                <ssd:ParameterBindings>
+                    <ssd:ParameterBinding>
+                        <ssd:ParameterValues>
+                            <ssv:ParameterSet version="1.0" name="initial_values">
+                                <ssv:Parameters>
+                                    <ssv:Parameter name="stiffness">
+                                        <ssv:Real value="10"/>
+                                    </ssv:Parameter>
+                                </ssv:Parameters>
+                            </ssv:ParameterSet>
+                        </ssd:ParameterValues>
+                    </ssd:ParameterBinding>
+                </ssd:ParameterBindings>
+            </ssd:Component>
+
+            <!-- Damper FMU -->
+            <ssd:Component
+                    name="damper"
+                    source="@MODEL_PATH@/fmi3/damper.fmu">
+                <ssd:Connectors>
+                    <ssd:Connector name="velocity" kind="input">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                    <ssd:Connector name="force" kind="output">
+                        <ssc:Real/>
+                    </ssd:Connector>
+                </ssd:Connectors>
+                <ssd:ParameterBindings>
+                    <ssd:ParameterBinding>
+                        <ssd:ParameterValues>
+                            <ssv:ParameterSet version="1.0" name="initial_values">
+                                <ssv:Parameters>
+                                    <ssv:Parameter name="damping">
+                                        <ssv:Real value="1.0"/>
+                                    </ssv:Parameter>
+                                </ssv:Parameters>
+                            </ssv:ParameterSet>
+                        </ssd:ParameterValues>
+                    </ssd:ParameterBinding>
+                </ssd:ParameterBindings>
+            </ssd:Component>
+
+        </ssd:Elements>
+
+
+        <!-- Connections -->
+        <ssd:Connections>
+
+            <!-- Mass → Spring -->
+            <ssd:Connection
+                    startElement="mass"
+                    startConnector="position"
+                    endElement="spring"
+                    endConnector="position"/>
+
+            <!-- Mass → Damper -->
+            <ssd:Connection
+                    startElement="mass"
+                    startConnector="velocity"
+                    endElement="damper"
+                    endConnector="velocity"/>
+
+            <!-- Spring → Mass -->
+            <ssd:Connection
+                    startElement="spring"
+                    startConnector="force"
+                    endElement="mass"
+                    endConnector="force_spring"/>
+
+            <!-- Damper → Mass -->
+            <ssd:Connection
+                    startElement="damper"
+                    startConnector="force"
+                    endElement="mass"
+                    endConnector="force_damper"/>
+
+        </ssd:Connections>
+
+    </ssd:System>
+
+    <ssd:DefaultExperiment startTime="0">
+            <ssd:Annotations>
+                <ssc:Annotation type="com.opensimulationplatform">
+                    <osp:Algorithm>
+                        <osp:FixedStepAlgorithm baseStepSize="1e-4"/>
+                    </osp:Algorithm>
+                </ssc:Annotation>
+            </ssd:Annotations>
+        </ssd:DefaultExperiment>
+
+</ssd:SystemStructureDescription>

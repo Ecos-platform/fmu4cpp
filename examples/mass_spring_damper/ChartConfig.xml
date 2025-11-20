@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecos:ChartConfig xmlns:ecos="http://github.com/Ecos-platform/libecos/resources/schema/ChartConfig">
+
+    <ecos:chart>
+        <ecos:timeseries title="Spring-Mass-Damper System" label="Position [m]">
+
+            <ecos:series>
+
+                <!-- Mass position -->
+                <ecos:component name="mass">
+                    <ecos:variable name="position"/>
+                </ecos:component>
+
+            </ecos:series>
+
+        </ecos:timeseries>
+    </ecos:chart>
+
+</ecos:ChartConfig>
