@@ -56,7 +56,6 @@ public:
         return true;
     }
 
-
     void reset() override {
         // default initial conditions
         x0_ = 2.0;

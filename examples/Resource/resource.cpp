@@ -12,10 +12,6 @@ class Resource : public fmu_base {
 public:
     FMU4CPP_CTOR(Resource) {
 
-        std::ifstream ifs(resourceLocation() / "file.txt");
-
-        std::getline(ifs, content_);
-
         register_string(
                 "content", &content_)
                 .setVariability(variability_t::CONSTANT)
@@ -31,7 +27,8 @@ public:
     }
 
     void reset() override {
-        // do nothing
+        std::ifstream ifs(resourceLocation() / "file.txt");
+        std::getline(ifs, content_);
     }
 
 private:

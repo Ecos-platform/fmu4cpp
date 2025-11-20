@@ -12,50 +12,46 @@ class SimplePendulum : public fmu_base {
 public:
     FMU4CPP_CTOR(SimplePendulum) {
 
-        register_real("angle", &angle_)
+        register_real("angle", &state_.angle_)
                 .setCausality(causality_t::OUTPUT)
                 .setVariability(variability_t::CONTINUOUS);
 
-        register_real("angularVelocity", &angularVelocity_)
+        register_real("angularVelocity", &state_.angularVelocity_)
                 .setCausality(causality_t::LOCAL)
                 .setVariability(variability_t::CONTINUOUS);
         register_real(
-                "gravity", &gravity_)
+                "gravity", &state_.gravity_)
                 .setCausality(causality_t::PARAMETER)
                 .setVariability(variability_t::FIXED);
         register_real(
-                "length", &length_)
+                "length", &state_.length_)
                 .setCausality(causality_t::PARAMETER)
                 .setVariability(variability_t::FIXED);
         register_real(
-                "damping", &damping_)
+                "damping", &state_.damping_)
                 .setCausality(causality_t::PARAMETER)
                 .setVariability(variability_t::FIXED)
                 .addAnnotation("<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific variable annotation\"</documentation>\n</Tool>");
 
-        SimplePendulum::reset();
+        set_state_helpers(&SimplePendulum::state_);
     }
 
     bool do_step(double dt) override {
-        angularVelocity_ += (-gravity_ / length_) * std::sin(angle_) * dt - damping_ * angularVelocity_ * dt;
-        angle_ += angularVelocity_ * dt;
+        state_.angularVelocity_ += (-state_.gravity_ / state_.length_) * std::sin(state_.angle_) * dt - state_.damping_ * state_.angularVelocity_ * dt;
+        state_.angle_ += state_.angularVelocity_ * dt;
         return true;
     }
 
-    void reset() override {
-        angle_ = pi / 4;// 45 degrees
-        angularVelocity_ = 0;
-        gravity_ = -9.81;
-        length_ = 1.0;
-        damping_ = 0.1;
-    }
-
 private:
-    double angle_{};          // Current angle of the pendulum
-    double angularVelocity_{};// Current angular velocity
-    double gravity_{};        // Acceleration due to gravity
-    double length_{};         // Length of the pendulum
-    double damping_{};        // Damping factor
+    struct State {
+        double angle_ = pi / 4;     // Current angle of the pendulum
+        double angularVelocity_ = 0;// Current angular velocity
+        double gravity_ = -9.81;    // Acceleration due to gravity
+        double length_ = 1;         // Length of the pendulum
+        double damping_ = 0.5;      // Damping factor
+    };
+
+    State state_;
 };
 
 
@@ -63,6 +59,9 @@ model_info fmu4cpp::get_model_info() {
     model_info info;
     info.modelName = "SimplePendulum";
     info.description = "A simple pendulum model";
+    info.canGetAndSetFMUstate = true;
+    info.canSerializeFMUstate = true;
+    info.defaultExperiment = {0.0, 10};
     info.vendorAnnotations = {"<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific annotation data\"</documentation>\n</Tool>"};
     return info;
 }
