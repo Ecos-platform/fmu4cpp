@@ -54,15 +54,6 @@ public:
                 .setInitial(initial_t::CALCULATED)
                 .setDependencies({"stringIn"});
 
-#ifdef FMI3
-        register_binary("binaryIn", &state_.binary_)
-                .setCausality(causality_t::INPUT)
-                .setVariability(variability_t::DISCRETE);
-
-        register_binary("binaryOut", &state_.binary_)
-                .setCausality(causality_t::OUTPUT)
-                .setVariability(variability_t::DISCRETE);
-#endif
         Model::reset();
     }
 
@@ -95,14 +86,12 @@ private:
         double real_{};
         bool boolean_{};
         std::string string_{};
-        std::vector<uint8_t> binary_{};
 
         void reset() {
             integer_ = 0;
             real_ = 0;
             boolean_ = false;
             string_ = "empty";
-            binary_ = {};
         }
     };
 
