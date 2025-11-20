@@ -18,6 +18,4 @@ endif ()
 include("cmake/generate_fmu.cmake")
 
 add_subdirectory(export)
-
-
 add_subdirectory(examples)
