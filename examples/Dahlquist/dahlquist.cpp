@@ -21,7 +21,7 @@ public:
                 .setCausality(fmu4cpp::causality_t::PARAMETER)
                 .setVariability(fmu4cpp::variability_t::FIXED);
 
-        set_state_helpers(&Dahlquist::state_);
+        register_state(&Dahlquist::state_);
     }
 
     bool do_step(double dt) override {

@@ -33,7 +33,7 @@ public:
                 .setVariability(variability_t::FIXED)
                 .addAnnotation("<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific variable annotation\"</documentation>\n</Tool>");
 
-        set_state_helpers(&SimplePendulum::state_);
+        register_state(&SimplePendulum::state_);
     }
 
     bool do_step(double dt) override {
