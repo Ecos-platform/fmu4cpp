@@ -4,13 +4,13 @@
 
 #include "variable_access.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
-#include <cstdint>
 
 namespace fmu4cpp {
 
@@ -52,6 +52,7 @@ namespace fmu4cpp {
         std::optional<initial_t> initial_;
         std::vector<std::string> annotations_;
         std::vector<std::string> dependencies_;
+        std::string description_;
 
     public:
         VariableBase(std::string name, unsigned int vr, size_t index)
@@ -79,6 +80,10 @@ namespace fmu4cpp {
 
         [[nodiscard]] std::optional<initial_t> initial() const {
             return initial_;
+        }
+
+        [[nodiscard]] std::string getDescription() const {
+            return description_;
         }
 
         [[nodiscard]] std::vector<std::string> getDependencies() const {
@@ -128,6 +133,11 @@ namespace fmu4cpp {
             }
 
             access_->set(value);
+        }
+
+        V &setDescription(const std::string &description) {
+            description_ = description;
+            return *static_cast<V *>(this);
         }
 
         V &setCausality(causality_t causality) {
@@ -235,6 +245,10 @@ namespace fmu4cpp {
             return max_;
         }
 
+        [[nodiscard]] std::optional<std::string> getUnit() const {
+            return unit_;
+        }
+
         RealVariable &setMin(const std::optional<double> &min) {
             min_ = min;
             return *this;
@@ -245,9 +259,15 @@ namespace fmu4cpp {
             return *this;
         }
 
+        RealVariable &setUnit(const std::optional<std::string> &unit) {
+            unit_ = unit;
+            return *this;
+        }
+
     private:
         std::optional<double> min_;
         std::optional<double> max_;
+        std::optional<std::string> unit_;
     };
 
     class BoolVariable final : public Variable<bool, BoolVariable> {

@@ -18,7 +18,8 @@ fmu_base::fmu_base(fmu_data data) : data_(std::move(data)) {
 
     register_real("time", &time_)
             .setCausality(causality_t::INDEPENDENT)
-            .setVariability(variability_t::CONTINUOUS);
+            .setVariability(variability_t::CONTINUOUS)
+            .setDescription("Simulation time");
 }
 
 
@@ -296,7 +297,7 @@ std::vector<unsigned> fmu_base::get_value_refs() const {
     std::vector<unsigned int> indices;
     const auto allVars = collect(integers_, reals_, booleans_, strings_);
     indices.reserve(allVars.size());
-    for (const auto& v: allVars) {
+    for (const auto &v: allVars) {
         indices.emplace_back(v->value_reference());
     }
 
