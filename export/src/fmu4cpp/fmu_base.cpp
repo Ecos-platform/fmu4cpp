@@ -106,6 +106,7 @@ void fmu_base::get_integer(const unsigned int vr[], size_t nvr, int value[]) con
         value[i] = integers_[idx].get();
     }
 }
+
 void fmu_base::get_real(const unsigned int vr[], size_t nvr, double value[]) const {
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
@@ -113,6 +114,7 @@ void fmu_base::get_real(const unsigned int vr[], size_t nvr, double value[]) con
         value[i] = reals_[idx].get();
     }
 }
+
 void fmu_base::get_boolean(const unsigned int vr[], size_t nvr, int value[]) const {
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
@@ -120,6 +122,7 @@ void fmu_base::get_boolean(const unsigned int vr[], size_t nvr, int value[]) con
         value[i] = static_cast<int>(booleans_[idx].get());
     }
 }
+
 void fmu_base::get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const {
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
@@ -127,15 +130,28 @@ void fmu_base::get_boolean(const unsigned int vr[], size_t nvr, bool value[]) co
         value[i] = booleans_[idx].get();
     }
 }
+
 void fmu_base::get_string(const unsigned int vr[], size_t nvr, const char *value[]) {
-    stringBuffer_.clear();
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
         const auto idx = vrToStringIndices_.at(ref);
-        stringBuffer_.push_back(strings_[idx].get());
-        value[i] = stringBuffer_.back().c_str();
+        stringBuffer_ = strings_[idx].get();
+        value[i] = stringBuffer_.c_str();
     }
 }
+
+void fmu_base::get_binary(const unsigned int vr[], size_t nvr, size_t valueSizes[], const uint8_t *values[]) {
+
+    for (auto i = 0; i < nvr; i++) {
+        const auto ref = vr[i];
+        const auto idx = vrToBinaryIndices_.at(ref);
+        const auto &data = binary_[idx].get();
+        valueSizes[i] = data.size();
+        binaryBuffer_.assign(data.begin(), data.end());
+        values[i] = binaryBuffer_.data();
+    }
+}
+
 void fmu_base::set_integer(const unsigned int vr[], size_t nvr, const int value[]) {
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
@@ -143,6 +159,7 @@ void fmu_base::set_integer(const unsigned int vr[], size_t nvr, const int value[
         integers_[idx].set(value[i]);
     }
 }
+
 void fmu_base::set_real(const unsigned int vr[], size_t nvr, const double value[]) {
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
@@ -164,6 +181,7 @@ void fmu_base::set_boolean(const unsigned int vr[], size_t nvr, const bool value
         booleans_[idx].set(value[i]);
     }
 }
+
 void fmu_base::set_string(const unsigned int vr[], size_t nvr, const char *const value[]) {
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
@@ -171,10 +189,8 @@ void fmu_base::set_string(const unsigned int vr[], size_t nvr, const char *const
         strings_[idx].set(value[i]);
     }
 }
+
 void fmu_base::set_binary(const unsigned int vr[], size_t nvr, const size_t valueSizes[], const uint8_t *const value[]) {
-#ifdef FMI2
-    static_assert("set_binary not available for FMI2");
-#endif
 
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];

@@ -517,7 +517,7 @@ fmi3Status fmi3SetString(
 }
 
 fmi3Status fmi3GetBinary(fmi3Instance c,
-                         const fmi3ValueReference valueReferences[],
+                         const fmi3ValueReference vr[],
                          size_t nvr,
                          size_t valueSizes[],
                          fmi3Binary values[],
@@ -525,8 +525,18 @@ fmi3Status fmi3GetBinary(fmi3Instance c,
 
     const auto component = static_cast<Fmi3Component *>(c);
 
-    component->logger->log(fmiError, "Unsupported function fmi3GetBinary");
-    return fmi3Error;
+    try {
+        component->slave->get_binary(vr, nvr, valueSizes, values);
+        return fmi3OK;
+    } catch (const fmu4cpp::fatal_error &ex) {
+        component->logger->log(fmiFatal, ex.what());
+        component->state = Fmi3Component::State::Invalid;
+        return fmi3Fatal;
+    } catch (const std::exception &ex) {
+        component->logger->log(fmiError, ex.what());
+        component->state = Fmi3Component::State::Terminated;
+        return fmi3Error;
+    }
 }
 
 fmi3Status fmi3SetBinary(fmi3Instance c,

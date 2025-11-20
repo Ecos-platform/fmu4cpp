@@ -131,6 +131,8 @@ namespace fmu4cpp {
         void get_boolean(const unsigned int vr[], size_t nvr, bool value[]) const;
 
         void get_string(const unsigned int vr[], size_t nvr, const char *value[]);
+        void get_binary(const unsigned int vr[], size_t nvr, size_t valueSizes[], const uint8_t *values[]);
+
         void set_integer(const unsigned int vr[], size_t nvr, const int value[]);
         void set_real(const unsigned int vr[], size_t nvr, const double value[]);
 
@@ -224,11 +226,11 @@ namespace fmu4cpp {
         std::unordered_map<unsigned int, size_t> vrToBooleanIndices_;
 
         std::vector<StringVariable> strings_;
-        std::vector<std::string> stringBuffer_;
+        std::string stringBuffer_;
         std::unordered_map<unsigned int, size_t> vrToStringIndices_;
 
         std::vector<BinaryVariable> binary_;
-        std::vector<std::string> binaryBuffer_;
+        std::vector<uint8_t> binaryBuffer_;
         std::unordered_map<unsigned int, size_t> vrToBinaryIndices_;
 
         std::function<void *(void *)> get_state_ptr_{nullptr};
