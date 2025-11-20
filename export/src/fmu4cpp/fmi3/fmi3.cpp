@@ -175,7 +175,13 @@ fmi3Instance fmi3InstantiateCoSimulation(
     auto logger = std::make_unique<fmi3Logger>(instanceEnvironment, logMessage, instanceName);
     logger->setDebugLogging(loggingOn);
 
-    auto slave = fmu4cpp::createInstance({logger.get(), instanceName, resources});
+    auto slave = fmu4cpp::createInstance(
+            {
+                    logger.get(),
+                    instanceName,
+                    resources,
+                    visible,
+            });
     const auto guid = slave->guid();
     if (guid != instantiationToken) {
         logger->log(fmiFatal, "[fmu4cpp] Error. Wrong guid!");

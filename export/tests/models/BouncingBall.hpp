@@ -21,22 +21,26 @@ public:
                 "height", &state_.height_)
                 .setCausality(causality_t::OUTPUT)
                 .setVariability(variability_t::CONTINUOUS)
-                .setInitial(initial_t::EXACT);
+                .setInitial(initial_t::EXACT)
+                .setDescription("Current height of the ball");
 
         register_real(
                 "velocity", &state_.velocity_)
                 .setCausality(causality_t::LOCAL)
-                .setVariability(variability_t::CONTINUOUS);
+                .setVariability(variability_t::CONTINUOUS)
+                .setDescription("Current velocity of the ball");
 
         register_real(
                 "gravity", &state_.gravity_)
                 .setCausality(causality_t::PARAMETER)
-                .setVariability(variability_t::FIXED);
+                .setVariability(variability_t::FIXED)
+                .setDescription("Acceleration due to gravity");
 
         register_real(
                 "bounceFactor", &state_.bounceFactor_)
                 .setCausality(causality_t::PARAMETER)
-                .setVariability(variability_t::FIXED);
+                .setVariability(variability_t::FIXED)
+                .setDescription("Factor to reduce velocity on bounce");
 
         register_state(&BouncingBall::state_);
     }

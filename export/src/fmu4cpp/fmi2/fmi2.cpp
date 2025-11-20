@@ -90,7 +90,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
                               fmi2String fmuGUID,
                               fmi2String fmuResourceLocation,
                               const fmi2CallbackFunctions *functions,
-                              fmi2Boolean /*visible*/,
+                              fmi2Boolean visible,
                               fmi2Boolean loggingOn) {
 
     auto logger = std::make_unique<fmi2Logger>(instanceName, functions);
@@ -118,7 +118,13 @@ fmi2Component fmi2Instantiate(fmi2String instanceName,
         resources.replace(0, 6 - magic, "");
     }
 
-    auto slave = fmu4cpp::createInstance({logger.get(), instanceName, resources});
+    auto slave = fmu4cpp::createInstance(
+            {
+                    logger.get(),
+                    instanceName,
+                    resources,
+                    visible == fmi2True,
+            });
     const auto guid = slave->guid();
     if (guid != fmuGUID) {
         logger->log(fmiFatal, "[fmu4cpp] Error. Wrong guid!");

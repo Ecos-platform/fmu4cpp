@@ -38,15 +38,6 @@ std::string fmu_base::make_description() const {
        << ">\n"
        << "\t</CoSimulation>\n\n";
 
-    if (!m.vendorAnnotations.empty()) {
-        ss << "\t<VendorAnnotations>\n";
-        for (const auto &annotation: m.vendorAnnotations) {
-            std::string indentedAnnotation = indent_multiline_string(annotation, 2);
-            ss << indentedAnnotation << "\n";
-        }
-        ss << "\t</VendorAnnotations>\n\n";
-    }
-
     if (m.defaultExperiment) {
         ss << "\t<DefaultExperiment ";
 
@@ -56,6 +47,15 @@ std::string fmu_base::make_description() const {
         if (m.defaultExperiment->tolerance) ss << " tolerance=\"" << *m.defaultExperiment->tolerance << "\"";
 
         ss << "/>\n\n";
+    }
+
+    if (!m.vendorAnnotations.empty()) {
+        ss << "\t<VendorAnnotations>\n";
+        for (const auto &annotation: m.vendorAnnotations) {
+            std::string indentedAnnotation = indent_multiline_string(annotation, 2);
+            ss << indentedAnnotation << "\n";
+        }
+        ss << "\t</VendorAnnotations>\n\n";
     }
 
     ss << "\t<ModelVariables>\n";
@@ -77,19 +77,33 @@ std::string fmu_base::make_description() const {
            << "\t\t<ScalarVariable name=\""
            << v->name() << "\" valueReference=\"" << v->value_reference() << "\""
            << " causality=\"" << to_string(v->causality()) << "\"";
+
         if (variability) {
             ss << " variability=\"" << to_string(*variability) << "\"";
         }
         if (initial) {
             ss << " initial=\"" << to_string(*initial) << "\"";
         }
+
+        if (auto desc = v->getDescription(); !desc.empty()) {
+            ss << " description=\"" << desc << "\"";
+        }
+
         ss << ">\n";
         if (auto i = dynamic_cast<const IntVariable *>(v)) {
+
             ss << "\t\t\t<Integer";
             if (requires_start(*v)) {
                 ss << " start=\"" << i->get() << "\"";
             }
+            const auto min = i->getMin();
+            const auto max = i->getMax();
+            if (min && max) {
+                ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
+            }
+
         } else if (auto r = dynamic_cast<const RealVariable *>(v)) {
+
             ss << "\t\t\t<Real";
             if (requires_start(*v)) {
                 ss << " start=\"" << r->get() << "\"";
@@ -99,11 +113,16 @@ std::string fmu_base::make_description() const {
             if (min && max) {
                 ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
             }
+            if (const auto unit = r->getUnit()) {
+                ss << " unit=\"" << *unit << "\"";
+            }
+
         } else if (auto s = dynamic_cast<const StringVariable *>(v)) {
             ss << "\t\t\t<String";
             if (requires_start(*v)) {
                 ss << " start=\"" << s->get() << "\"";
             }
+
         } else if (auto b = dynamic_cast<const BoolVariable *>(v)) {
             ss << "\t\t\t<Boolean";
             if (requires_start(*v)) {
@@ -111,6 +130,7 @@ std::string fmu_base::make_description() const {
             }
         }
         ss << "/>\n";
+
         if (!annotations.empty()) {
             ss << "\t\t\t<Annotations>\n";
             for (const auto &annotation: annotations) {

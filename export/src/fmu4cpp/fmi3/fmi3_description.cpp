@@ -21,6 +21,8 @@ namespace {
             return "String";
         } else if (dynamic_cast<const BoolVariable *>(v)) {
             return "Boolean";
+        } else if (dynamic_cast<const BinaryVariable *>(v)) {
+            return "Binary";
         }
         throw std::runtime_error("Unknown variable type");
     }
@@ -88,18 +90,27 @@ std::string fmu_base::make_description() const {
            << "\t\t<" << type(v) << " name=\""
            << v->name() << "\" valueReference=\"" << v->value_reference() << "\""
            << " causality=\"" << to_string(v->causality()) << "\"";
+
         if (variability) {
             ss << " variability=\"" << to_string(*variability) << "\"";
         }
         if (initial) {
             ss << " initial=\"" << to_string(*initial) << "\"";
         }
+
+        if (auto desc = v->getDescription(); !desc.empty()) {
+            ss << " description=\"" << desc << "\"";
+        }
+
         bool with_start = requires_start(*v);
         if (auto i = dynamic_cast<const IntVariable *>(v)) {
+
             if (with_start) {
                 ss << " start=\"" << i->get() << "\"";
             }
+
         } else if (auto r = dynamic_cast<const RealVariable *>(v)) {
+
             if (with_start) {
                 ss << " start=\"" << r->get() << "\"";
             }
@@ -108,17 +119,24 @@ std::string fmu_base::make_description() const {
             if (min && max) {
                 ss << " min=\"" << *min << "\" max=\"" << *max << "\"";
             }
+
+        } else if (auto b = dynamic_cast<const BoolVariable *>(v)) {
+
+            if (with_start) {
+                ss << " start=\"" << b->get() << "\"";
+            }
+
         } else if (auto s = dynamic_cast<const StringVariable *>(v)) {
+
             if (with_start) {
                 ss << ">\n";
                 ss << "\t\t\t<Dimension start=\"1\"/>\n";
                 ss << "\t\t\t<Start value=\"" << s->get() << "\"/>\n";
             }
-        } else if (auto b = dynamic_cast<const BoolVariable *>(v)) {
-            if (with_start) {
-                ss << " start=\"" << b->get() << "\"";
-            }
+        } else if (auto bin = dynamic_cast<const BinaryVariable *>(v)) {
+            //TODO
         }
+
         if (with_start && dynamic_cast<const StringVariable *>(v)) {
             ss << "\t\t</String>\n";
         } else {

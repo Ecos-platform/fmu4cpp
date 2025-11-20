@@ -86,6 +86,7 @@ namespace fmu4cpp {
         logger *fmiLogger{nullptr};
         std::string instanceName{};
         std::filesystem::path resourceLocation{};
+        bool visible{false};
     };
 
     class fmu_base {
@@ -102,6 +103,10 @@ namespace fmu4cpp {
 
         [[nodiscard]] const std::filesystem::path &resourceLocation() const {
             return data_.resourceLocation;
+        }
+
+        [[nodiscard]] bool visible() const {
+            return data_.visible;
         }
 
         [[nodiscard]] std::optional<IntVariable> get_int_variable(const std::string &name) const;
