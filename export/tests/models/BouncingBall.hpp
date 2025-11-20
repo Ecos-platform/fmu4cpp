@@ -38,7 +38,7 @@ public:
                 .setCausality(causality_t::PARAMETER)
                 .setVariability(variability_t::FIXED);
 
-        set_state_helpers(&BouncingBall::state_);
+        register_state(&BouncingBall::state_);
     }
 
     bool do_step(double dt) override {
