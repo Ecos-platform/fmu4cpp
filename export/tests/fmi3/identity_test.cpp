@@ -1,95 +1,21 @@
 
-#include "catch2/matchers/catch_matchers_vector.hpp"
-#include "fmi3/fmi3Functions.h"
-
-
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_vector.hpp>
+
 #include <cstdarg>
 #include <iostream>
 #include <unordered_set>
 
 #include <fmu4cpp/fmu_base.hpp>
 
-class Model : public fmu4cpp::fmu_base {
+#include "Identity.hpp"
+#include "fmi3/fmi3Functions.h"
 
-public:
-    FMU4CPP_CTOR(Model) {
-
-        register_variable(integer("integerIn", &integer_)
-                                  .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
-
-        register_variable(real("realIn", &real_)
-                                  .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
-
-        register_variable(boolean("booleanIn", &boolean_)
-                                  .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
-
-        register_variable(string("stringIn", &string_)
-                                  .setCausality(fmu4cpp::causality_t::INPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE));
-
-
-        register_variable(integer("integerOut", &integer_)
-                                  .setCausality(fmu4cpp::causality_t::OUTPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({"integerIn"}));
-
-        register_variable(real("realOut", &real_)
-                                  .setCausality(fmu4cpp::causality_t::OUTPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({"realIn"}));
-
-        register_variable(boolean("booleanOut", &boolean_)
-                                  .setCausality(fmu4cpp::causality_t::OUTPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({"booleanIn"}));
-
-        register_variable(string("stringOut", [this] { return string_; })
-                                  .setCausality(fmu4cpp::causality_t::OUTPUT)
-                                  .setVariability(fmu4cpp::variability_t::DISCRETE)
-                                  .setInitial(fmu4cpp::initial_t::CALCULATED)
-                                  .setDependencies({"stringIn"}));
-
-        Model::reset();
-    }
-
-    bool do_step(double dt) override {
-        return true;
-    }
-
-    void reset() override {
-        integer_ = 0;
-        real_ = 0;
-        boolean_ = false;
-        string_ = "empty";
-    }
-
-private:
-    int integer_;
-    double real_;
-    bool boolean_;
-    std::string string_;
-};
-
-fmu4cpp::model_info fmu4cpp::get_model_info() {
-    model_info info;
-    info.modelName = "Identity";
-    info.description = "A simple feed-trough model";
-    return info;
-}
 
 std::string fmu4cpp::model_identifier() {
     return "identity";
 }
-
-FMU4CPP_INSTANTIATE(Model);
 
 
 int readInt(fmi3Instance c, fmi3ValueReference ref) {

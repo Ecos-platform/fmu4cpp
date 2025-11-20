@@ -13,6 +13,7 @@
 #include "Identity.hpp"
 #include "fmu4cpp/fmu_base.hpp"
 
+
 std::string fmu4cpp::model_identifier() {
     return "identity";
 }
@@ -146,9 +147,11 @@ TEST_CASE("test_identity") {
 
     double t{0};
     const double dt{0.1};
-
     bool b{false};
     int counter{0};
+
+    fmi2FMUstate preState;
+    fmi2FMUstate afterState;
     while (t < 1) {
 
         setInt(c, integerIn->value_reference(), counter);
@@ -156,7 +159,9 @@ TEST_CASE("test_identity") {
         setString(c, stringIn->value_reference(), std::to_string(t));
         setBool(c, booleanIn->value_reference(), b);
 
+        REQUIRE(fmi2GetFMUstate(c, &preState) == fmi2OK);
         REQUIRE(fmi2DoStep(c, t, dt, true) == fmi2OK);
+        REQUIRE(fmi2GetFMUstate(c, &afterState) == fmi2OK);
 
         REQUIRE(readReal(c, realOut->value_reference()) == Catch::Approx(t));
         REQUIRE(readString(c, stringOut->value_reference()) == std::to_string(t));
@@ -166,11 +171,31 @@ TEST_CASE("test_identity") {
         t += dt;
         counter++;
         b = !b;
+
+        REQUIRE(readReal(c, realOut->value_reference()) != Catch::Approx(t));
+        REQUIRE(readString(c, stringOut->value_reference()) != std::to_string(t));
+        REQUIRE(readInt(c, integerOut->value_reference()) != counter);
+        REQUIRE(readBool(c, booleanOut->value_reference()) != b);
+
+        REQUIRE(fmi2SetFMUstate(c, preState) == fmi2OK);
+
+        REQUIRE(readReal(c, realOut->value_reference()) == Catch::Approx(t-dt));
+        REQUIRE(readString(c, stringOut->value_reference()) == std::to_string(t-dt));
+        REQUIRE(readInt(c, integerOut->value_reference()) == counter-1);
+        REQUIRE(readBool(c, booleanOut->value_reference()) == !b);
+
+        REQUIRE(fmi2SetFMUstate(c, afterState) == fmi2OK);
+
     }
 
     setOutputFail(c);
 
+    REQUIRE(fmi2FreeFMUstate(c, &preState) == fmi2OK);
+    REQUIRE(fmi2FreeFMUstate(c, &afterState) == fmi2OK);
     REQUIRE(fmi2Terminate(c) == fmi2OK);
 
     fmi2FreeInstance(c);
+
+    REQUIRE(preState == nullptr);
+    REQUIRE(afterState == nullptr);
 }
