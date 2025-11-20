@@ -192,10 +192,12 @@ TEST_CASE("test_identity") {
 
     REQUIRE(fmi2FreeFMUstate(c, &preState) == fmi2OK);
     REQUIRE(fmi2FreeFMUstate(c, &afterState) == fmi2OK);
+
+    REQUIRE(preState == nullptr);
+    REQUIRE(afterState == nullptr);
+
     REQUIRE(fmi2Terminate(c) == fmi2OK);
 
     fmi2FreeInstance(c);
 
-    REQUIRE(preState == nullptr);
-    REQUIRE(afterState == nullptr);
 }

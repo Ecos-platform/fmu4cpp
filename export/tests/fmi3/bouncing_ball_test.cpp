@@ -17,6 +17,8 @@ TEST_CASE("BouncingBall_test") {
     BouncingBall model({});
     const auto guid = model.guid();
 
+    auto startHeight = model.get_real_variable("height")->get();
+
     auto c = fmi3InstantiateCoSimulation("bouncing_ball", guid.c_str(), "", false, false, false, false, nullptr, 0, nullptr, nullptr, nullptr);
     REQUIRE(c);
 
@@ -75,4 +77,13 @@ TEST_CASE("BouncingBall_test") {
 
     REQUIRE(fmi3FreeFMUState(c, &state) == fmi3OK);
     REQUIRE(state == nullptr);
+
+
+    REQUIRE(fmi3GetFloat64(c, &heightVr, 1, &height, 1) == fmi3OK);
+    CHECK(height < startHeight );
+    fmi3Reset(c);
+    REQUIRE(fmi3GetFloat64(c, &heightVr, 1, &height, 1) == fmi3OK);
+    CHECK(height == Catch::Approx(startHeight));
+
+    fmi3FreeInstance(c);
 }

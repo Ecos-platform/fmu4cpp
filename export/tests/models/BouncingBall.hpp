@@ -38,7 +38,7 @@ public:
                 .setCausality(causality_t::PARAMETER)
                 .setVariability(variability_t::FIXED);
 
-        BouncingBall::reset();
+        set_state_helpers(&BouncingBall::state_);
     }
 
     bool do_step(double dt) override {
@@ -58,63 +58,17 @@ public:
             << "Current height: " << state_.height_
             << ", Current velocity: " << state_.velocity_;
 
-        log(fmiOK, oss.str());
+        debugLog(fmiOK, oss.str());
 
         return true;
     }
 
-    void *getFMUState() override {
-        auto statePtr = new State(state_);
-        return statePtr;
-    }
-
-    void setFmuState(void *state) override {
-        state_.setFromPtr(state);
-    }
-
-    void freeFmuState(void **state) override {
-        delete static_cast<State *>(*state);
-        *state = nullptr;
-    }
-
-    void serializedFMUStateSize(void *state, size_t &size) override {
-        size = sizeof(State);
-    }
-
-    void serializeFMUState(void *state, std::vector<uint8_t> &serializedState) override {
-        const State *statePtr = static_cast<State *>(state);
-        serializedState.resize(sizeof(State));
-        std::memcpy(serializedState.data(), statePtr, sizeof(State));
-    }
-
-    void deserializeFMUState(const std::vector<uint8_t> &serializedState, void **state) override {
-        auto statePtr = new State();
-        std::memcpy(statePtr, serializedState.data(), sizeof(State));
-        *state = statePtr;
-    }
-
-    void reset() override {
-        state_.reset();
-    }
-
 private:
     struct State {
-        double height_{};      // Current height of the ball
-        double velocity_{};    // Current velocity of the ball
-        double gravity_{};     // Acceleration due to gravity
-        double bounceFactor_{};// Factor to reduce velocity on bounce
-
-        void setFromPtr(const void *ptr) {
-            const auto *src = static_cast<const State *>(ptr);
-            *this = *src;
-        }
-
-        void reset() {
-            height_ = 10;
-            velocity_ = 0;
-            gravity_ = -9.81f;
-            bounceFactor_ = 0.6f;
-        }
+        double height_ = 10;       // Current height of the ball
+        double velocity_ = 0;      // Current velocity of the ball
+        double gravity_ = -9.81;   // Acceleration due to gravity
+        double bounceFactor_ = 0.6;// Factor to reduce velocity on bounce
     };
 
     State state_;
