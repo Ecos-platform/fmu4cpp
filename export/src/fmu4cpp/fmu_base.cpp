@@ -28,79 +28,74 @@ namespace fmu4cpp {
         throw fatal_error("Reset is unimplemented in slave");
     }
 
-    IntVariable fmu_base::integer(const std::string &name, int *ptr, const std::function<void()> &onChange) {
+    IntVariable& fmu_base::register_integer(const std::string &name, int *ptr, const std::function<void()> &onChange) {
         const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, ptr, onChange};
-    }
-
-    IntVariable fmu_base::integer(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, getter, setter};
-    }
-
-    RealVariable fmu_base::real(const std::string &name, double *ptr, const std::function<void()> &onChange) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, ptr, onChange};
-    }
-
-    RealVariable fmu_base::real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, getter, setter};
-    }
-
-    BoolVariable fmu_base::boolean(const std::string &name, bool *ptr, const std::function<void()> &onChange) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, ptr, onChange};
-    }
-
-    BoolVariable fmu_base::boolean(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, getter, setter};
-    }
-
-    StringVariable fmu_base::string(const std::string &name, std::string *ptr, const std::function<void()> &onChange) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, ptr, onChange};
-    }
-
-    StringVariable fmu_base::string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, getter, setter};
-    }
-
-    BinaryVariable fmu_base::binary(const std::string &name, BinaryType *ptr, const std::function<void()> &onChange) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, ptr, onChange};
-    }
-
-    BinaryVariable fmu_base::binary(const std::string &name, const std::function<BinaryType()> &getter, const std::optional<std::function<void(BinaryType)>> &setter) {
-        const auto vr = static_cast<unsigned int>(numVariables_++);
-        return {name, vr, numVariables_, getter, setter};
-    }
-
-    void fmu_base::register_variable(IntVariable v) {
-        integers_.emplace_back(std::move(v));
+        auto& v = integers_.emplace_back(name, vr, numVariables_, ptr, onChange);
         vrToIntegerIndices_.emplace(v.value_reference(), integers_.size() - 1);
+        return v;
     }
 
-    void fmu_base::register_variable(RealVariable v) {
-        reals_.emplace_back(std::move(v));
+    IntVariable& fmu_base::register_integer(const std::string &name, const std::function<int()> &getter, const std::optional<std::function<void(int)>> &setter) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = integers_.emplace_back(name, vr, numVariables_, getter, setter);
+        vrToIntegerIndices_.emplace(v.value_reference(), integers_.size() - 1);
+        return v;
+    }
+
+    RealVariable& fmu_base::register_real(const std::string &name, double *ptr, const std::function<void()> &onChange) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = reals_.emplace_back(name, vr, numVariables_, ptr, onChange);
         vrToRealIndices_.emplace(v.value_reference(), reals_.size() - 1);
+        return v;
     }
 
-    void fmu_base::register_variable(BoolVariable v) {
-        booleans_.emplace_back(std::move(v));
+    RealVariable& fmu_base::register_real(const std::string &name, const std::function<double()> &getter, const std::optional<std::function<void(double)>> &setter) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = reals_.emplace_back(name, vr, numVariables_, getter, setter);
+        vrToRealIndices_.emplace(v.value_reference(), reals_.size() - 1);
+        return v;
+    }
+
+    BoolVariable& fmu_base::register_boolean(const std::string &name, bool *ptr, const std::function<void()> &onChange) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = booleans_.emplace_back(name, vr, numVariables_, ptr, onChange);
         vrToBooleanIndices_.emplace(v.value_reference(), booleans_.size() - 1);
+        return v;
     }
 
-    void fmu_base::register_variable(StringVariable v) {
-        strings_.emplace_back(std::move(v));
+    BoolVariable& fmu_base::register_boolean(const std::string &name, const std::function<bool()> &getter, const std::optional<std::function<void(bool)>> &setter) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = booleans_.emplace_back(name, vr, numVariables_, getter, setter);
+        vrToBooleanIndices_.emplace(v.value_reference(), booleans_.size() - 1);
+        return v;
+    }
+
+    StringVariable& fmu_base::register_string(const std::string &name, std::string *ptr, const std::function<void()> &onChange) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = strings_.emplace_back(name, vr, numVariables_, ptr, onChange);
         vrToStringIndices_.emplace(v.value_reference(), strings_.size() - 1);
+        return v;
     }
 
-    void fmu_base::register_variable(BinaryVariable v) {
-        binary_.emplace_back(std::move(v));
+    StringVariable& fmu_base::register_string(const std::string &name, const std::function<std::string()> &getter, const std::optional<std::function<void(std::string)>> &setter) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = strings_.emplace_back(name, vr, numVariables_, getter, setter);
+        vrToStringIndices_.emplace(v.value_reference(), strings_.size() - 1);
+        return v;
+    }
+
+    BinaryVariable& fmu_base::register_binary(const std::string &name, BinaryType *ptr, const std::function<void()> &onChange) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = binary_.emplace_back(name, vr, numVariables_, ptr, onChange);
         vrToBinaryIndices_.emplace(v.value_reference(), binary_.size() - 1);
+        return v;
+    }
+
+    BinaryVariable& fmu_base::register_binary(const std::string &name, const std::function<BinaryType()> &getter, const std::optional<std::function<void(BinaryType)>> &setter) {
+        const auto vr = static_cast<unsigned int>(numVariables_++);
+        auto& v = binary_.emplace_back(name, vr, numVariables_, getter, setter);
+        vrToBinaryIndices_.emplace(v.value_reference(), binary_.size() - 1);
+        return v;
     }
 
     [[maybe_unused]] std::string fmu_base::guid() const {

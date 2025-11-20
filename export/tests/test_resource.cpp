@@ -12,8 +12,8 @@ public:
         std::ifstream file(resourceLocation().string() + "/data.txt");
         std::getline(file, data_);
 
-        register_variable(string("data", &data_)
-                                  .setCausality(fmu4cpp::causality_t::OUTPUT));
+        register_string("data", &data_)
+                .setCausality(fmu4cpp::causality_t::OUTPUT);
 
         Model::reset();
     }

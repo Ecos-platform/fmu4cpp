@@ -17,10 +17,10 @@ class Model : public fmu4cpp::fmu_base {
 public:
     FMU4CPP_CTOR(Model) {
 
-        register_variable(binary("binaryIn", &binaryIn_).setCausality(fmu4cpp::causality_t::INPUT));
-        register_variable(real("realOut", &realOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(integer("integerOut", &integerOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
-        register_variable(string("stringOut", &stringOut_).setCausality(fmu4cpp::causality_t::OUTPUT));
+        register_binary("binaryIn", &binaryIn_).setCausality(fmu4cpp::causality_t::INPUT);
+        register_real("realOut", &realOut_).setCausality(fmu4cpp::causality_t::OUTPUT);
+        register_integer("integerOut", &integerOut_).setCausality(fmu4cpp::causality_t::OUTPUT);
+        register_string("stringOut", &stringOut_).setCausality(fmu4cpp::causality_t::OUTPUT);
 
         Model::reset();
     }
