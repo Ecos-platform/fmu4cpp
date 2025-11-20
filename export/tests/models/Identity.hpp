@@ -1,6 +1,6 @@
 
-#ifndef IDENTITY_HPP
-#define IDENTITY_HPP
+#ifndef FMU4CPP_IDENTITY_HPP
+#define FMU4CPP_IDENTITY_HPP
 
 #include <fmu4cpp/fmu_base.hpp>
 
@@ -30,6 +30,11 @@ public:
                 .setCausality(causality_t::INPUT)
                 .setVariability(variability_t::DISCRETE);
 
+        register_binary("binaryIn", &state_.binary_)
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
+
+
         register_integer("integerOut", &state_.integer_)
                 .setCausality(causality_t::OUTPUT)
                 .setVariability(variability_t::DISCRETE)
@@ -53,6 +58,10 @@ public:
                 .setVariability(variability_t::DISCRETE)
                 .setInitial(initial_t::CALCULATED)
                 .setDependencies({"stringIn"});
+
+        register_binary("binaryOut", &state_.binary_)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE);
 
         Model::reset();
     }
@@ -86,12 +95,14 @@ private:
         double real_{};
         bool boolean_{};
         std::string string_{};
+        std::vector<uint8_t> binary_{};
 
         void reset() {
             integer_ = 0;
             real_ = 0;
             boolean_ = false;
             string_ = "empty";
+            binary_ = {};
         }
     };
 
@@ -111,4 +122,4 @@ model_info fmu4cpp::get_model_info() {
 FMU4CPP_INSTANTIATE(Model);// Entry point for FMI instantiate function.
 
 
-#endif//IDENTITY_HPP
+#endif//FMU4CPP_IDENTITY_HPP
