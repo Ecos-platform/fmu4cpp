@@ -30,11 +30,6 @@ public:
                 .setCausality(causality_t::INPUT)
                 .setVariability(variability_t::DISCRETE);
 
-        register_binary("binaryIn", &state_.binary_)
-                .setCausality(causality_t::INPUT)
-                .setVariability(variability_t::DISCRETE);
-
-
         register_integer("integerOut", &state_.integer_)
                 .setCausality(causality_t::OUTPUT)
                 .setVariability(variability_t::DISCRETE)
@@ -59,10 +54,15 @@ public:
                 .setInitial(initial_t::CALCULATED)
                 .setDependencies({"stringIn"});
 
+#ifdef FMI3
+        register_binary("binaryIn", &state_.binary_)
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
+
         register_binary("binaryOut", &state_.binary_)
                 .setCausality(causality_t::OUTPUT)
                 .setVariability(variability_t::DISCRETE);
-
+#endif
         Model::reset();
     }
 
