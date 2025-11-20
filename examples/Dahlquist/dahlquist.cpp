@@ -8,18 +8,18 @@ class Dahlquist : public fmu4cpp::fmu_base {
 public:
     FMU4CPP_CTOR(Dahlquist) {
 
-        register_variable(real("x", &x)
-                                  .setCausality(fmu4cpp::causality_t::OUTPUT)
-                                  .setVariability(fmu4cpp::variability_t::CONTINUOUS)
-                                  .setInitial(fmu4cpp::initial_t::EXACT));
+        register_real("x", &x)
+                .setCausality(fmu4cpp::causality_t::OUTPUT)
+                .setVariability(fmu4cpp::variability_t::CONTINUOUS)
+                .setInitial(fmu4cpp::initial_t::EXACT);
 
-        register_variable(real("dx", &dx)
-                                  .setCausality(fmu4cpp::causality_t::LOCAL)
-                                  .setVariability(fmu4cpp::variability_t::CONTINUOUS));
+        register_real("dx", &dx)
+                .setCausality(fmu4cpp::causality_t::LOCAL)
+                .setVariability(fmu4cpp::variability_t::CONTINUOUS);
 
-        register_variable(real("k", &k)
-                                  .setCausality(fmu4cpp::causality_t::PARAMETER)
-                                  .setVariability(fmu4cpp::variability_t::FIXED));
+        register_real("k", &k)
+                .setCausality(fmu4cpp::causality_t::PARAMETER)
+                .setVariability(fmu4cpp::variability_t::FIXED);
 
         Dahlquist::reset();
     }

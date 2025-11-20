@@ -12,26 +12,26 @@ class SimplePendulum : public fmu_base {
 public:
     FMU4CPP_CTOR(SimplePendulum) {
 
-        register_variable(real("angle", &angle_)
-                                  .setCausality(causality_t::OUTPUT)
-                                  .setVariability(variability_t::CONTINUOUS));
+        register_real("angle", &angle_)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::CONTINUOUS);
 
-        register_variable(real("angularVelocity", &angularVelocity_)
-                                  .setCausality(causality_t::LOCAL)
-                                  .setVariability(variability_t::CONTINUOUS));
-        register_variable(real(
-                                  "gravity", &gravity_)
-                                  .setCausality(causality_t::PARAMETER)
-                                  .setVariability(variability_t::FIXED));
-        register_variable(real(
-                                  "length", &length_)
-                                  .setCausality(causality_t::PARAMETER)
-                                  .setVariability(variability_t::FIXED));
-        register_variable(real(
-                                  "damping", &damping_)
-                                  .setCausality(causality_t::PARAMETER)
-                                  .setVariability(variability_t::FIXED)
-                                  .addAnnotation("<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific variable annotation\"</documentation>\n</Tool>"));
+        register_real("angularVelocity", &angularVelocity_)
+                .setCausality(causality_t::LOCAL)
+                .setVariability(variability_t::CONTINUOUS);
+        register_real(
+                "gravity", &gravity_)
+                .setCausality(causality_t::PARAMETER)
+                .setVariability(variability_t::FIXED);
+        register_real(
+                "length", &length_)
+                .setCausality(causality_t::PARAMETER)
+                .setVariability(variability_t::FIXED);
+        register_real(
+                "damping", &damping_)
+                .setCausality(causality_t::PARAMETER)
+                .setVariability(variability_t::FIXED)
+                .addAnnotation("<Tool name=\"fmu4cpp\">\n\t<documentation>\"Example of tool specific variable annotation\"</documentation>\n</Tool>");
 
         SimplePendulum::reset();
     }

@@ -16,11 +16,10 @@ public:
 
         std::getline(ifs, content_);
 
-        register_variable(
-                string(
-                        "content", &content_)
-                        .setVariability(variability_t::CONSTANT)
-                        .setCausality(causality_t::OUTPUT));
+        register_string(
+                "content", &content_)
+                .setVariability(variability_t::CONSTANT)
+                .setCausality(causality_t::OUTPUT);
 
         Resource::reset();
     }
