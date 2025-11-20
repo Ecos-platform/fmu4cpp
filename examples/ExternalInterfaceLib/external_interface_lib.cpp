@@ -10,7 +10,7 @@ class ExternalInterfaceLib : public fmu4cpp::fmu_base {
 public:
     FMU4CPP_CTOR(ExternalInterfaceLib) {
 
-        register_string("jsonString_", &jsonString_)
+        register_string("jsonString", &jsonString_)
                 .setCausality(fmu4cpp::causality_t::LOCAL)
                 .setVariability(fmu4cpp::variability_t::DISCRETE);
 
@@ -26,7 +26,7 @@ public:
 
         jsonString_ = json.dump();
 
-        log(fmiOK, "Generated JSON string: " + jsonString_);
+        debugLog(fmiOK, "Generated JSON string: " + jsonString_);
 
         return true;
     }

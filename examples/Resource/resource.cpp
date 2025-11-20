@@ -26,7 +26,7 @@ public:
 
     bool do_step(double dt) override {
 
-        log(fmiOK, get_string_variable("content")->get());
+        debugLog(fmiOK, get_string_variable("content")->get());
         return true;
     }
 

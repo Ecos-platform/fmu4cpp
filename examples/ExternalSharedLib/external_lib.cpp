@@ -18,7 +18,7 @@ public:
 
     bool do_step(double dt) override {
 
-        log(fmiOK, fmt::format("Hello from External Library! counter={} dt={}", ++counter, dt));
+        debugLog(fmiOK, fmt::format("Hello from External Library! counter={} dt={}", ++counter, dt));
 
         return true;
     }
