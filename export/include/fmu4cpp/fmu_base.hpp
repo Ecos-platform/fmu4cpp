@@ -226,11 +226,11 @@ namespace fmu4cpp {
         std::unordered_map<unsigned int, size_t> vrToBooleanIndices_;
 
         std::vector<StringVariable> strings_;
-        std::string stringBuffer_;
+        std::vector<std::string> stringBuffer_;
         std::unordered_map<unsigned int, size_t> vrToStringIndices_;
 
         std::vector<BinaryVariable> binary_;
-        std::vector<uint8_t> binaryBuffer_;
+        std::vector<std::vector<uint8_t>> binaryBuffer_;
         std::unordered_map<unsigned int, size_t> vrToBinaryIndices_;
 
         std::function<void *(void *)> get_state_ptr_{nullptr};

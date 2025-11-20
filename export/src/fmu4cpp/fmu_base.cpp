@@ -132,23 +132,24 @@ void fmu_base::get_boolean(const unsigned int vr[], size_t nvr, bool value[]) co
 }
 
 void fmu_base::get_string(const unsigned int vr[], size_t nvr, const char *value[]) {
+    stringBuffer_.clear();
     for (unsigned i = 0; i < nvr; i++) {
         const auto ref = vr[i];
         const auto idx = vrToStringIndices_.at(ref);
-        stringBuffer_ = strings_[idx].get();
-        value[i] = stringBuffer_.c_str();
+        stringBuffer_.emplace_back(strings_[idx].get());
+        value[i] = stringBuffer_.back().c_str();
     }
 }
 
 void fmu_base::get_binary(const unsigned int vr[], size_t nvr, size_t valueSizes[], const uint8_t *values[]) {
-
+    binaryBuffer_.clear();
     for (auto i = 0; i < nvr; i++) {
         const auto ref = vr[i];
         const auto idx = vrToBinaryIndices_.at(ref);
         const auto &data = binary_[idx].get();
         valueSizes[i] = data.size();
-        binaryBuffer_.assign(data.begin(), data.end());
-        values[i] = binaryBuffer_.data();
+        binaryBuffer_.emplace_back(data.begin(), data.end());
+        values[i] = binaryBuffer_.back().data();
     }
 }
 
