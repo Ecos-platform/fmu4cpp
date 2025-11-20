@@ -33,9 +33,9 @@ namespace fmu4cpp {
         explicit fmu_base(fmu_data data)
             : data_(std::move(data)) {
 
-            register_variable(real("time", &time_)
-                                      .setCausality(causality_t::INDEPENDENT)
-                                      .setVariability(variability_t::CONTINUOUS));
+            register_real("time", &time_)
+                    .setCausality(causality_t::INDEPENDENT)
+                    .setVariability(variability_t::CONTINUOUS);
         }
 
         fmu_base(const fmu_base &) = delete;
@@ -257,37 +257,30 @@ namespace fmu4cpp {
         virtual ~fmu_base() = default;
 
     protected:
-        IntVariable integer(const std::string &name, int *ptr, const std::function<void()> &onChange = {});
-        IntVariable integer(const std::string &name,
-                            const std::function<int()> &getter,
-                            const std::optional<std::function<void(int)>> &setter = std::nullopt);
+        IntVariable &register_integer(const std::string &name, int *ptr, const std::function<void()> &onChange = {});
+        IntVariable &register_integer(const std::string &name,
+                                      const std::function<int()> &getter,
+                                      const std::optional<std::function<void(int)>> &setter = std::nullopt);
 
-        RealVariable real(const std::string &name, double *ptr, const std::function<void()> &onChange = {});
-        RealVariable real(const std::string &name,
-                          const std::function<double()> &getter,
-                          const std::optional<std::function<void(double)>> &setter = std::nullopt);
+        RealVariable &register_real(const std::string &name, double *ptr, const std::function<void()> &onChange = {});
+        RealVariable &register_real(const std::string &name,
+                                    const std::function<double()> &getter,
+                                    const std::optional<std::function<void(double)>> &setter = std::nullopt);
 
-        BoolVariable boolean(const std::string &name, bool *ptr, const std::function<void()> &onChange = {});
-        BoolVariable boolean(const std::string &name,
-                             const std::function<bool()> &getter,
-                             const std::optional<std::function<void(bool)>> &setter);
+        BoolVariable &register_boolean(const std::string &name, bool *ptr, const std::function<void()> &onChange = {});
+        BoolVariable &register_boolean(const std::string &name,
+                                       const std::function<bool()> &getter,
+                                       const std::optional<std::function<void(bool)>> &setter);
 
-        StringVariable string(const std::string &name, std::string *ptr, const std::function<void()> &onChange = {});
-        StringVariable string(const std::string &name,
-                              const std::function<std::string()> &getter,
-                              const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
+        StringVariable &register_string(const std::string &name, std::string *ptr, const std::function<void()> &onChange = {});
+        StringVariable &register_string(const std::string &name,
+                                        const std::function<std::string()> &getter,
+                                        const std::optional<std::function<void(std::string)>> &setter = std::nullopt);
 
-        BinaryVariable binary(const std::string &name, BinaryType *ptr, const std::function<void()> &onChange = {});
-        BinaryVariable binary(const std::string &name,
-                              const std::function<std::vector<uint8_t>()> &getter,
-                              const std::optional<std::function<void(std::vector<uint8_t>)>> &setter = std::nullopt);
-
-        void register_variable(IntVariable v);
-        void register_variable(RealVariable v);
-        void register_variable(BoolVariable v);
-        void register_variable(StringVariable v);
-        void register_variable(BinaryVariable v);
-
+        BinaryVariable &register_binary(const std::string &name, BinaryType *ptr, const std::function<void()> &onChange = {});
+        BinaryVariable &register_binary(const std::string &name,
+                                        const std::function<std::vector<uint8_t>()> &getter,
+                                        const std::optional<std::function<void(std::vector<uint8_t>)>> &setter = std::nullopt);
 
         virtual void enter_initialisation_mode();
         virtual bool do_step(double dt) = 0;

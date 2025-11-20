@@ -17,8 +17,13 @@ public:
     FMU4CPP_CTOR(Model), reals_(4) {
 
         for (int i = 0; i < reals_.size(); i++) {
-            register_variable(
-                    real("real[" + std::to_string(i) + "]", [this, i] { return reals_[i]; }, [this, i](double val) { reals_[i] = val; }).setCausality(fmu4cpp::causality_t::PARAMETER).setVariability(fmu4cpp::variability_t::TUNABLE));
+            // clang-format off
+            register_real("real[" + std::to_string(i) + "]",
+                [this, i] { return reals_[i]; },
+                [this, i](double val) { reals_[i] = val; }
+                ).setCausality(fmu4cpp::causality_t::PARAMETER)
+            .setVariability(fmu4cpp::variability_t::TUNABLE);
+            // clang-format on
         }
 
         Model::reset();

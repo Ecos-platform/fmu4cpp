@@ -11,49 +11,48 @@ class Model : public fmu_base {
 public:
     FMU4CPP_CTOR(Model) {
 
-        register_variable(integer(
-                                  "integerIn", &state_.integer_)
-                                  .setCausality(causality_t::INPUT)
-                                  .setVariability(variability_t::DISCRETE));
-        register_variable(
-                real(
-                        "realIn", &state_.real_)
-                        .setCausality(causality_t::INPUT)
-                        .setVariability(variability_t::DISCRETE));
+        register_integer(
+                "integerIn", &state_.integer_)
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
+        register_real(
+                "realIn", &state_.real_)
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
 
-        register_variable(boolean(
-                                  "booleanIn", &state_.boolean_)
-                                  .setCausality(causality_t::INPUT)
-                                  .setVariability(variability_t::DISCRETE));
+        register_boolean(
+                "booleanIn", &state_.boolean_)
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
 
-        register_variable(string(
-                                  "stringIn", &state_.string_)
-                                  .setCausality(causality_t::INPUT)
-                                  .setVariability(variability_t::DISCRETE));
+        register_string(
+                "stringIn", &state_.string_)
+                .setCausality(causality_t::INPUT)
+                .setVariability(variability_t::DISCRETE);
 
-        register_variable(integer("integerOut", &state_.integer_)
-                                  .setCausality(causality_t::OUTPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({"integerIn"}));
+        register_integer("integerOut", &state_.integer_)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE)
+                .setInitial(initial_t::CALCULATED)
+                .setDependencies({"integerIn"});
 
-        register_variable(real("realOut", &state_.real_)
-                                  .setCausality(causality_t::OUTPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({"realIn"}));
+        register_real("realOut", &state_.real_)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE)
+                .setInitial(initial_t::CALCULATED)
+                .setDependencies({"realIn"});
 
-        register_variable(boolean("booleanOut", &state_.boolean_)
-                                  .setCausality(causality_t::OUTPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({"booleanIn"}));
+        register_boolean("booleanOut", &state_.boolean_)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE)
+                .setInitial(initial_t::CALCULATED)
+                .setDependencies({"booleanIn"});
 
-        register_variable(string("stringOut", &state_.string_)
-                                  .setCausality(causality_t::OUTPUT)
-                                  .setVariability(variability_t::DISCRETE)
-                                  .setInitial(initial_t::CALCULATED)
-                                  .setDependencies({"stringIn"}));
+        register_string("stringOut", &state_.string_)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::DISCRETE)
+                .setInitial(initial_t::CALCULATED)
+                .setDependencies({"stringIn"});
 
         Model::reset();
     }
@@ -64,7 +63,7 @@ public:
     }
 
     void *getFMUState() override {
-        auto* state = new State(state_);
+        auto *state = new State(state_);
         return state;
     }
 
@@ -78,11 +77,10 @@ public:
     }
 
     void reset() override {
-       state_.reset();
+        state_.reset();
     }
 
 private:
-
     struct State {
         int integer_{};
         double real_{};
@@ -113,4 +111,4 @@ model_info fmu4cpp::get_model_info() {
 FMU4CPP_INSTANTIATE(Model);// Entry point for FMI instantiate function.
 
 
-#endif //IDENTITY_HPP
+#endif//IDENTITY_HPP

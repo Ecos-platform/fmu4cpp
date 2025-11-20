@@ -44,30 +44,26 @@ class BouncingBall : public fmu_base {
 public:
     FMU4CPP_CTOR(BouncingBall) {
 
-        register_variable(
-                real(
-                        "height", &height)
-                        .setCausality(causality_t::OUTPUT)
-                        .setVariability(variability_t::CONTINUOUS))
-                        .setInitial(initial_t::EXACT));
+        register_real(
+                "height", &height)
+                .setCausality(causality_t::OUTPUT)
+                .setVariability(variability_t::CONTINUOUS))
+                .setInitial(initial_t::EXACT);
 
-        register_variable(
-                real(
-                        "velocity", &velocity)
-                        .setCausality(causality_t::LOCAL)
-                        .setVariability(variability_t::CONTINUOUS));
+        register_real(
+                "velocity", &velocity)
+                .setCausality(causality_t::LOCAL)
+                .setVariability(variability_t::CONTINUOUS);
 
-        register_variable(
-                real(
-                        "gravity", &gravity)
-                        .setCausality(causality_t::PARAMETER)
-                        .setVariability(variability_t::FIXED));
+        register_real(
+                "gravity", &gravity)
+                .setCausality(causality_t::PARAMETER)
+                .setVariability(variability_t::FIXED);
 
-        register_variable(
-                real(
-                        "bounceFactor", &bounceFactor)
-                        .setCausality(causality_t::PARAMETER)
-                        .setVariability(variability_t::FIXED));
+        register_real(
+                "bounceFactor", &bounceFactor)
+                .setCausality(causality_t::PARAMETER)
+                .setVariability(variability_t::FIXED);
 
 
         BouncingBall::reset();
