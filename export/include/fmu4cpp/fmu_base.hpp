@@ -192,7 +192,7 @@ namespace fmu4cpp {
         }
 
         template<typename Model, typename State>
-        void set_state_helpers(State Model::*stateMember) {
+        void register_state(State Model::*stateMember) {
             static_assert(std::is_trivially_copyable_v<State>, "State must be trivially copyable");
             get_state_ptr_ = [stateMember](void *self) -> void * {
                 return &(static_cast<Model *>(self)->*stateMember);
