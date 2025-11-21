@@ -66,6 +66,9 @@
                                     <ssv:Parameter name="stiffness">
                                         <ssv:Real value="10"/>
                                     </ssv:Parameter>
+                                    <ssv:Parameter name="rest_position">
+                                        <ssv:Real value="0"/>
+                                    </ssv:Parameter>
                                 </ssv:Parameters>
                             </ssv:ParameterSet>
                         </ssd:ParameterValues>
