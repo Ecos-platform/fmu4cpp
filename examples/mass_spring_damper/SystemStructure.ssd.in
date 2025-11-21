@@ -139,13 +139,13 @@
     </ssd:System>
 
     <ssd:DefaultExperiment startTime="0">
-            <ssd:Annotations>
-                <ssc:Annotation type="com.opensimulationplatform">
-                    <osp:Algorithm>
-                        <osp:FixedStepAlgorithm baseStepSize="1e-4"/>
-                    </osp:Algorithm>
-                </ssc:Annotation>
-            </ssd:Annotations>
-        </ssd:DefaultExperiment>
+        <ssd:Annotations>
+            <ssc:Annotation type="com.opensimulationplatform">
+                <osp:Algorithm>
+                    <osp:FixedStepAlgorithm baseStepSize="1e-4"/>
+                </osp:Algorithm>
+            </ssc:Annotation>
+        </ssd:Annotations>
+    </ssd:DefaultExperiment>
 
 </ssd:SystemStructureDescription>
