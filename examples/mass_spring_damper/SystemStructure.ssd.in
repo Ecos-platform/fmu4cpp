@@ -148,6 +148,20 @@
                     <osp:FixedStepAlgorithm baseStepSize="1e-4"/>
                 </osp:Algorithm>
             </ssc:Annotation>
+            <ssc:Annotation type="com.github.ecos-platform.scenario">
+                <ecos:Scenario name="MassSpringDamperSimulation">
+                    <ecos:action t="5">
+                        <ecos:variable id="spring::rest_position">
+                            <ecos:real value="2.0"/>
+                        </ecos:variable>
+                    </ecos:action>
+                    <ecos:action t="25">
+                        <ecos:variable id="spring::rest_position">
+                            <ecos:real value="0.0"/>
+                        </ecos:variable>
+                    </ecos:action>
+                </ecos:Scenario>
+            </ssc:Annotation>
         </ssd:Annotations>
     </ssd:DefaultExperiment>
 
