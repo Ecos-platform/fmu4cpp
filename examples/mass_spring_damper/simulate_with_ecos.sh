@@ -1,0 +1,1 @@
+ecos simulate --path . --chartConfig ChartConfig.xml --stopTime 10 --stepSize 0.01
