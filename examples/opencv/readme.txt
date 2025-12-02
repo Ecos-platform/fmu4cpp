@@ -1,0 +1,1 @@
+This FMU must be built with dynamic MSVC runtime.
