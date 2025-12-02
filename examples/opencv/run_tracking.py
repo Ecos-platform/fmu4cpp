@@ -2,6 +2,7 @@
 from ecospy import *
 
 from pathlib import Path
+from time import sleep
 
 def read_png_file_to_bytes(path: str) -> bytes:
     with open(path, "rb") as f:
@@ -25,6 +26,7 @@ def main():
             sim.init()
             sim.set_binary("model::blob", image)
             sim.step()
+            sleep(1)
             sim.terminate()
 
 

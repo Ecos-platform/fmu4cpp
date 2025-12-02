@@ -8,7 +8,7 @@
 #include <fstream>
 #include <iostream>
 
-const std::vector<std::string> coco_names();
+const std::vector<std::string> &coco_names();
 
 class BoxDrawer {
 public:
@@ -66,8 +66,7 @@ class Tracking : public fmu4cpp::fmu_base {
 public:
     FMU4CPP_CTOR(Tracking) {
 
-        register_binary("blob", &binary_)
-                .setCausality(fmu4cpp::causality_t::INPUT);
+        register_binary("blob", &binary_).setCausality(fmu4cpp::causality_t::INPUT);
 
         register_real("confThreshold", &confThreshold)
                 .setCausality(fmu4cpp::causality_t::PARAMETER)
@@ -125,9 +124,8 @@ public:
             }
 
             // Transpose if needed (verify first)
-            const cv::Mat &transposedOutput = output.t();// Transpose output for processing
+            const cv::Mat& transposedOutput = output.t();// Transpose output for processing
             int rows = transposedOutput.rows;
-
 
             // Post-process detections
             std::vector<int> classIds;
@@ -158,13 +156,13 @@ public:
                 }
             }
 
-            std::cout << "Detections: " << boxes.size() << std::endl;
+            drawer.setConfThreshold(confThreshold);
+            drawer.draw(frame, classIds, confidences, boxes);
+            imshow(windowName_, frame);
 
-            // drawer.setConfThreshold(confThreshold);
-            // drawer.draw(frame, classIds, confidences, boxes);
-            // imshow(windowName_, frame);
-
+            cv::waitKey(1);
         }
+
         return true;
     }
 
@@ -182,7 +180,7 @@ private:
     BoxDrawer drawer{};
 };
 
-const std::vector<std::string> coco_names() {
+const std::vector<std::string> &coco_names() {
     static std::vector<std::string> names = {
             "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light",
             "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
