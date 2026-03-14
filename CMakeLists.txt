@@ -6,6 +6,7 @@ option(FMU4CPP_BUILD_TESTS "Build internal tests" OFF)
 option(FMU4CPP_MSVC_STATIC_CRT "Use static MSVC runtime library" ON)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (POLICY CMP0091)
     cmake_policy(SET CMP0091 NEW)
@@ -18,7 +19,12 @@ if (POLICY CMP0091)
     endif ()
 endif ()
 
-
 include("cmake/generate_fmu.cmake")
-
 add_subdirectory(export)
+
+generateFMU(
+    GainModel
+    FMI_VERSIONS fmi2 fmi3
+    SOURCES
+        src/GainModel.cpp
+)
